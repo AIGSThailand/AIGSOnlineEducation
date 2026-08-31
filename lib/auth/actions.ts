@@ -54,9 +54,9 @@ export async function loginAction(formData: FormData): Promise<AuthActionResult>
       .from("profiles")
       .select("role")
       .eq("id", user.id)
-      .single();
+      .single<{ role: UserRole }>();
 
-    redirectPath = getRoleDashboardPath(profile?.role as UserRole);
+    redirectPath = getRoleDashboardPath(profile?.role);
   }
 
   return {

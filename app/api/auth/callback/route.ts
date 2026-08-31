@@ -32,9 +32,9 @@ export async function GET(request: Request) {
           .from("profiles")
           .select("role")
           .eq("id", user.id)
-          .single();
+          .single<{ role: UserRole }>();
 
-        const rolePath = getRoleDashboardPath(profile?.role as UserRole);
+        const rolePath = getRoleDashboardPath(profile?.role);
         return NextResponse.redirect(`${origin}${rolePath}`);
       }
 

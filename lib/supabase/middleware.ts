@@ -61,9 +61,9 @@ export async function updateSession(request: NextRequest) {
       .from("profiles")
       .select("role")
       .eq("id", user.id)
-      .single();
+      .single<{ role: UserRole }>();
 
-    const role = (profile?.role as UserRole) || "student";
+    const role = profile?.role || "student";
 
     if (pathname.startsWith("/admin") && role !== "admin") {
       const url = request.nextUrl.clone();
@@ -89,9 +89,9 @@ export async function updateSession(request: NextRequest) {
       .from("profiles")
       .select("role")
       .eq("id", user.id)
-      .single();
+      .single<{ role: UserRole }>();
 
-    const role = (profile?.role as UserRole) || "student";
+    const role = profile?.role || "student";
     const redirectUrl = request.nextUrl.clone();
 
     if (role === "admin") {

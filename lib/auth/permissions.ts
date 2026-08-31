@@ -23,12 +23,12 @@ export async function getCurrentUser(): Promise<AuthSessionUser | null> {
     .from("profiles")
     .select("*")
     .eq("id", user.id)
-    .single();
+    .single<UserProfile>();
 
   return {
     id: user.id,
     email: user.email || "",
-    profile: (profile as UserProfile) || null,
+    profile: profile || null,
   };
 }
 
