@@ -1,0 +1,94 @@
+-- ==============================================================================
+-- AIGS Online Education Platform - Seed Data
+-- ==============================================================================
+
+-- Note: In production / local Supabase testing, creating auth.users via Supabase Auth API
+-- will automatically populate the profiles table via the on_auth_user_created trigger.
+-- For direct SQL development testing, we provide sample courses and structure:
+
+-- 1. Sample Demo Courses
+INSERT INTO public.courses (id, title, slug, description, status, thumbnail_url, wordpress_course_id)
+VALUES
+    (
+        '11111111-1111-1111-1111-111111111111',
+        'Introduction to AI & Prompt Engineering',
+        'intro-to-ai-and-prompt-engineering',
+        'Master the fundamentals of generative AI, large language models, and structured prompt design.',
+        'published',
+        'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+        101
+    ),
+    (
+        '22222222-2222-2222-2222-222222222222',
+        'Full-Stack Modern Web Architecture',
+        'full-stack-modern-web-architecture',
+        'Learn to build scalable, production-grade applications using Next.js App Router, Supabase, and Stripe.',
+        'published',
+        'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80',
+        102
+    ),
+    (
+        '33333333-3333-3333-3333-333333333333',
+        'Advanced Applied Machine Learning',
+        'advanced-applied-machine-learning',
+        'Deep dive into PyTorch, transformer fine-tuning, retrieval-augmented generation (RAG), and model evaluation.',
+        'draft',
+        'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80',
+        103
+    )
+ON CONFLICT (id) DO NOTHING;
+
+-- 2. Sample Modules for Course 1
+INSERT INTO public.modules (id, course_id, title, sort_order)
+VALUES
+    (
+        'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+        '11111111-1111-1111-1111-111111111111',
+        'Module 1: Foundations of Modern AI',
+        1
+    ),
+    (
+        'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+        '11111111-1111-1111-1111-111111111111',
+        'Module 2: Advanced Prompt Engineering Techniques',
+        2
+    )
+ON CONFLICT (id) DO NOTHING;
+
+-- 3. Sample Lessons for Course 1
+INSERT INTO public.lessons (id, module_id, course_id, title, slug, content, video_url, sort_order, wordpress_lesson_id)
+VALUES
+    (
+        'cccccccc-cccc-cccc-cccc-cccccccccccc',
+        'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+        '11111111-1111-1111-1111-111111111111',
+        'Lesson 1.1: What are Large Language Models?',
+        'what-are-llms',
+        'In this introductory lesson, we explore tokenization, neural attention mechanisms, and how modern language models generate probabilistic text.',
+        'https://www.youtube.com/embed/dQw4w9WgXcQ',
+        1,
+        201
+    ),
+    (
+        'dddddddd-dddd-dddd-dddd-dddddddddddd',
+        'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+        '11111111-1111-1111-1111-111111111111',
+        'Lesson 1.2: The Anatomy of an LLM Context Window',
+        'anatomy-of-context-window',
+        'Learn how input tokens, system instructions, and completion tokens interact within bounded context windows.',
+        'https://www.youtube.com/embed/dQw4w9WgXcQ',
+        2,
+        202
+    ),
+    (
+        'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee',
+        'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+        '11111111-1111-1111-1111-111111111111',
+        'Lesson 2.1: Few-Shot and Chain-of-Thought Prompting',
+        'few-shot-and-chain-of-thought',
+        'Understand structured decomposition, few-shot exemplars, and self-consistency techniques for reliable reasoning.',
+        'https://www.youtube.com/embed/dQw4w9WgXcQ',
+        3,
+        203
+    )
+ON CONFLICT (id) DO NOTHING;
