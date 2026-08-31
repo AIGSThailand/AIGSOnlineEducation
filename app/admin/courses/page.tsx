@@ -4,13 +4,18 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
+import type { Database } from "@/types/database.types";
+
+type CourseRow = Database["public"]["Tables"]["courses"]["Row"];
 
 export default async function AdminCoursesPage() {
   const supabase = await createClient();
-  const { data: courses } = await supabase
+  const { data } = await supabase
     .from("courses")
     .select("*")
     .order("created_at", { ascending: false });
+
+  const courses = (data as CourseRow[] | null) || [];
 
   return (
     <div className="space-y-6">
@@ -30,7 +35,7 @@ export default async function AdminCoursesPage() {
 
       <Card className="p-0 overflow-hidden">
         <CardHeader className="p-4 border-b border-slate-100">
-          <CardTitle>All Platform Courses ({courses?.length || 0})</CardTitle>
+          <CardTitle>All Platform Courses ({courses.length})</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
@@ -45,7 +50,7 @@ export default async function AdminCoursesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {courses && courses.length > 0 ? (
+                {courses.length > 0 ? (
                   courses.map((c) => (
                     <tr key={c.id} className="hover:bg-slate-50/50">
                       <td className="px-6 py-4">

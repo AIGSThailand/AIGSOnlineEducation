@@ -47,7 +47,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
   }
 
   // Fetch modules & lessons for sidebar navigation
-  const { data: modulesData } = await supabase
+  const { data: rawModules } = await supabase
     .from("modules")
     .select(`
       id,
@@ -66,7 +66,24 @@ export default async function LessonPage({ params }: LessonPageProps) {
     .eq("course_id", courseId)
     .order("sort_order", { ascending: true });
 
-  const modules: ModuleWithLessons[] = (modulesData || []).map((m) => ({
+  interface RawModuleItem {
+    id: string;
+    course_id: string;
+    title: string;
+    sort_order: number;
+    lessons: {
+      id: string;
+      module_id: string | null;
+      course_id: string;
+      title: string;
+      slug: string;
+      sort_order: number;
+    }[];
+  }
+
+  const modulesData = (rawModules as unknown as RawModuleItem[] | null) || [];
+
+  const modules: ModuleWithLessons[] = modulesData.map((m) => ({
     id: m.id,
     course_id: m.course_id,
     title: m.title,

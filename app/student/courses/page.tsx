@@ -29,10 +29,17 @@ export default async function StudentCoursesPage() {
     `)
     .eq("student_id", user?.id || "");
 
-  const courses: CourseWithInstructors[] =
-    enrollments
-      ?.map((e) => (Array.isArray(e.course) ? e.course[0] : e.course))
-      .filter((c): c is CourseWithInstructors => !!c) || [];
+  interface StudentEnrollmentItem {
+    id: string;
+    status: string;
+    course: CourseWithInstructors | CourseWithInstructors[] | null;
+  }
+
+  const enrollmentList = (enrollments as unknown as StudentEnrollmentItem[] | null) || [];
+
+  const courses: CourseWithInstructors[] = enrollmentList
+    .map((e) => (Array.isArray(e.course) ? e.course[0] : e.course))
+    .filter((c): c is CourseWithInstructors => !!c);
 
   return (
     <div className="space-y-6">

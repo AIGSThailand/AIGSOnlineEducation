@@ -3,9 +3,14 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { BookOpen, User } from "lucide-react";
 import type { CourseWithInstructors } from "@/types/lms.types";
+import type { Database } from "@/types/database.types";
+
+type CourseCardData =
+  | CourseWithInstructors
+  | Database["public"]["Tables"]["courses"]["Row"];
 
 interface CourseCardProps {
-  course: CourseWithInstructors;
+  course: CourseCardData;
   isEnrolled?: boolean;
 }
 
@@ -43,7 +48,7 @@ export function CourseCard({ course, isEnrolled }: CourseCardProps) {
           {course.description || "No description provided."}
         </p>
 
-        {course.instructors && course.instructors.length > 0 && (
+        {"instructors" in course && course.instructors && course.instructors.length > 0 && (
           <div className="mb-4 flex items-center text-xs text-slate-500">
             <User className="mr-1 h-3.5 w-3.5 text-slate-400" />
             <span>

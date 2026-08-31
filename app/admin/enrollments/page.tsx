@@ -3,9 +3,19 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
 
+interface EnrollmentRow {
+  id: string;
+  status: string;
+  enrolled_at: string;
+  wordpress_enrollment_id: number | null;
+  stripe_subscription_id: string | null;
+  student: { email: string; first_name: string | null; last_name: string | null } | null;
+  course: { title: string } | null;
+}
+
 export default async function AdminEnrollmentsPage() {
   const supabase = await createClient();
-  const { data: enrollments } = await supabase
+  const { data } = await supabase
     .from("enrollments")
     .select(`
       id,
@@ -18,6 +28,8 @@ export default async function AdminEnrollmentsPage() {
     `)
     .order("enrolled_at", { ascending: false })
     .limit(50);
+
+  const enrollments = (data as unknown as EnrollmentRow[] | null) || [];
 
   return (
     <div className="space-y-6">
@@ -32,7 +44,7 @@ export default async function AdminEnrollmentsPage() {
 
       <Card className="p-0 overflow-hidden">
         <CardHeader className="p-4 border-b border-slate-100">
-          <CardTitle>Enrollments ({enrollments?.length || 0})</CardTitle>
+          <CardTitle>Enrollments ({enrollments.length})</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
@@ -47,7 +59,7 @@ export default async function AdminEnrollmentsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {enrollments && enrollments.length > 0 ? (
+                {enrollments.length > 0 ? (
                   enrollments.map((e) => {
                     const student = Array.isArray(e.student) ? e.student[0] : e.student;
                     const course = Array.isArray(e.course) ? e.course[0] : e.course;

@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth/permissions";
 import { CourseCard } from "@/components/courses/course-card";
-import type { CourseWithInstructors } from "@/types/lms.types";
+import type { Database } from "@/types/database.types";
 
 export default async function CourseCatalogPage() {
   const supabase = await createClient();
@@ -36,7 +36,8 @@ export default async function CourseCatalogPage() {
     enrolledCourseIds = enrollments?.map((e) => e.course_id) || [];
   }
 
-  const courseList = (courses as CourseWithInstructors[]) || [];
+  type CourseRow = Database["public"]["Tables"]["courses"]["Row"];
+  const courseList = (courses as CourseRow[] | null) || [];
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-10">

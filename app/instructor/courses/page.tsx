@@ -1,21 +1,41 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth/permissions";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import type { CourseStatus } from "@/types/database.types";
+
+interface AssignedCourseItem {
+  course_id: string;
+  course: {
+    id: string;
+    title: string;
+    slug: string;
+    description: string | null;
+    status: CourseStatus;
+  } | {
+    id: string;
+    title: string;
+    slug: string;
+    description: string | null;
+    status: CourseStatus;
+  }[] | null;
+}
 
 export default async function InstructorCoursesPage() {
   const user = await getCurrentUser();
   const supabase = await createClient();
 
-  const { data: assigned } = await supabase
+  const { data } = await supabase
     .from("course_instructors")
     .select(`
       course_id,
       course:courses(id, title, slug, description, status)
     `)
     .eq("instructor_id", user?.id || "");
+
+  const assigned = (data as unknown as AssignedCourseItem[] | null) || [];
 
   return (
     <div className="space-y-6">
@@ -29,7 +49,7 @@ export default async function InstructorCoursesPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {assigned && assigned.length > 0 ? (
+        {assigned.length > 0 ? (
           assigned.map((item) => {
             const course = Array.isArray(item.course) ? item.course[0] : item.course;
             if (!course) return null;

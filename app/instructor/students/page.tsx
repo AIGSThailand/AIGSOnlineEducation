@@ -4,6 +4,14 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
+interface EnrolledStudentItem {
+  id: string;
+  status: string;
+  enrolled_at: string;
+  student: { id: string; email: string; first_name: string | null; last_name: string | null } | null;
+  course: { id: string; title: string } | null;
+}
+
 export default async function InstructorStudentsPage() {
   const user = await getCurrentUser();
   const supabase = await createClient();
@@ -16,7 +24,7 @@ export default async function InstructorStudentsPage() {
 
   const courseIds = assigned?.map((a) => a.course_id) || [];
 
-  let enrollments: any[] = [];
+  let enrollments: EnrolledStudentItem[] = [];
   if (courseIds.length > 0) {
     const { data } = await supabase
       .from("enrollments")
@@ -30,7 +38,7 @@ export default async function InstructorStudentsPage() {
       .in("course_id", courseIds)
       .order("enrolled_at", { ascending: false });
 
-    enrollments = data || [];
+    enrollments = (data as unknown as EnrolledStudentItem[] | null) || [];
   }
 
   return (

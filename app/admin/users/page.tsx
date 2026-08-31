@@ -2,14 +2,19 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
+import type { Database } from "@/types/database.types";
+
+type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"];
 
 export default async function AdminUsersPage() {
   const supabase = await createClient();
-  const { data: profiles } = await supabase
+  const { data } = await supabase
     .from("profiles")
     .select("*")
     .order("created_at", { ascending: false })
     .limit(50);
+
+  const profiles = (data as ProfileRow[] | null) || [];
 
   return (
     <div className="space-y-6">
@@ -24,7 +29,7 @@ export default async function AdminUsersPage() {
 
       <Card className="p-0 overflow-hidden">
         <CardHeader className="p-4 border-b border-slate-100">
-          <CardTitle>Platform Accounts ({profiles?.length || 0})</CardTitle>
+          <CardTitle>Platform Accounts ({profiles.length})</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
@@ -38,7 +43,7 @@ export default async function AdminUsersPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {profiles && profiles.length > 0 ? (
+                {profiles.length > 0 ? (
                   profiles.map((p) => (
                     <tr key={p.id} className="hover:bg-slate-50/50">
                       <td className="px-6 py-4">

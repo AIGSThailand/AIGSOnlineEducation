@@ -80,7 +80,6 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 # Supabase (Settings -> API)
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-supabase-anon-key
 
 # Server-Side Only: NEVER EXPOSE TO CLIENT
 SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key

@@ -40,10 +40,18 @@ export default async function StudentDashboardPage() {
     .eq("student_id", user?.id || "")
     .eq("completed", true);
 
-  const activeCourses: CourseWithInstructors[] =
-    enrollments
-      ?.map((e) => (Array.isArray(e.course) ? e.course[0] : e.course))
-      .filter((c): c is CourseWithInstructors => !!c) || [];
+  interface EnrollmentWithCourse {
+    id: string;
+    status: string;
+    enrolled_at: string;
+    course: CourseWithInstructors | CourseWithInstructors[] | null;
+  }
+
+  const enrollmentList = (enrollments as unknown as EnrollmentWithCourse[] | null) || [];
+
+  const activeCourses: CourseWithInstructors[] = enrollmentList
+    .map((e) => (Array.isArray(e.course) ? e.course[0] : e.course))
+    .filter((c): c is CourseWithInstructors => !!c);
 
   return (
     <div className="space-y-6">
