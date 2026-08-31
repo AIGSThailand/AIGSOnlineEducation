@@ -5,6 +5,9 @@ import { LessonSidebar } from "@/components/courses/lesson-sidebar";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import type { ModuleWithLessons } from "@/types/lms.types";
+import type { Database } from "@/types/database.types";
+
+type LessonRow = Database["public"]["Tables"]["lessons"]["Row"];
 
 interface LessonPageProps {
   params: {
@@ -40,7 +43,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
     .select("*")
     .eq("id", lessonId)
     .eq("course_id", courseId)
-    .maybeSingle();
+    .maybeSingle<LessonRow>();
 
   if (!lesson) {
     notFound();
@@ -99,7 +102,8 @@ export default async function LessonPage({ params }: LessonPageProps) {
     .eq("course_id", courseId)
     .eq("completed", true);
 
-  const completedLessonIds = progressList?.map((p) => p.lesson_id) || [];
+  const rawProgress = (progressList as unknown as { lesson_id: string }[] | null) || [];
+  const completedLessonIds = rawProgress.map((p) => p.lesson_id);
 
   return (
     <div className="flex h-[calc(100vh-65px)] overflow-hidden">

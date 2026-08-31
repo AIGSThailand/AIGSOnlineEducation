@@ -3,10 +3,13 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth/permissions";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen, CheckCircle, Clock, PlayCircle } from "lucide-react";
 import type { ModuleWithLessons } from "@/types/lms.types";
+import type { Database } from "@/types/database.types";
+
+type CourseRow = Database["public"]["Tables"]["courses"]["Row"];
 
 interface CourseDetailPageProps {
   params: {
@@ -24,7 +27,7 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
     .from("courses")
     .select("*")
     .eq("id", courseId)
-    .maybeSingle();
+    .maybeSingle<CourseRow>();
 
   if (!course) {
     notFound();
@@ -85,7 +88,7 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
       .eq("course_id", courseId)
       .eq("student_id", user.id)
       .eq("status", "active")
-      .maybeSingle();
+      .maybeSingle<{ status: string }>();
 
     isEnrolled = !!enrollment;
   }

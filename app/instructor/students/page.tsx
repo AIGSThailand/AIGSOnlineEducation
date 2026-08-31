@@ -22,7 +22,8 @@ export default async function InstructorStudentsPage() {
     .select("course_id")
     .eq("instructor_id", user?.id || "");
 
-  const courseIds = assigned?.map((a) => a.course_id) || [];
+  const rawAssigned = (assigned as unknown as { course_id: string }[] | null) || [];
+  const courseIds = rawAssigned.map((a) => a.course_id);
 
   let enrollments: EnrolledStudentItem[] = [];
   if (courseIds.length > 0) {

@@ -10,8 +10,13 @@ export default async function InstructorDashboardPage() {
   const user = await getCurrentUser();
   const supabase = await createClient();
 
+  interface AssignedItem {
+    course_id: string;
+    course: { id: string; title: string; status: string } | { id: string; title: string; status: string }[] | null;
+  }
+
   // Fetch instructor's assigned courses
-  const { data: assignedCourses } = await supabase
+  const { data: rawAssigned } = await supabase
     .from("course_instructors")
     .select(`
       course_id,
@@ -19,7 +24,8 @@ export default async function InstructorDashboardPage() {
     `)
     .eq("instructor_id", user?.id || "");
 
-  const courseIds = assignedCourses?.map((ac) => ac.course_id) || [];
+  const assignedCourses = (rawAssigned as unknown as AssignedItem[] | null) || [];
+  const courseIds = assignedCourses.map((ac) => ac.course_id);
 
   // Count active students in assigned courses
   let studentCount = 0;

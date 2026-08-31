@@ -78,7 +78,7 @@ export async function canAccessCourse(courseId: string): Promise<boolean> {
       .select("course_id")
       .eq("course_id", courseId)
       .eq("instructor_id", user.id)
-      .maybeSingle();
+      .maybeSingle<{ course_id: string }>();
 
     return !!data;
   }
@@ -90,7 +90,7 @@ export async function canAccessCourse(courseId: string): Promise<boolean> {
     .eq("course_id", courseId)
     .eq("student_id", user.id)
     .eq("status", "active")
-    .maybeSingle();
+    .maybeSingle<{ status: string }>();
 
   return !!enrollment;
 }

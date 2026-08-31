@@ -28,7 +28,7 @@ export async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Se
 
   // If direct course purchase or enrollment attached
   if (userId && courseId) {
-    const { error: enrollError } = await adminClient.from("enrollments").upsert(
+    const { error: enrollError } = await (adminClient.from("enrollments") as any).upsert(
       {
         student_id: userId,
         course_id: courseId,

@@ -33,7 +33,8 @@ export default async function CourseCatalogPage() {
       .eq("student_id", user.id)
       .eq("status", "active");
 
-    enrolledCourseIds = enrollments?.map((e) => e.course_id) || [];
+    const rawEnrollments = (enrollments as unknown as { course_id: string }[] | null) || [];
+    enrolledCourseIds = rawEnrollments.map((e) => e.course_id);
   }
 
   type CourseRow = Database["public"]["Tables"]["courses"]["Row"];

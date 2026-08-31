@@ -1,8 +1,10 @@
 import { stripe } from "./server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { SubscriptionStatus } from "@/types/database.types";
+import type { Database, SubscriptionStatus } from "@/types/database.types";
 import type { CustomerMappingResult } from "@/types/stripe.types";
 import type Stripe from "stripe";
+
+type SubscriptionInsert = Database["public"]["Tables"]["subscriptions"]["Insert"];
 
 /**
  * Maps a Supabase user to an existing or newly created Stripe Customer.
@@ -21,7 +23,7 @@ export async function getOrCreateStripeCustomer(
     .select("stripe_customer_id")
     .eq("user_id", userId)
     .limit(1)
-    .maybeSingle();
+    .maybeSingle<{ stripe_customer_id: string }>();
 
   if (existingSub?.stripe_customer_id) {
     return {
@@ -101,7 +103,7 @@ export async function syncStripeSubscriptionToDatabase(
           .from("profiles")
           .select("id")
           .eq("email", customer.email)
-          .maybeSingle();
+          .maybeSingle<{ id: string }>();
 
         if (profile) {
           userId = profile.id;
@@ -123,16 +125,18 @@ export async function syncStripeSubscriptionToDatabase(
     subscription.current_period_end * 1000
   ).toISOString();
 
-  const { data, error } = await adminClient.from("subscriptions").upsert(
-    {
-      user_id: userId,
-      stripe_customer_id: customerId,
-      stripe_subscription_id: subscription.id,
-      stripe_price_id: priceId,
-      status,
-      current_period_end: currentPeriodEnd,
-      updated_at: new Date().toISOString(),
-    },
+  const payload: SubscriptionInsert = {
+    user_id: userId,
+    stripe_customer_id: customerId,
+    stripe_subscription_id: subscription.id,
+    stripe_price_id: priceId,
+    status,
+    current_period_end: currentPeriodEnd,
+    updated_at: new Date().toISOString(),
+  };
+
+  const { data, error } = await (adminClient.from("subscriptions") as any).upsert(
+    payload,
     {
       onConflict: "stripe_subscription_id",
     }
