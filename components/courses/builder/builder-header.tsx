@@ -10,11 +10,13 @@ interface BuilderHeaderProps {
   portal: BuilderPortal;
   course: CourseBuilderCourse;
   saveStatus: SaveStatus;
+  structureSource?: "course_sections" | "modules_fallback";
   onPublish: () => void;
   onArchive: () => void;
   onSave?: () => void;
   onOpenStructure: () => void;
   onOpenSettings: () => void;
+  canPublish?: boolean;
 }
 
 const saveStatusLabel: Record<SaveStatus, string> = {
@@ -29,11 +31,13 @@ export function BuilderHeader({
   portal,
   course,
   saveStatus,
+  structureSource,
   onPublish,
   onArchive,
   onSave,
   onOpenStructure,
   onOpenSettings,
+  canPublish = true,
 }: BuilderHeaderProps) {
   const statusText = saveStatusLabel[saveStatus];
 
@@ -63,6 +67,11 @@ export function BuilderHeader({
           <Badge variant={course.status === "published" ? "success" : "default"}>
             {course.status}
           </Badge>
+          {structureSource === "course_sections" && course.wordpressCourseId != null && (
+            <Badge variant="default" className="hidden sm:inline-flex">
+              LearnDash
+            </Badge>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
@@ -95,13 +104,13 @@ export function BuilderHeader({
             </Button>
           )}
 
-          {course.status === "draft" && (
+          {course.status === "draft" && canPublish && (
             <Button type="button" size="sm" onClick={onPublish}>
               Publish
             </Button>
           )}
 
-          {course.status === "published" && (
+          {course.status === "published" && canPublish && (
             <Button type="button" variant="outline" size="sm" onClick={onArchive}>
               Archive
             </Button>

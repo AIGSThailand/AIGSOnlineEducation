@@ -1,11 +1,17 @@
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/auth/permissions";
+import {
+  buildPermissions,
+  buildSectionsFromModules,
+  buildSectionsFromSteps,
+  toLegacyStructure,
+} from "@/features/curriculum/build-structure";
 import type {
   CourseBuilderCourse,
   CourseBuilderData,
   CourseListItem,
-  CourseStructureModuleItem,
   InstructorOption,
-} from "./types";
+} from "@/features/curriculum/types";
 import type { Database } from "@/types/database.types";
 
 type CourseRow = Database["public"]["Tables"]["courses"]["Row"];
@@ -175,7 +181,10 @@ async function getCourseIdsForInstructor(instructorId: string): Promise<string[]
   return (data || []).map((r) => r.course_id);
 }
 
-export async function getCourseBuilderData(courseId: string): Promise<CourseBuilderData | null> {
+export async function getCourseBuilderData(
+  courseId: string,
+  options?: { isAdmin?: boolean }
+): Promise<CourseBuilderData | null> {
   const supabase = await createClient();
 
   const { data: course } = await supabase
@@ -185,6 +194,10 @@ export async function getCourseBuilderData(courseId: string): Promise<CourseBuil
     .maybeSingle<CourseRow>();
 
   if (!course) return null;
+
+  const user = await getCurrentUser();
+  const isAdmin =
+    options?.isAdmin ?? user?.profile?.role === "admin";
 
   const { data: instructorRows } = await supabase
     .from("course_instructors")
@@ -198,19 +211,21 @@ export async function getCourseBuilderData(courseId: string): Promise<CourseBuil
     .eq("course_id", courseId)
     .eq("status", "active");
 
-  const { data: modules } = await supabase
-    .from("modules")
-    .select("*")
-    .eq("course_id", courseId)
-    .order("sort_order", { ascending: true })
-    .returns<ModuleRow[]>();
-
   const { data: lessons } = await supabase
     .from("lessons")
-    .select("*")
+    .select("id, module_id, title, slug, sort_order, status")
     .eq("course_id", courseId)
     .order("sort_order", { ascending: true })
-    .returns<LessonRow[]>();
+    .returns<
+      {
+        id: string;
+        module_id: string | null;
+        title: string;
+        slug: string;
+        sort_order: number;
+        status: LessonRow["status"];
+      }[]
+    >();
 
   const lessonIds = (lessons || []).map((l) => l.id);
   const progressLessonIds = new Set<string>();
@@ -226,33 +241,82 @@ export async function getCourseBuilderData(courseId: string): Promise<CourseBuil
     }
   }
 
-  const lessonsByModule = new Map<string, LessonRow[]>();
-  for (const lesson of lessons || []) {
-    if (!lesson.module_id) continue;
-    const list = lessonsByModule.get(lesson.module_id) || [];
-    list.push(lesson);
-    lessonsByModule.set(lesson.module_id, list);
-  }
+  const lessonsById = new Map((lessons || []).map((l) => [l.id, l]));
 
-  const structure: CourseStructureModuleItem[] = (modules || []).map((mod) => ({
-    kind: "module" as const,
-    id: mod.id,
-    title: mod.title,
-    description: null,
-    sortOrder: mod.sort_order,
-    lessons: (lessonsByModule.get(mod.id) || [])
-      .sort((a, b) => a.sort_order - b.sort_order)
-      .map((lesson) => ({
-        kind: "lesson" as const,
-        id: lesson.id,
-        moduleId: mod.id,
-        title: lesson.title,
-        slug: lesson.slug,
-        sortOrder: lesson.sort_order,
-        status: lesson.status ?? "published",
-        hasProgress: progressLessonIds.has(lesson.id),
-      })),
-  }));
+  const { data: courseSections } = await supabase
+    .from("course_sections")
+    .select("id, course_id, title, description, sort_order, wordpress_section_id")
+    .eq("course_id", courseId)
+    .order("sort_order", { ascending: true });
+
+  let sections: ReturnType<typeof buildSectionsFromSteps>;
+  let structureSource: "course_sections" | "modules_fallback" = "course_sections";
+
+  if (courseSections && courseSections.length > 0) {
+    const { data: steps } = await supabase
+      .from("course_steps")
+      .select("id, course_id, step_type, lesson_id, quiz_id, section_id, sort_order")
+      .eq("course_id", courseId)
+      .is("parent_step_id", null)
+      .order("sort_order", { ascending: true })
+      .returns<
+        {
+          id: string;
+          course_id: string;
+          step_type: "lesson" | "topic" | "quiz";
+          lesson_id: string | null;
+          quiz_id: string | null;
+          section_id: string | null;
+          sort_order: number;
+        }[]
+      >();
+
+    const quizIds = (steps || [])
+      .filter((s) => s.quiz_id)
+      .map((s) => s.quiz_id as string);
+
+    const quizzesById = new Map<
+      string,
+      { id: string; title: string; slug: string; status: Database["public"]["Enums"]["content_status"] }
+    >();
+
+    if (quizIds.length > 0) {
+      const { data: quizRows } = await supabase
+        .from("quizzes")
+        .select("id, title, slug, status")
+        .in("id", quizIds)
+        .returns<
+          {
+            id: string;
+            title: string;
+            slug: string;
+            status: Database["public"]["Enums"]["content_status"];
+          }[]
+        >();
+      for (const quiz of quizRows || []) {
+        quizzesById.set(quiz.id, quiz);
+      }
+    }
+
+    sections = buildSectionsFromSteps(
+      courseSections,
+      steps || [],
+      lessonsById,
+      quizzesById,
+      progressLessonIds
+    );
+  } else {
+    structureSource = "modules_fallback";
+
+    const { data: modules } = await supabase
+      .from("modules")
+      .select("id, title, sort_order")
+      .eq("course_id", courseId)
+      .order("sort_order", { ascending: true })
+      .returns<ModuleRow[]>();
+
+    sections = buildSectionsFromModules(modules || [], lessons || [], progressLessonIds);
+  }
 
   const instructors = await getInstructorOptions();
 
@@ -274,8 +338,18 @@ export async function getCourseBuilderData(courseId: string): Promise<CourseBuil
     enrollmentCount: enrollmentCount ?? 0,
   };
 
-  return { course: builderCourse, structure, instructors };
+  return {
+    course: builderCourse,
+    sections,
+    structure: toLegacyStructure(sections),
+    instructors,
+    permissions: buildPermissions(isAdmin),
+    structureSource,
+  };
 }
+
+/** Primary builder query alias (spec name). */
+export const getCourseBuilder = getCourseBuilderData;
 
 export async function slugExists(slug: string, excludeCourseId?: string): Promise<boolean> {
   const supabase = await createClient();

@@ -1,45 +1,52 @@
 "use client";
 
 import * as React from "react";
-import { ChevronDown, ChevronRight, ChevronUp, GripVertical, Plus, Trash2 } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  ChevronUp,
+  ClipboardList,
+  GripVertical,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type {
+  CourseBuilderSelection,
   CourseStructureModuleItem,
+  CurriculumItem,
   StructureItemType,
 } from "@/features/courses/types";
 
-export type SelectedItem =
-  | { type: "course" }
-  | { type: "module"; id: string }
-  | { type: "lesson"; id: string; moduleId: string };
+export type SelectedItem = CourseBuilderSelection;
 
 interface CourseStructureProps {
   structure: CourseStructureModuleItem[];
   selected: SelectedItem;
   onSelect: (item: SelectedItem) => void;
-  onAddModule: () => void;
-  onAddLesson: (moduleId: string) => void;
-  onMoveModule: (moduleId: string, direction: "up" | "down") => void;
+  onAddSection: () => void;
+  onAddLesson: (sectionId: string) => void;
+  onMoveSection: (sectionId: string, direction: "up" | "down") => void;
   onMoveLesson: (lessonId: string, direction: "up" | "down") => void;
-  onDeleteModule: (moduleId: string) => void;
+  onDeleteSection: (sectionId: string) => void;
   onDeleteLesson: (lessonId: string) => void;
-  expandedModules: Set<string>;
-  onToggleModule: (moduleId: string) => void;
+  expandedSections: Set<string>;
+  onToggleSection: (sectionId: string) => void;
 }
 
 export function CourseStructure({
   structure,
   selected,
   onSelect,
-  onAddModule,
+  onAddSection,
   onAddLesson,
-  onMoveModule,
+  onMoveSection,
   onMoveLesson,
-  onDeleteModule,
+  onDeleteSection,
   onDeleteLesson,
-  expandedModules,
-  onToggleModule,
+  expandedSections,
+  onToggleSection,
 }: CourseStructureProps) {
   return (
     <div className="flex h-full flex-col">
@@ -60,9 +67,15 @@ export function CourseStructure({
 
       <div className="flex items-center justify-between px-4 py-3">
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-          Course structure
+          Curriculum
         </p>
-        <Button type="button" variant="ghost" size="sm" onClick={onAddModule} aria-label="Add module">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={onAddSection}
+          aria-label="Add section"
+        >
           <Plus className="h-4 w-4" />
         </Button>
       </div>
@@ -70,35 +83,36 @@ export function CourseStructure({
       <div className="flex-1 overflow-y-auto px-2 pb-4">
         {structure.length === 0 ? (
           <div className="px-2 py-6 text-center text-sm text-slate-500">
-            <p>No modules yet.</p>
-            <Button type="button" variant="outline" size="sm" className="mt-3" onClick={onAddModule}>
-              Add Module
+            <p>No sections yet.</p>
+            <Button type="button" variant="outline" size="sm" className="mt-3" onClick={onAddSection}>
+              Add section
             </Button>
           </div>
         ) : (
-          <ul className="space-y-1" role="tree" aria-label="Course structure">
-            {structure.map((module, mIdx) => {
-              const expanded = expandedModules.has(module.id);
-              const isModuleSelected = selected.type === "module" && selected.id === module.id;
+          <ul className="space-y-1" role="tree" aria-label="Course curriculum">
+            {structure.map((section, sIdx) => {
+              const expanded = expandedSections.has(section.id);
+              const isSectionSelected =
+                selected.type === "section" && selected.id === section.id;
 
               return (
                 <li
-                  key={module.id}
+                  key={section.id}
                   role="treeitem"
                   aria-expanded={expanded}
-                  aria-selected={isModuleSelected}
+                  aria-selected={isSectionSelected}
                 >
                   <div
                     className={cn(
                       "group flex items-center gap-1 rounded-md pr-1",
-                      isModuleSelected ? "bg-brand-50" : "hover:bg-slate-50"
+                      isSectionSelected ? "bg-brand-50" : "hover:bg-slate-50"
                     )}
                   >
                     <button
                       type="button"
-                      onClick={() => onToggleModule(module.id)}
+                      onClick={() => onToggleSection(section.id)}
                       className="rounded p-1 text-slate-400 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-brand-500"
-                      aria-label={expanded ? "Collapse module" : "Expand module"}
+                      aria-label={expanded ? "Collapse section" : "Expand section"}
                     >
                       {expanded ? (
                         <ChevronDown className="h-4 w-4" />
@@ -108,22 +122,22 @@ export function CourseStructure({
                     </button>
                     <button
                       type="button"
-                      onClick={() => onSelect({ type: "module", id: module.id })}
+                      onClick={() => onSelect({ type: "section", id: section.id })}
                       className="min-w-0 flex-1 truncate py-2 text-left text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500 rounded-md px-1"
                     >
-                      {module.title}
+                      {section.title}
                     </button>
                     <div className="hidden items-center gap-0.5 group-focus-within:flex group-hover:flex">
                       <MoveButtons
-                        onUp={() => onMoveModule(module.id, "up")}
-                        onDown={() => onMoveModule(module.id, "down")}
-                        disableUp={mIdx === 0}
-                        disableDown={mIdx === structure.length - 1}
-                        label={`Module ${module.title}`}
+                        onUp={() => onMoveSection(section.id, "up")}
+                        onDown={() => onMoveSection(section.id, "down")}
+                        disableUp={sIdx === 0}
+                        disableDown={sIdx === structure.length - 1}
+                        label={`Section ${section.title}`}
                       />
                       <IconButton
-                        label={`Delete module ${module.title}`}
-                        onClick={() => onDeleteModule(module.id)}
+                        label={`Delete section ${section.title}`}
+                        onClick={() => onDeleteSection(section.id)}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </IconButton>
@@ -132,62 +146,19 @@ export function CourseStructure({
 
                   {expanded && (
                     <ul className="ml-5 mt-1 space-y-0.5 border-l border-slate-200 pl-2" role="group">
-                      {module.lessons.length === 0 ? (
+                      {section.items.length === 0 && section.lessons.length === 0 ? (
                         <li className="px-2 py-2 text-xs text-slate-500">
-                          No lessons yet.{" "}
+                          No content yet.{" "}
                           <button
                             type="button"
                             className="text-brand-600 underline focus:outline-none focus:ring-2 focus:ring-brand-500"
-                            onClick={() => onAddLesson(module.id)}
+                            onClick={() => onAddLesson(section.id)}
                           >
                             Add lesson
                           </button>
                         </li>
                       ) : (
-                        module.lessons.map((lesson, lIdx) => {
-                          const isLessonSelected =
-                            selected.type === "lesson" && selected.id === lesson.id;
-                          return (
-                            <li key={lesson.id}>
-                              <div
-                                className={cn(
-                                  "group flex items-center gap-1 rounded-md",
-                                  isLessonSelected ? "bg-brand-50" : "hover:bg-slate-50"
-                                )}
-                              >
-                                <GripVertical className="ml-1 h-3 w-3 shrink-0 text-slate-300" aria-hidden />
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    onSelect({
-                                      type: "lesson",
-                                      id: lesson.id,
-                                      moduleId: module.id,
-                                    })
-                                  }
-                                  className="min-w-0 flex-1 truncate py-1.5 text-left text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 rounded-md px-1"
-                                >
-                                  {lesson.title}
-                                </button>
-                                <div className="hidden items-center gap-0.5 group-focus-within:flex group-hover:flex">
-                                  <MoveButtons
-                                    onUp={() => onMoveLesson(lesson.id, "up")}
-                                    onDown={() => onMoveLesson(lesson.id, "down")}
-                                    disableUp={lIdx === 0}
-                                    disableDown={lIdx === module.lessons.length - 1}
-                                    label={`Lesson ${lesson.title}`}
-                                  />
-                                  <IconButton
-                                    label={`Delete lesson ${lesson.title}`}
-                                    onClick={() => onDeleteLesson(lesson.id)}
-                                  >
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                  </IconButton>
-                                </div>
-                              </div>
-                            </li>
-                          );
-                        })
+                        renderSectionItems(section, selected, onSelect, onMoveLesson, onDeleteLesson)
                       )}
                       <li className="px-1 py-1">
                         <Button
@@ -195,7 +166,7 @@ export function CourseStructure({
                           variant="ghost"
                           size="sm"
                           className="h-8 w-full justify-start text-xs"
-                          onClick={() => onAddLesson(module.id)}
+                          onClick={() => onAddLesson(section.id)}
                         >
                           <Plus className="mr-1 h-3.5 w-3.5" />
                           Add lesson
@@ -211,13 +182,104 @@ export function CourseStructure({
       </div>
 
       <div className="border-t border-slate-100 p-3">
-        <Button type="button" variant="outline" size="sm" className="w-full" onClick={onAddModule}>
+        <Button type="button" variant="outline" size="sm" className="w-full" onClick={onAddSection}>
           <Plus className="mr-1.5 h-4 w-4" />
-          Add module
+          Add section
         </Button>
       </div>
     </div>
   );
+}
+
+function renderSectionItems(
+  section: CourseStructureModuleItem,
+  selected: SelectedItem,
+  onSelect: (item: SelectedItem) => void,
+  onMoveLesson: (lessonId: string, direction: "up" | "down") => void,
+  onDeleteLesson: (lessonId: string) => void
+) {
+  const items: CurriculumItem[] =
+    section.items.length > 0
+      ? section.items
+      : section.lessons.map((l) => ({ ...l, kind: "lesson" as const }));
+
+  const lessonItems = items.filter((i) => i.kind === "lesson");
+
+  return items.map((item, idx) => {
+    if (item.kind === "lesson") {
+      const lessonIdx = lessonItems.findIndex((l) => l.id === item.id);
+      const isLessonSelected = selected.type === "lesson" && selected.id === item.id;
+      return (
+        <li key={item.id}>
+          <div
+            className={cn(
+              "group flex items-center gap-1 rounded-md",
+              isLessonSelected ? "bg-brand-50" : "hover:bg-slate-50"
+            )}
+          >
+            <GripVertical className="ml-1 h-3 w-3 shrink-0 text-slate-300" aria-hidden />
+            <button
+              type="button"
+              onClick={() =>
+                onSelect({
+                  type: "lesson",
+                  id: item.id,
+                  sectionId: section.id,
+                })
+              }
+              className="min-w-0 flex-1 truncate py-1.5 text-left text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 rounded-md px-1"
+            >
+              {item.title}
+            </button>
+            <div className="hidden items-center gap-0.5 group-focus-within:flex group-hover:flex">
+              <MoveButtons
+                onUp={() => onMoveLesson(item.id, "up")}
+                onDown={() => onMoveLesson(item.id, "down")}
+                disableUp={lessonIdx <= 0}
+                disableDown={lessonIdx >= lessonItems.length - 1}
+                label={`Lesson ${item.title}`}
+              />
+              <IconButton
+                label={`Delete lesson ${item.title}`}
+                onClick={() => onDeleteLesson(item.id)}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </IconButton>
+            </div>
+          </div>
+        </li>
+      );
+    }
+
+    if (item.kind === "quiz" || item.kind === "exam") {
+      const isQuizSelected =
+        (selected.type === "quiz" || selected.type === "exam") && selected.id === item.id;
+      return (
+        <li key={item.id}>
+          <button
+            type="button"
+            onClick={() =>
+              onSelect({
+                type: item.kind === "exam" ? "exam" : "quiz",
+                id: item.id,
+                sectionId: section.id,
+              })
+            }
+            className={cn(
+              "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm focus:outline-none focus:ring-2 focus:ring-brand-500",
+              isQuizSelected ? "bg-brand-50 text-brand-900" : "text-slate-600 hover:bg-slate-50"
+            )}
+          >
+            <ClipboardList className="h-3.5 w-3.5 shrink-0 text-amber-600" aria-hidden />
+            <span className="truncate">{item.title}</span>
+            <span className="ml-auto text-[10px] uppercase text-slate-400">Quiz</span>
+          </button>
+        </li>
+      );
+    }
+
+    return null;
+  });
 }
 
 function MoveButtons({
@@ -271,11 +333,14 @@ function IconButton({
 
 export function itemTypeLabel(type: StructureItemType): string {
   switch (type) {
-    case "module":
     case "section":
-      return "Module";
+    case "module":
+      return "Section";
     case "lesson":
       return "Lesson";
+    case "quiz":
+    case "exam":
+      return "Quiz";
     default:
       return "Item";
   }

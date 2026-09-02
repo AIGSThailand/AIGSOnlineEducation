@@ -56,11 +56,12 @@ export function StructureItem({
   );
 }
 
-export function lessonItemFromRow(lesson: CourseStructureLessonItem) {
+export function lessonItemFromRow(lesson: CourseStructureLessonItem & { moduleId?: string }) {
   return {
     kind: "lesson" as const,
     id: lesson.id,
-    moduleId: lesson.moduleId,
+    sectionId: lesson.sectionId,
+    moduleId: lesson.moduleId ?? lesson.sectionId,
     title: lesson.title,
   };
 }

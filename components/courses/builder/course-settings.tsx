@@ -11,12 +11,18 @@ import {
   updateCourseAction,
   updateStripeMappingAction,
 } from "@/features/courses/actions";
-import type { CourseBuilderCourse, InstructorOption, SaveStatus } from "@/features/courses/types";
+import type {
+  CourseBuilderCourse,
+  CourseBuilderPermissions,
+  InstructorOption,
+  SaveStatus,
+} from "@/features/courses/types";
 
 interface CourseSettingsProps {
   course: CourseBuilderCourse;
   instructors: InstructorOption[];
   isAdmin: boolean;
+  permissions?: CourseBuilderPermissions;
   onSaveStatusChange: (status: SaveStatus) => void;
 }
 
@@ -24,8 +30,11 @@ export function CourseSettings({
   course,
   instructors,
   isAdmin,
+  permissions,
   onSaveStatusChange,
 }: CourseSettingsProps) {
+  const canEditCommerce = permissions?.canEditCommerce ?? isAdmin;
+  const canEditMigration = permissions?.canEditMigration ?? isAdmin;
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [thumbnailUrl, setThumbnailUrl] = useState(course.thumbnailUrl || "");
@@ -129,7 +138,7 @@ export function CourseSettings({
         />
       </section>
 
-      {isAdmin && (
+      {(permissions?.canManageInstructors ?? isAdmin) && (
         <section className="space-y-3">
           <h3 className="text-sm font-semibold text-slate-800">Instructor</h3>
           <Label htmlFor="instructor-select">Assigned instructor</Label>
@@ -157,7 +166,7 @@ export function CourseSettings({
         </section>
       )}
 
-      {isAdmin && (
+      {canEditCommerce && (
         <section className="space-y-3 border-t border-slate-100 pt-4">
           <h3 className="text-sm font-semibold text-slate-800">Commerce (Admin)</h3>
           <Label htmlFor="stripe-product">Stripe product ID</Label>
@@ -179,7 +188,7 @@ export function CourseSettings({
         </section>
       )}
 
-      {isAdmin && course.wordpressCourseId && (
+      {canEditMigration && course.wordpressCourseId && (
         <section className="space-y-2 border-t border-slate-100 pt-4">
           <h3 className="text-sm font-semibold text-slate-800">Migration (read-only)</h3>
           <p className="text-xs font-mono text-slate-500">
