@@ -1,0 +1,59 @@
+# Apply committed SQL migrations to the Supabase STAGING project.
+# Triggers on pushes to develop when migration files change, or manually.
+#
+# Required GitHub secrets (Repository → Settings → Secrets → Actions):
+#   SUPABASE_ACCESS_TOKEN          — https://supabase.com/dashboard/account/tokens
+#   SUPABASE_STAGING_PROJECT_REF   — staging project ref (Dashboard URL segment)
+#   SUPABASE_STAGING_DB_PASSWORD   — staging Database → Settings → password
+
+name: Supabase migrations (staging)
+
+on:
+  push:
+    branches:
+      - develop
+    paths:
+      - "supabase/migrations/**"
+      - "supabase/config.toml"
+  workflow_dispatch:
+
+concurrency:
+  group: supabase-migrations-staging
+  cancel-in-progress: false
+
+jobs:
+  verify-local:
+    name: Verify migrations apply cleanly
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start local Postgres and apply migrations
+        run: supabase db start
+
+  deploy-staging:
+    name: Push migrations to staging
+    needs: verify-local
+    runs-on: ubuntu-latest
+    environment: staging
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_STAGING_DB_PASSWORD }}
+      SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_STAGING_PROJECT_REF }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link staging project
+        run: supabase link --project-ref "$SUPABASE_PROJECT_ID"
+
+      - name: Push pending migrations
+        run: supabase db push

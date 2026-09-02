@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { getClientEnv } from "@/lib/env/client";
 import { getRoleDashboardPath } from "./redirects";
 import {
   loginSchema,
@@ -86,7 +87,7 @@ export async function registerAction(formData: FormData): Promise<AuthActionResu
   }
 
   const supabase = await createClient();
-  const origin = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const { NEXT_PUBLIC_APP_URL: origin } = getClientEnv();
 
   const { data, error } = await supabase.auth.signUp({
     email: validated.data.email,
@@ -140,7 +141,7 @@ export async function forgotPasswordAction(formData: FormData): Promise<AuthActi
   }
 
   const supabase = await createClient();
-  const origin = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const { NEXT_PUBLIC_APP_URL: origin } = getClientEnv();
 
   const { error } = await supabase.auth.resetPasswordForEmail(validated.data.email, {
     redirectTo: `${origin}/reset-password`,

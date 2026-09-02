@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireAuth, canAccessCourse } from "@/lib/auth/permissions";
 import { LessonSidebar } from "@/components/courses/lesson-sidebar";
+import { RichContent } from "@/components/courses/rich-content";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import type { ModuleWithLessons } from "@/types/lms.types";
@@ -138,17 +139,10 @@ export default async function LessonPage({ params }: LessonPageProps) {
           )}
 
           {/* Lesson Content Body */}
-          <div className="prose max-w-none text-slate-700">
-            {lesson.content ? (
-              <div className="whitespace-pre-line leading-relaxed">
-                {lesson.content}
-              </div>
-            ) : (
-              <p className="text-sm italic text-slate-400">
-                No supplementary textual notes provided for this lesson.
-              </p>
-            )}
-          </div>
+          <RichContent
+            html={lesson.content}
+            fallback="No supplementary textual notes provided for this lesson."
+          />
         </div>
       </div>
     </div>

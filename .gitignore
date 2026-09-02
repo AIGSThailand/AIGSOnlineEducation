@@ -30,3 +30,10 @@ next-env.d.ts
 
 # Supabase local config
 .supabase
+supabase/.temp/
+supabase/.branches/
+
+# LearnDash export data & media files
+learndash_data/
+*.ld
+

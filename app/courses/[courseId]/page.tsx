@@ -2,9 +2,12 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth/permissions";
+import { canManageCourse } from "@/features/courses/permissions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { BuyCourseButton } from "@/components/stripe/buy-course-button";
+import { RichContent } from "@/components/courses/rich-content";
 import { BookOpen, CheckCircle, Clock, PlayCircle } from "lucide-react";
 import type { ModuleWithLessons } from "@/types/lms.types";
 import type { Database } from "@/types/database.types";
@@ -15,9 +18,12 @@ interface CourseDetailPageProps {
   params: {
     courseId: string;
   };
+  searchParams?: {
+    preview?: string;
+  };
 }
 
-export default async function CourseDetailPage({ params }: CourseDetailPageProps) {
+export default async function CourseDetailPage({ params, searchParams }: CourseDetailPageProps) {
   const { courseId } = params;
   const supabase = await createClient();
   const user = await getCurrentUser();
@@ -94,9 +100,19 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
   }
 
   const firstLesson = modules[0]?.lessons[0];
+  const isPreview = searchParams?.preview === "1" && (await canManageCourse(courseId));
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
+      {isPreview && (
+        <div
+          className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+          role="status"
+        >
+          Preview mode — you are viewing this course as an authorized builder. Draft content is
+          visible only to you.
+        </div>
+      )}
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-3">
         {/* Left 2 Cols: Course Overview & Syllabus */}
         <div className="lg:col-span-2 space-y-8">
@@ -110,9 +126,11 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
             <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
               {course.title}
             </h1>
-            <p className="mt-4 text-base text-slate-600 leading-relaxed">
-              {course.description || "No description provided."}
-            </p>
+            <RichContent
+              html={course.description}
+              className="mt-4 text-base"
+              fallback="No description provided."
+            />
           </div>
 
           {/* Syllabus Section */}
@@ -203,9 +221,12 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
                     </Button>
                   </Link>
                 ) : user ? (
-                  <Button className="w-full" size="lg" disabled>
-                    Subscription Required
-                  </Button>
+                  <BuyCourseButton
+                    courseId={course.id}
+                    courseTitle={course.title}
+                    amount={99} // Default price, or can be passed from Stripe priceId
+                    label="Enroll Now (One-Time)"
+                  />
                 ) : (
                   <Link href={`/login?redirect=/courses/${courseId}`} className="block">
                     <Button className="w-full" size="lg">

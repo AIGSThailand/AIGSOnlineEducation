@@ -28,16 +28,25 @@ export async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Se
 
   // If direct course purchase or enrollment attached
   if (userId && courseId) {
+    const paymentIntentId =
+      typeof session.payment_intent === "string"
+        ? session.payment_intent
+        : session.payment_intent?.id || null;
+
     const { error: enrollError } = await (adminClient.from("enrollments") as any).upsert(
       {
         student_id: userId,
         course_id: courseId,
         status: "active",
+        enrollment_source: "stripe",
+        source_reference: session.id,
         enrolled_at: new Date().toISOString(),
         stripe_subscription_id:
           typeof session.subscription === "string"
             ? session.subscription
             : session.subscription?.id || null,
+        stripe_payment_intent_id: paymentIntentId,
+        stripe_checkout_session_id: session.id,
       },
       {
         onConflict: "student_id,course_id",

@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
-import { stripe } from "@/lib/stripe/server";
+import { getStripe } from "@/lib/stripe/server";
+import { getStripeWebhookSecret } from "@/lib/env/server";
 import {
   handleCheckoutSessionCompleted,
   handleSubscriptionCreated,
@@ -21,7 +22,7 @@ export async function POST(req: Request) {
   const body = await req.text();
   const headerList = headers();
   const signature = headerList.get("stripe-signature");
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const webhookSecret = getStripeWebhookSecret();
 
   if (!signature || !webhookSecret) {
     console.error("[Stripe Webhook] Missing signature or STRIPE_WEBHOOK_SECRET.");
@@ -34,7 +35,7 @@ export async function POST(req: Request) {
   let event: Stripe.Event;
 
   try {
-    event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+    event = getStripe().webhooks.constructEvent(body, signature, webhookSecret);
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : "Unknown verification error";
     console.error(`[Stripe Webhook Signature Verification Failed]: ${errorMessage}`);

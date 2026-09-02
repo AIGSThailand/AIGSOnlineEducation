@@ -1,0 +1,58 @@
+# Apply validated migrations to Supabase PRODUCTION.
+# Manual trigger only — run after staging QA passes.
+#
+# Required GitHub secrets:
+#   SUPABASE_ACCESS_TOKEN
+#   SUPABASE_PRODUCTION_PROJECT_REF
+#   SUPABASE_PRODUCTION_DB_PASSWORD
+#
+# Recommended: protect the "production" GitHub Environment with required reviewers.
+
+name: Supabase migrations (production)
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "production" to confirm'
+        required: true
+        type: string
+
+concurrency:
+  group: supabase-migrations-production
+  cancel-in-progress: false
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require explicit confirmation
+        if: inputs.confirm != 'production'
+        run: |
+          echo "::error::Confirmation failed. Re-run and type exactly: production"
+          exit 1
+
+  deploy-production:
+    name: Push migrations to production
+    needs: guard
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_PRODUCTION_DB_PASSWORD }}
+      SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PRODUCTION_PROJECT_REF }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link production project
+        run: supabase link --project-ref "$SUPABASE_PROJECT_ID"
+
+      - name: Push pending migrations
+        run: supabase db push

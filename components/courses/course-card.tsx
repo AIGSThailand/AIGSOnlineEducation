@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { BookOpen, User } from "lucide-react";
+import { wordpressContentToPlainText } from "@/lib/utils/wordpress-content";
 import type { CourseWithInstructors } from "@/types/lms.types";
 import type { Database } from "@/types/database.types";
 
@@ -45,7 +46,7 @@ export function CourseCard({ course, isEnrolled }: CourseCardProps) {
         </h4>
 
         <p className="mb-4 flex-1 text-sm text-slate-600 dark:text-slate-400 line-clamp-2">
-          {course.description || "No description provided."}
+          {wordpressContentToPlainText(course.description) || "No description provided."}
         </p>
 
         {"instructors" in course && course.instructors && course.instructors.length > 0 && (

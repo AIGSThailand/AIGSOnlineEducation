@@ -65,30 +65,47 @@ npm install
 
 ## 3. Environment Variables
 
-Create `.env.local` in the project root:
+Create `.env.local` from the template and configure for **local** development:
 
 ```bash
 cp .env.example .env.local
 ```
 
-Populate the variables:
+See **[docs/environments.md](./docs/environments.md)** for the full local / staging / production model.
+
+Minimal local values:
 
 ```ini
-# Application URL
+APP_ENV=local
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 
-# Supabase (Settings -> API)
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+# From `supabase status` after `npm run supabase:start`
+NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-local-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-local-service-role-key
 
-# Server-Side Only: NEVER EXPOSE TO CLIENT
-SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
-
-# Stripe Configuration
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_51...
-STRIPE_SECRET_KEY=sk_test_51...
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_SECRET_KEY=sk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 ```
+
+Validated at runtime via `lib/env/` (Zod + Stripe/Supabase environment guards).
+
+---
+
+## 3a. Environments (summary)
+
+| Environment | Supabase | Stripe |
+|-------------|----------|--------|
+| **Local** | Supabase CLI (`127.0.0.1:54321`) | Test |
+| **Staging** | Dedicated hosted project | Test |
+| **Production** | Separate hosted project | Live |
+
+- [docs/environments.md](./docs/environments.md) — variables, Auth URLs, webhooks
+- [docs/deployment.md](./docs/deployment.md) — Git branches, Vercel scopes
+- [docs/vercel-staging-setup.md](./docs/vercel-staging-setup.md) — staging domain + Vercel env vars
+- [docs/github-actions.md](./docs/github-actions.md) — CI and Supabase migration deploy
+- [docs/database-migrations.md](./docs/database-migrations.md) — migration promotion
 
 ---
 
@@ -111,25 +128,27 @@ The initial database migration (`supabase/migrations/20260831000000_initial_sche
 
 ## 5. Running Migrations & Seeding
 
-### Option A: Using Supabase CLI (Recommended)
+### Option A: Supabase CLI (recommended)
+
 ```bash
-# Initialize local Supabase instance
-supabase start
+# Start local Supabase (Docker required)
+npm run supabase:start
+npm run supabase:status    # copy URL and keys to .env.local
 
-# Apply migrations
-supabase db reset
+# Apply all migrations + seed.sql
+npm run supabase:reset
 
-# Seed demo courses & modules
-supabase db execute --file supabase/seed.sql
+# Create a new migration
+npm run db:migration:new -- your_migration_name
 ```
 
-### Option B: Supabase Cloud Dashboard
-1. Open your project on [Supabase Dashboard](https://supabase.com/dashboard).
-2. Navigate to **SQL Editor**.
-3. Copy and run `supabase/migrations/20260831000000_initial_schema.sql`.
-4. Copy and run `supabase/seed.sql`.
+Local DB is reproducible from `supabase/migrations/` + `supabase/seed.sql` with no manual SQL steps.
 
----
+See [docs/database-migrations.md](./docs/database-migrations.md) for staging/production promotion.
+
+### Option B: Supabase Cloud Dashboard (staging/production only)
+
+Apply committed migration files in order via SQL Editor or `supabase db push` after linking the target project. **Do not** patch production schema manually outside migrations.
 
 ## 6. Authentication & Session Flow
 
@@ -183,35 +202,32 @@ Copy the printed `whsec_...` secret into your `STRIPE_WEBHOOK_SECRET` in `.env.l
 ## 9. Local Development Commands
 
 ```bash
-# Start development server
-npm run dev
-
-# Run TypeScript linter
+npm run supabase:start   # Local Supabase (first time / after reboot)
+npm run supabase:reset   # Migrations + seed
+npm run dev              # Next.js at http://localhost:3000
 npm run lint
-
-# Format codebase with Prettier
-npm run format
-
-# Production build test
 npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to view the application.
+### Stripe webhooks (local)
 
----
+```bash
+stripe login
+stripe listen --forward-to localhost:3000/api/stripe/webhook
+# Copy whsec_... to STRIPE_WEBHOOK_SECRET in .env.local
+```
 
 ## 10. Deployment to Vercel
 
-1. Push this repository to GitHub/GitLab.
-2. Import the project into the [Vercel Dashboard](https://vercel.com).
-3. Configure the **Environment Variables** matching `.env.example`.
-4. Add the live production webhook URL to Stripe:
-   ```
-   https://your-domain.vercel.app/api/stripe/webhook
-   ```
-5. In your Supabase Auth Settings:
-   - Add `https://your-domain.vercel.app/api/auth/callback` to **Redirect URLs**.
-   - Set Site URL to `https://your-domain.vercel.app`.
+See **[docs/deployment.md](./docs/deployment.md)** for branch mapping, Vercel environment scopes, and checklists.
+
+Summary:
+
+1. Push to GitHub/GitLab.
+2. Import into [Vercel](https://vercel.com).
+3. Set environment variables per scope (Preview → staging Supabase + Stripe test; Production → production Supabase + Stripe live).
+4. Register Stripe webhooks per environment (separate `STRIPE_WEBHOOK_SECRET` each).
+5. Configure Supabase Auth redirect URLs using `NEXT_PUBLIC_APP_URL` for each project.
 
 ---
 
@@ -223,16 +239,14 @@ To support the migration from WordPress + LearnDash, all tables include nullable
 - `lessons.wordpress_lesson_id`
 - `enrollments.wordpress_enrollment_id`
 
-### Dedicated Migration Directory
-Future ETL (Extract, Transform, Load) scripts should be placed in:
+### Migration scripts
+
 ```text
 scripts/
-└── migration/
-    ├── 01_export_wordpress_data.php   # WP-CLI / REST exporter for users, courses, and lessons
-    ├── 02_import_users.ts              # Migrates WP users to Supabase Auth & profiles
-    ├── 03_import_courses.ts            # Imports course hierarchies, modules, and lessons
-    ├── 04_import_enrollments.ts        # Migrates LearnDash user enrollment & completion data
-    └── 05_reconcile_stripe.ts          # Matches existing Stripe customers by email metadata
+  migrate-learndash.mjs
+  migrate-learndash-quizzes.mjs
+  normalize-wordpress-content.mjs
+  lib/wordpress-content.mjs
 ```
 
-Because the database schema already includes foreign key constraints, indexes, and legacy reference columns, migration scripts can be executed safely using the `SUPABASE_SERVICE_ROLE_KEY` via `lib/supabase/admin.ts`.
+Run against **staging first**. Requires `SUPABASE_SERVICE_ROLE_KEY` for the target environment only — never commit exports or production credentials. See [docs/environments.md](./docs/environments.md).

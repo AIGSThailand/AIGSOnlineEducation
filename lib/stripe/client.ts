@@ -1,4 +1,5 @@
 import { loadStripe, type Stripe } from "@stripe/stripe-js";
+import { getClientEnv } from "@/lib/env/client";
 
 let stripePromise: Promise<Stripe | null>;
 
@@ -8,7 +9,7 @@ let stripePromise: Promise<Stripe | null>;
  */
 export function getStripe() {
   if (!stripePromise) {
-    const key = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+    const key = getClientEnv().NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
     if (!key) {
       console.warn("NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is not defined.");
       return Promise.resolve(null);

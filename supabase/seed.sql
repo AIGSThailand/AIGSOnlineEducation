@@ -1,10 +1,10 @@
 -- ==============================================================================
--- AIGS Online Education Platform - Seed Data
+-- AIGS Online Education Platform - Seed Data (LOCAL / TESTING ONLY)
 -- ==============================================================================
-
--- Note: In production / local Supabase testing, creating auth.users via Supabase Auth API
--- will automatically populate the profiles table via the on_auth_user_created trigger.
--- For direct SQL development testing, we provide sample courses and structure:
+-- Synthetic sample data only. Do NOT use real student emails, production WordPress
+-- users, live Stripe IDs, or production credentials.
+-- Runs automatically after `supabase db reset` (see supabase/config.toml).
+-- Create test auth users via Supabase Auth API — profiles are created by trigger.
 
 -- 1. Sample Demo Courses
 INSERT INTO public.courses (id, title, slug, description, status, thumbnail_url, wordpress_course_id)

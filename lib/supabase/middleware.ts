@@ -1,5 +1,6 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { getClientEnv } from "@/lib/env/client";
 import type { Database, UserRole } from "@/types/database.types";
 
 /**
@@ -11,8 +12,17 @@ export async function updateSession(request: NextRequest) {
     request,
   });
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  let supabaseUrl: string | undefined;
+  let supabaseKey: string | undefined;
+
+  try {
+    const env = getClientEnv();
+    supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL;
+    supabaseKey = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  } catch {
+    supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  }
 
   if (!supabaseUrl || !supabaseKey) {
     return supabaseResponse;
@@ -35,14 +45,12 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  // IMPORTANT: Do NOT use supabase.auth.getSession() in middleware as it is insecure and not guaranteed to refresh tokens
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   const pathname = request.nextUrl.pathname;
 
-  // 1. Unauthenticated users trying to access protected dashboards
   const isProtectedRoute =
     pathname.startsWith("/admin") ||
     pathname.startsWith("/instructor") ||
@@ -55,7 +63,6 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // 2. Authenticated user role verification for role-specific routes
   if (user && isProtectedRoute) {
     const { data: profile } = await supabase
       .from("profiles")
@@ -78,7 +85,6 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  // 3. Authenticated users attempting to visit auth pages (login/register)
   const isAuthRoute =
     pathname === "/login" ||
     pathname === "/register" ||
