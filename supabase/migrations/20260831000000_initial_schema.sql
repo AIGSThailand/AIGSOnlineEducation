@@ -3,8 +3,8 @@
 -- Compatible with LearnDash Migration & Stripe Subscriptions
 -- ==============================================================================
 
--- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- Enable UUID generation (Supabase hosted: pgcrypto in extensions schema)
+CREATE EXTENSION IF NOT EXISTS "pgcrypto" WITH SCHEMA "extensions";
 
 -- ------------------------------------------------------------------------------
 -- 1. Enums and Custom Types
@@ -30,7 +30,7 @@ CREATE TABLE public.profiles (
 -- 3. Courses Table
 -- ------------------------------------------------------------------------------
 CREATE TABLE public.courses (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title TEXT NOT NULL,
     slug TEXT NOT NULL UNIQUE,
     description TEXT,
@@ -55,7 +55,7 @@ CREATE TABLE public.course_instructors (
 -- 5. Modules Table
 -- ------------------------------------------------------------------------------
 CREATE TABLE public.modules (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     course_id UUID NOT NULL REFERENCES public.courses(id) ON DELETE CASCADE,
     title TEXT NOT NULL,
     sort_order INTEGER NOT NULL DEFAULT 0,
@@ -67,7 +67,7 @@ CREATE TABLE public.modules (
 -- 6. Lessons Table
 -- ------------------------------------------------------------------------------
 CREATE TABLE public.lessons (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     module_id UUID REFERENCES public.modules(id) ON DELETE SET NULL,
     course_id UUID NOT NULL REFERENCES public.courses(id) ON DELETE CASCADE,
     title TEXT NOT NULL,
@@ -85,7 +85,7 @@ CREATE TABLE public.lessons (
 -- 7. Enrollments Table
 -- ------------------------------------------------------------------------------
 CREATE TABLE public.enrollments (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     student_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     course_id UUID NOT NULL REFERENCES public.courses(id) ON DELETE CASCADE,
     status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'completed', 'cancelled', 'expired')),
@@ -102,7 +102,7 @@ CREATE TABLE public.enrollments (
 -- 8. Lesson Progress Table
 -- ------------------------------------------------------------------------------
 CREATE TABLE public.lesson_progress (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     student_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     course_id UUID NOT NULL REFERENCES public.courses(id) ON DELETE CASCADE,
     lesson_id UUID NOT NULL REFERENCES public.lessons(id) ON DELETE CASCADE,
@@ -117,7 +117,7 @@ CREATE TABLE public.lesson_progress (
 -- 9. Subscriptions Table (Stripe Integration)
 -- ------------------------------------------------------------------------------
 CREATE TABLE public.subscriptions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     stripe_customer_id TEXT NOT NULL,
     stripe_subscription_id TEXT NOT NULL UNIQUE,

@@ -15,7 +15,8 @@
     "db:migration:new": "supabase migration new",
     "migrate:learndash": "node scripts/migrate-learndash.mjs",
     "migrate:learndash:quizzes": "node scripts/migrate-learndash-quizzes.mjs",
-    "migrate:normalize-content": "node scripts/normalize-wordpress-content.mjs"
+    "migrate:normalize-content": "node scripts/normalize-wordpress-content.mjs",
+    "auth:verify-email": "node scripts/verify-user-email.mjs"
   },
   "dependencies": {
     "@stripe/stripe-js": "^5.6.0",
