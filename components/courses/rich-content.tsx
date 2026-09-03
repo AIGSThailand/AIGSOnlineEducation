@@ -20,9 +20,6 @@ export function RichContent({ html, className, fallback }: RichContentProps) {
   }
 
   return (
-    <div
-      className={cn("rich-content", className)}
-      dangerouslySetInnerHTML={{ __html: clean }}
-    />
+    <div className={cn("rich-content", className)} dangerouslySetInnerHTML={{ __html: clean }} />
   );
 }

@@ -1,10 +1,4 @@
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[];
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type UserRole = "admin" | "instructor" | "student";
 export type CourseStatus = "draft" | "published" | "archived";
@@ -16,12 +10,7 @@ export type EnrollmentSource = "manual" | "stripe" | "migration" | "group" | "ad
 export type GroupStatus = "active" | "archived";
 export type CertificateRuleSourceType = "course" | "quiz" | "group";
 export type QuestionType =
-  | "single_choice"
-  | "multiple_choice"
-  | "true_false"
-  | "fill_blank"
-  | "essay"
-  | "assessment";
+  "single_choice" | "multiple_choice" | "true_false" | "fill_blank" | "essay" | "assessment";
 export type SubscriptionStatus =
   | "trialing"
   | "active"

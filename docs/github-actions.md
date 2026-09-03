@@ -8,11 +8,11 @@ Related: [deployment.md](./deployment.md) · [database-migrations.md](./database
 
 ## Workflows
 
-| Workflow | File | Trigger | Target |
-|----------|------|---------|--------|
-| **CI** | `.github/workflows/ci.yml` | PR / push to `develop`, `main` | Lint + build |
-| **Staging migrations** | `.github/workflows/supabase-migrations-staging.yml` | Push to `develop` (migration paths) or manual | Supabase **staging** |
-| **Production migrations** | `.github/workflows/supabase-migrations-production.yml` | Manual only (`workflow_dispatch`) | Supabase **production** |
+| Workflow                  | File                                                   | Trigger                                       | Target                  |
+| ------------------------- | ------------------------------------------------------ | --------------------------------------------- | ----------------------- |
+| **CI**                    | `.github/workflows/ci.yml`                             | PR / push to `develop`, `main`                | Lint + build            |
+| **Staging migrations**    | `.github/workflows/supabase-migrations-staging.yml`    | Push to `develop` (migration paths) or manual | Supabase **staging**    |
+| **Production migrations** | `.github/workflows/supabase-migrations-production.yml` | Manual only (`workflow_dispatch`)             | Supabase **production** |
 
 Vercel deploys the Next.js app automatically when you connect the repo. These workflows handle **database schema** separately.
 
@@ -38,9 +38,9 @@ main      → manual production migration workflow → supabase db push (product
 
 For each **hosted** project (staging and production):
 
-| Value | Where to find it |
-|-------|------------------|
-| **Project ref** | Dashboard URL: `https://supabase.com/project/<ref>` |
+| Value           | Where to find it                                          |
+| --------------- | --------------------------------------------------------- |
+| **Project ref** | Dashboard URL: `https://supabase.com/project/<ref>`       |
 | **DB password** | Project → **Settings** → **Database** → database password |
 
 Use **separate** Supabase projects for staging and production.
@@ -49,12 +49,12 @@ Use **separate** Supabase projects for staging and production.
 
 Repo → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**
 
-| Secret | Description |
-|--------|-------------|
-| `SUPABASE_ACCESS_TOKEN` | Personal access token from step 1 |
-| `SUPABASE_STAGING_PROJECT_REF` | Staging project ref |
-| `SUPABASE_STAGING_DB_PASSWORD` | Staging database password |
-| `SUPABASE_PRODUCTION_PROJECT_REF` | Production project ref (production workflow only) |
+| Secret                            | Description                                             |
+| --------------------------------- | ------------------------------------------------------- |
+| `SUPABASE_ACCESS_TOKEN`           | Personal access token from step 1                       |
+| `SUPABASE_STAGING_PROJECT_REF`    | Staging project ref                                     |
+| `SUPABASE_STAGING_DB_PASSWORD`    | Staging database password                               |
+| `SUPABASE_PRODUCTION_PROJECT_REF` | Production project ref (production workflow only)       |
 | `SUPABASE_PRODUCTION_DB_PASSWORD` | Production database password (production workflow only) |
 
 Never commit these values to Git.
@@ -127,13 +127,13 @@ Runs on every PR to `develop` or `main`. Uses placeholder env vars — not conne
 
 ## Troubleshooting
 
-| Error | Likely cause | Fix |
-|-------|--------------|-----|
-| `Invalid access token` | Wrong or expired `SUPABASE_ACCESS_TOKEN` | Regenerate token, update secret |
-| `password authentication failed` | Wrong `SUPABASE_*_DB_PASSWORD` | Reset DB password in Supabase Dashboard |
-| `Remote migration versions not found` | Drift between local and remote | Inspect `supabase migration list`; fix forward only |
-| `verify-local` fails | Broken SQL in migration | Fix migration, test with `npm run supabase:reset` locally |
-| Workflow skipped | No migration file changes on push | Use **Run workflow** manually or touch `supabase/migrations/` |
+| Error                                 | Likely cause                             | Fix                                                           |
+| ------------------------------------- | ---------------------------------------- | ------------------------------------------------------------- |
+| `Invalid access token`                | Wrong or expired `SUPABASE_ACCESS_TOKEN` | Regenerate token, update secret                               |
+| `password authentication failed`      | Wrong `SUPABASE_*_DB_PASSWORD`           | Reset DB password in Supabase Dashboard                       |
+| `Remote migration versions not found` | Drift between local and remote           | Inspect `supabase migration list`; fix forward only           |
+| `verify-local` fails                  | Broken SQL in migration                  | Fix migration, test with `npm run supabase:reset` locally     |
+| Workflow skipped                      | No migration file changes on push        | Use **Run workflow** manually or touch `supabase/migrations/` |
 
 ---
 

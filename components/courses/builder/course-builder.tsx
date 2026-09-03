@@ -15,8 +15,13 @@ import {
   createModuleAction,
   deleteLessonAction,
   deleteModuleAction,
+  duplicateLessonAction,
+  duplicateQuizAction,
+  duplicateSectionAction,
+  reorderCurriculumAction,
   reorderLessonAction,
   reorderModuleAction,
+  reorderSectionsAction,
 } from "@/features/courses/builder/actions";
 import type {
   BuilderPortal,
@@ -53,6 +58,7 @@ export function CourseBuilder({
   const [deleteTarget, setDeleteTarget] = useState<
     { kind: "section"; id: string } | { kind: "lesson"; id: string } | null
   >(null);
+  const [isReordering, setIsReordering] = useState(false);
 
   const expandedDefaults = useMemo(() => {
     const set = new Set(data.structure.map((s) => s.id));
@@ -145,6 +151,75 @@ export function CourseBuilder({
     });
   };
 
+  const handleReorderSections = (sectionIds: string[]) => {
+    setIsReordering(true);
+    startTransition(async () => {
+      const result = await reorderSectionsAction({ courseId: data.course.id, sectionIds });
+      setIsReordering(false);
+      if (result.success) router.refresh();
+    });
+  };
+
+  const handleReorderCurriculum = (payload: {
+    sectionIds: string[];
+    sections: Array<{
+      sectionId: string;
+      items: Array<{ kind: "lesson" | "quiz" | "exam"; id: string; stepId: string | null }>;
+    }>;
+  }) => {
+    setIsReordering(true);
+    startTransition(async () => {
+      const result = await reorderCurriculumAction({
+        courseId: data.course.id,
+        sections: payload.sections.map((s) => ({
+          sectionId: s.sectionId,
+          items: s.items.map(({ kind, id }) => ({ kind, id })),
+        })),
+      });
+      setIsReordering(false);
+      if (result.success) router.refresh();
+    });
+  };
+
+  const handleDuplicateSection = (sectionId: string) => {
+    startTransition(async () => {
+      const result = await duplicateSectionAction({ courseId: data.course.id, sectionId });
+      if (result.success && result.data) {
+        handleSelect({ type: "section", id: result.data.sectionId });
+        setExpanded((prev) => new Set(prev).add(result.data!.sectionId));
+        router.refresh();
+      }
+    });
+  };
+
+  const handleDuplicateLesson = (sectionId: string, lessonId: string) => {
+    startTransition(async () => {
+      const result = await duplicateLessonAction({
+        courseId: data.course.id,
+        sectionId,
+        lessonId,
+      });
+      if (result.success && result.data) {
+        handleSelect({ type: "lesson", id: result.data.lessonId, sectionId });
+        router.refresh();
+      }
+    });
+  };
+
+  const handleDuplicateQuiz = (sectionId: string, quizId: string) => {
+    startTransition(async () => {
+      const result = await duplicateQuizAction({
+        courseId: data.course.id,
+        sectionId,
+        quizId,
+      });
+      if (result.success && result.data) {
+        handleSelect({ type: "quiz", id: result.data.quizId, sectionId });
+        router.refresh();
+      }
+    });
+  };
+
   const triggerSave = useCallback(() => {
     setSaveSignal((n) => n + 1);
   }, []);
@@ -159,8 +234,14 @@ export function CourseBuilder({
     onMoveLesson: handleMoveLesson,
     onDeleteSection: (id: string) => setDeleteTarget({ kind: "section", id }),
     onDeleteLesson: (id: string) => setDeleteTarget({ kind: "lesson", id }),
+    onDuplicateSection: handleDuplicateSection,
+    onDuplicateLesson: handleDuplicateLesson,
+    onDuplicateQuiz: handleDuplicateQuiz,
+    onReorderSections: handleReorderSections,
+    onReorderCurriculum: handleReorderCurriculum,
     expandedSections: expanded,
     onToggleSection: toggleSection,
+    isReordering,
   };
 
   return (
@@ -227,16 +308,8 @@ export function CourseBuilder({
         />
       </Sheet>
 
-      <PublishDialog
-        open={publishOpen}
-        onOpenChange={setPublishOpen}
-        courseId={data.course.id}
-      />
-      <ArchiveDialog
-        open={archiveOpen}
-        onOpenChange={setArchiveOpen}
-        courseId={data.course.id}
-      />
+      <PublishDialog open={publishOpen} onOpenChange={setPublishOpen} courseId={data.course.id} />
+      <ArchiveDialog open={archiveOpen} onOpenChange={setArchiveOpen} courseId={data.course.id} />
 
       <DeleteItemDialog
         open={!!deleteTarget}

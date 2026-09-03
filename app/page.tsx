@@ -14,7 +14,7 @@ export default async function HomePage() {
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <div className="flex items-center space-x-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white font-bold text-lg">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-lg font-bold text-white">
               A
             </div>
             <span className="text-xl font-bold text-slate-900">AIGS LMS</span>
@@ -42,7 +42,7 @@ export default async function HomePage() {
       {/* Hero Section */}
       <main className="flex-1">
         <section className="mx-auto max-w-5xl px-6 py-20 text-center">
-          <div className="inline-flex items-center rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700 mb-6">
+          <div className="mb-6 inline-flex items-center rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700">
             <Sparkles className="mr-1.5 h-3.5 w-3.5" />
             Next.js App Router • Supabase RLS • Stripe Integration
           </div>
@@ -87,7 +87,8 @@ export default async function HomePage() {
               </div>
               <h3 className="text-lg font-bold text-slate-900">Role-Based Security</h3>
               <p className="mt-2 text-sm text-slate-600">
-                Granular Row Level Security (RLS) and server middleware protecting Admin, Instructor, and Student portals.
+                Granular Row Level Security (RLS) and server middleware protecting Admin,
+                Instructor, and Student portals.
               </p>
             </div>
 
@@ -97,7 +98,8 @@ export default async function HomePage() {
               </div>
               <h3 className="text-lg font-bold text-slate-900">Stripe Subscriptions</h3>
               <p className="mt-2 text-sm text-slate-600">
-                Automated webhook reconciliation supporting existing and new subscribers without interrupting access.
+                Automated webhook reconciliation supporting existing and new subscribers without
+                interrupting access.
               </p>
             </div>
 
@@ -107,7 +109,8 @@ export default async function HomePage() {
               </div>
               <h3 className="text-lg font-bold text-slate-900">LearnDash Migration Ready</h3>
               <p className="mt-2 text-sm text-slate-600">
-                Pre-structured legacy ID columns to seamlessly import courses, lessons, and student progress from WordPress.
+                Pre-structured legacy ID columns to seamlessly import courses, lessons, and student
+                progress from WordPress.
               </p>
             </div>
           </div>

@@ -12,7 +12,8 @@ export default function AuthCodeErrorPage() {
         Authentication Link Expired
       </h2>
       <p className="mt-2 text-sm text-slate-600">
-        The verification or password reset link has expired or has already been used. Please request a new one.
+        The verification or password reset link has expired or has already been used. Please request
+        a new one.
       </p>
       <div className="mt-6 space-y-2">
         <Link href="/login" className="block w-full">

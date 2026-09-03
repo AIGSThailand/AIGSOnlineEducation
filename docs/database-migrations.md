@@ -101,11 +101,11 @@ supabase db push
 
 ## Current migrations (reference)
 
-| File | Purpose |
-|------|---------|
-| `20260831000000_initial_schema.sql` | Phase 1 core schema + RLS |
+| File                                         | Purpose                                |
+| -------------------------------------------- | -------------------------------------- |
+| `20260831000000_initial_schema.sql`          | Phase 1 core schema + RLS              |
 | `20260901000000_phase2_learndash_schema.sql` | LearnDash-compatible tables + backfill |
-| `20260901120000_course_builder_rls.sql` | Instructor self-assign on new courses |
+| `20260901120000_course_builder_rls.sql`      | Instructor self-assign on new courses  |
 
 After adding migrations, update `types/database.types.ts` if schema types changed.
 

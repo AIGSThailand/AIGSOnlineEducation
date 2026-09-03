@@ -4,15 +4,15 @@
 
 ### What the existing Phase 1 model does well
 
-| Area | Current behavior |
-|------|------------------|
+| Area             | Current behavior                                                                                                    |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------- |
 | **Auth & roles** | Supabase Auth + `profiles.role` (`admin`, `instructor`, `student`) with middleware and server-side `requireRole()`. |
-| **Courses** | Dedicated `courses` table with slug, status, thumbnail, `wordpress_course_id`. |
-| **Instructors** | Many-to-many via `course_instructors`. |
-| **Enrollments** | `enrollments` with status lifecycle and Stripe / WordPress legacy fields. |
-| **Progress** | `lesson_progress` per student + lesson + course. |
-| **Stripe** | Customer linking, checkout webhook, optional subscription sync. |
-| **RLS** | Enabled on all Phase 1 tables with SECURITY DEFINER helpers. |
+| **Courses**      | Dedicated `courses` table with slug, status, thumbnail, `wordpress_course_id`.                                      |
+| **Instructors**  | Many-to-many via `course_instructors`.                                                                              |
+| **Enrollments**  | `enrollments` with status lifecycle and Stripe / WordPress legacy fields.                                           |
+| **Progress**     | `lesson_progress` per student + lesson + course.                                                                    |
+| **Stripe**       | Customer linking, checkout webhook, optional subscription sync.                                                     |
+| **RLS**          | Enabled on all Phase 1 tables with SECURITY DEFINER helpers.                                                        |
 
 Phase 1 is a **valid foundation** for authentication, payments, and basic course delivery. It is **not** a faithful LearnDash content model.
 
@@ -20,17 +20,17 @@ Phase 1 is a **valid foundation** for authentication, payments, and basic course
 
 ### Where Phase 1 conflicts with LearnDash
 
-| LearnDash concept | Phase 1 representation | Problem |
-|-------------------|------------------------|---------|
-| **Section** (organizational heading) | `modules` table | Phase 1 migration incorrectly treated sections as modules and **embedded lessons inside modules**. LearnDash sections are headings only. |
-| **Lesson** (reusable content CPT) | `lessons` with required `course_id`, `module_id`, `sort_order` | Hierarchy and placement are **baked into the lesson row**. Shared steps across courses are impossible without duplication. |
-| **Topic** (child of lesson) | *Missing* | Topics were flattened or ignored. |
-| **Course builder tree** | *Missing* | No representation of `Course → Lesson → Topic → Quiz` nesting. |
-| **Quiz / Question** | Placeholder UI only | No tables. |
-| **Certificate** | Placeholder UI only | No template / rule / earned separation. |
-| **Group** | *Missing* | No groups, leaders, or group-course assignments. |
-| **Enrollment source** | Implicit (Stripe webhook only) | Cannot distinguish manual, group, migration, admin grants. |
-| **Progression rules** | Hard-coded "Lifetime" in UI | No `linear` vs `free_form` course settings. |
+| LearnDash concept                    | Phase 1 representation                                         | Problem                                                                                                                                  |
+| ------------------------------------ | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| **Section** (organizational heading) | `modules` table                                                | Phase 1 migration incorrectly treated sections as modules and **embedded lessons inside modules**. LearnDash sections are headings only. |
+| **Lesson** (reusable content CPT)    | `lessons` with required `course_id`, `module_id`, `sort_order` | Hierarchy and placement are **baked into the lesson row**. Shared steps across courses are impossible without duplication.               |
+| **Topic** (child of lesson)          | _Missing_                                                      | Topics were flattened or ignored.                                                                                                        |
+| **Course builder tree**              | _Missing_                                                      | No representation of `Course → Lesson → Topic → Quiz` nesting.                                                                           |
+| **Quiz / Question**                  | Placeholder UI only                                            | No tables.                                                                                                                               |
+| **Certificate**                      | Placeholder UI only                                            | No template / rule / earned separation.                                                                                                  |
+| **Group**                            | _Missing_                                                      | No groups, leaders, or group-course assignments.                                                                                         |
+| **Enrollment source**                | Implicit (Stripe webhook only)                                 | Cannot distinguish manual, group, migration, admin grants.                                                                               |
+| **Progression rules**                | Hard-coded "Lifetime" in UI                                    | No `linear` vs `free_form` course settings.                                                                                              |
 
 ---
 
@@ -50,16 +50,16 @@ Phase 1 is a **valid foundation** for authentication, payments, and basic course
 
 ### What should remain unchanged
 
-| Asset | Reason |
-|-------|--------|
-| `profiles`, `auth.users` trigger | Production users already exist. |
-| `courses` core columns + `wordpress_course_id` | Imported LearnDash courses reference these IDs. |
-| `course_instructors` | Independent of LearnDash groups; still valid for app instructors. |
-| `enrollments` table + unique `(student_id, course_id)` | Phase 1 enrollments and Stripe webhook logic depend on it. |
-| `lesson_progress` | Phase 1 lesson viewer writes here; retained during transition. |
-| `subscriptions` | Legacy subscription customers; do not recreate Stripe customers. |
-| All existing **`wordpress_*`** legacy columns | Required for reconciliation and rollback. |
-| **`modules` table** | **Not dropped.** Deprecated; rows copied to `course_sections` with **same UUIDs** for zero-downtime backfill. |
+| Asset                                                  | Reason                                                                                                        |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| `profiles`, `auth.users` trigger                       | Production users already exist.                                                                               |
+| `courses` core columns + `wordpress_course_id`         | Imported LearnDash courses reference these IDs.                                                               |
+| `course_instructors`                                   | Independent of LearnDash groups; still valid for app instructors.                                             |
+| `enrollments` table + unique `(student_id, course_id)` | Phase 1 enrollments and Stripe webhook logic depend on it.                                                    |
+| `lesson_progress`                                      | Phase 1 lesson viewer writes here; retained during transition.                                                |
+| `subscriptions`                                        | Legacy subscription customers; do not recreate Stripe customers.                                              |
+| All existing **`wordpress_*`** legacy columns          | Required for reconciliation and rollback.                                                                     |
+| **`modules` table**                                    | **Not dropped.** Deprecated; rows copied to `course_sections` with **same UUIDs** for zero-downtime backfill. |
 
 ---
 
@@ -138,11 +138,11 @@ Same pattern for `certificate_rules.source_type` and `earned_certificates` sourc
 
 ### Progress model tradeoff
 
-| Approach | Pros | Cons |
-|----------|------|------|
-| Keep only `lesson_progress` | Simple | Ignores topics, quizzes, shared steps |
-| Separate `lesson_progress` + `topic_progress` | LearnDash-aligned | Quiz completion needs another table |
-| Generic `step_progress(course_step_id)` | One model for all step types; shared steps tracked per course placement | Indirect join for content details |
+| Approach                                      | Pros                                                                    | Cons                                  |
+| --------------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------- |
+| Keep only `lesson_progress`                   | Simple                                                                  | Ignores topics, quizzes, shared steps |
+| Separate `lesson_progress` + `topic_progress` | LearnDash-aligned                                                       | Quiz completion needs another table   |
+| Generic `step_progress(course_step_id)`       | One model for all step types; shared steps tracked per course placement | Indirect join for content details     |
 
 **Decision:** Keep **`lesson_progress`** (Phase 1 compat) + add **`topic_progress`** + add **`step_progress`** keyed by `(student_id, course_step_id)` as the canonical course-tree completion record going forward.
 
@@ -152,10 +152,10 @@ Same pattern for `certificate_rules.source_type` and `earned_certificates` sourc
 
 **Recommended:** **Materialized enrollments** with `enrollment_source = 'group'` and `source_reference = group.id`.
 
-| Approach | Verdict |
-|----------|---------|
-| Derived access (join group_users + group_courses at query time) | Correct but complicates RLS and every access check |
-| Materialized enrollments | Safer for RLS; matches LearnDash effective access; auditable |
+| Approach                                                        | Verdict                                                      |
+| --------------------------------------------------------------- | ------------------------------------------------------------ |
+| Derived access (join group_users + group_courses at query time) | Correct but complicates RLS and every access check           |
+| Materialized enrollments                                        | Safer for RLS; matches LearnDash effective access; auditable |
 
 Future group sync job/trigger creates or revokes enrollments when membership changes. Stripe and group enrollments remain distinguishable via `enrollment_source`.
 
@@ -165,33 +165,33 @@ Future group sync job/trigger creates or revokes enrollments when membership cha
 
 See migration file `supabase/migrations/20260901000000_phase2_learndash_schema.sql` for full DDL.
 
-| Table | Purpose |
-|-------|---------|
-| `course_sections` | LearnDash section headings |
-| `topics` | Topic content (reusable) |
-| `course_steps` | Course builder tree / placement |
-| `quizzes` | Quiz definitions |
-| `questions` | Question bank |
-| `question_options` | MCQ / T-F options |
-| `quiz_questions` | Quiz ↔ question join |
-| `quiz_attempts` | Student attempts |
-| `quiz_attempt_answers` | Per-question answers (JSONB) |
-| `certificate_templates` | Certificate designs |
-| `certificate_rules` | Eligibility rules |
-| `earned_certificates` | Issued certificates |
-| `groups` | LearnDash groups |
-| `group_users` | Group membership |
-| `group_leaders` | Group leadership (relationship-based) |
-| `group_courses` | Courses assigned to groups |
-| `topic_progress` | Topic completion |
-| `step_progress` | Generic course step completion |
+| Table                   | Purpose                               |
+| ----------------------- | ------------------------------------- |
+| `course_sections`       | LearnDash section headings            |
+| `topics`                | Topic content (reusable)              |
+| `course_steps`          | Course builder tree / placement       |
+| `quizzes`               | Quiz definitions                      |
+| `questions`             | Question bank                         |
+| `question_options`      | MCQ / T-F options                     |
+| `quiz_questions`        | Quiz ↔ question join                  |
+| `quiz_attempts`         | Student attempts                      |
+| `quiz_attempt_answers`  | Per-question answers (JSONB)          |
+| `certificate_templates` | Certificate designs                   |
+| `certificate_rules`     | Eligibility rules                     |
+| `earned_certificates`   | Issued certificates                   |
+| `groups`                | LearnDash groups                      |
+| `group_users`           | Group membership                      |
+| `group_leaders`         | Group leadership (relationship-based) |
+| `group_courses`         | Courses assigned to groups            |
+| `topic_progress`        | Topic completion                      |
+| `step_progress`         | Generic course step completion        |
 
 ### Altered tables
 
-| Table | Additions |
-|-------|-----------|
-| `courses` | `excerpt`, `progression_type`, `stripe_product_id`, `stripe_price_id` |
-| `lessons` | `excerpt`, `status`; `course_id`/`module_id`/`sort_order` retained (deprecated) |
+| Table         | Additions                                                                                         |
+| ------------- | ------------------------------------------------------------------------------------------------- |
+| `courses`     | `excerpt`, `progression_type`, `stripe_product_id`, `stripe_price_id`                             |
+| `lessons`     | `excerpt`, `status`; `course_id`/`module_id`/`sort_order` retained (deprecated)                   |
 | `enrollments` | `enrollment_source`, `source_reference`, `stripe_payment_intent_id`, `stripe_checkout_session_id` |
 
 ### Preserved legacy IDs
@@ -202,12 +202,12 @@ All Phase 1 `wordpress_*` columns retained. New nullable legacy columns added on
 
 ## Backward compatibility & rollback
 
-| Risk | Mitigation |
-|------|------------|
-| Phase 1 pages query `lessons.course_id` | Columns unchanged; backfill `course_steps` in parallel |
-| `modules` vs `course_sections` duplication | Same UUID copy; `modules` kept read-only |
-| RLS policy drift | New helpers; existing policies untouched on Phase 1 tables |
-| Rollback | Drop Phase 2 tables/columns via down migration; Phase 1 data intact |
+| Risk                                       | Mitigation                                                          |
+| ------------------------------------------ | ------------------------------------------------------------------- |
+| Phase 1 pages query `lessons.course_id`    | Columns unchanged; backfill `course_steps` in parallel              |
+| `modules` vs `course_sections` duplication | Same UUID copy; `modules` kept read-only                            |
+| RLS policy drift                           | New helpers; existing policies untouched on Phase 1 tables          |
+| Rollback                                   | Drop Phase 2 tables/columns via down migration; Phase 1 data intact |
 
 ---
 

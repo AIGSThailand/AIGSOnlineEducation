@@ -1,9 +1,6 @@
 import Link from "next/link";
 import { requireCourseBuilderAccess } from "@/features/courses/permissions";
-import {
-  getCourseListForAdmin,
-  getInstructorOptions,
-} from "@/features/courses/queries";
+import { getCourseListForAdmin, getInstructorOptions } from "@/features/courses/queries";
 import { CourseListTable } from "@/components/courses/builder/course-list-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

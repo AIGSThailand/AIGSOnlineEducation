@@ -14,7 +14,11 @@ export function assertStripeEnvironment(appEnv: AppEnv, stripeSecretKey: string)
     );
   }
 
-  if (appEnv === "production" && isTestSecret && process.env.ALLOW_STRIPE_TEST_IN_PRODUCTION !== "true") {
+  if (
+    appEnv === "production" &&
+    isTestSecret &&
+    process.env.ALLOW_STRIPE_TEST_IN_PRODUCTION !== "true"
+  ) {
     throw new Error(
       'Stripe configuration error: test secret key detected while APP_ENV is "production". ' +
         "Set ALLOW_STRIPE_TEST_IN_PRODUCTION=true only for controlled operations."
@@ -26,11 +30,14 @@ export function assertStripeEnvironment(appEnv: AppEnv, stripeSecretKey: string)
 export function assertSupabaseEnvironment(appEnv: AppEnv, supabaseUrl: string): void {
   if (!supabaseUrl) return;
 
-  const isLocalSupabase =
-    supabaseUrl.includes("127.0.0.1") || supabaseUrl.includes("localhost");
+  const isLocalSupabase = supabaseUrl.includes("127.0.0.1") || supabaseUrl.includes("localhost");
   const isHostedSupabase = supabaseUrl.includes(".supabase.co");
 
-  if (appEnv === "local" && isHostedSupabase && process.env.ALLOW_HOSTED_SUPABASE_LOCAL !== "true") {
+  if (
+    appEnv === "local" &&
+    isHostedSupabase &&
+    process.env.ALLOW_HOSTED_SUPABASE_LOCAL !== "true"
+  ) {
     console.warn(
       "[env] APP_ENV=local but NEXT_PUBLIC_SUPABASE_URL points to hosted Supabase. " +
         "Prefer `supabase start` (http://127.0.0.1:54321) for local development. " +

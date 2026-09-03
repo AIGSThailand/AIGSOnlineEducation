@@ -1,9 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  requireCourseBuilderAccess,
-  requireCourseManage,
-} from "@/features/courses/permissions";
+import { requireCourseBuilderAccess, requireCourseManage } from "@/features/courses/permissions";
 import { getCourseBuilderData } from "@/features/courses/queries";
 import { parseBuilderSelectionFromSearchParams } from "@/features/courses/types";
 import { CourseBuilder } from "@/components/courses/builder/course-builder";

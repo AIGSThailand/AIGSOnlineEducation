@@ -128,7 +128,10 @@ export async function updateCourseAction(input: unknown): Promise<ActionResult> 
   if (fields.progressionType !== undefined) updatePayload.progression_type = fields.progressionType;
 
   if (Object.keys(updatePayload).length > 0) {
-    const { error } = await supabase.from("courses").update(updatePayload as never).eq("id", courseId);
+    const { error } = await supabase
+      .from("courses")
+      .update(updatePayload as never)
+      .eq("id", courseId);
     if (error) return { success: false, error: error.message };
   }
 
@@ -170,7 +173,10 @@ export async function updateCourseStatusAction(input: unknown): Promise<ActionRe
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.from("courses").update({ status } as never).eq("id", courseId);
+  const { error } = await supabase
+    .from("courses")
+    .update({ status } as never)
+    .eq("id", courseId);
   if (error) return { success: false, error: error.message };
 
   revalidatePath(`/admin/courses/${courseId}/edit`);

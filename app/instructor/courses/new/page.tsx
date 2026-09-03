@@ -11,7 +11,7 @@ export default async function InstructorNewCoursePage() {
     <div className="space-y-6">
       <div>
         <Link href="/instructor/courses">
-          <Button variant="ghost" size="sm" className="mb-4 -ml-2">
+          <Button variant="ghost" size="sm" className="-ml-2 mb-4">
             <ArrowLeft className="mr-1.5 h-4 w-4" />
             Back to courses
           </Button>

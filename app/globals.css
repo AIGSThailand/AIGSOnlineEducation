@@ -54,4 +54,26 @@
   .rich-content h3 {
     @apply mb-3 mt-6 font-bold text-slate-900;
   }
+
+  .rich-content blockquote {
+    @apply my-4 border-l-4 border-slate-300 pl-4 italic text-slate-600;
+  }
+
+  .rich-content code {
+    @apply rounded bg-slate-100 px-1 py-0.5 font-mono text-sm text-slate-800;
+  }
+
+  .rich-content hr {
+    @apply my-6 border-slate-200;
+  }
+
+  /* TipTap editor surface */
+  .tiptap-editor.ProseMirror p.is-editor-empty:first-child::before {
+    @apply float-left h-0 pointer-events-none text-slate-400;
+    content: attr(data-placeholder);
+  }
+
+  .tiptap-editor.ProseMirror:focus {
+    outline: none;
+  }
 }

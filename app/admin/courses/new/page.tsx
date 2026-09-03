@@ -13,7 +13,7 @@ export default async function AdminNewCoursePage() {
     <div className="space-y-6">
       <div>
         <Link href="/admin/courses">
-          <Button variant="ghost" size="sm" className="mb-4 -ml-2">
+          <Button variant="ghost" size="sm" className="-ml-2 mb-4">
             <ArrowLeft className="mr-1.5 h-4 w-4" />
             Back to courses
           </Button>

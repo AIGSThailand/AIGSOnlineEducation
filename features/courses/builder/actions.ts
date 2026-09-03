@@ -6,12 +6,26 @@ import { canManageCourse } from "@/features/courses/permissions";
 import {
   deleteLessonSchema,
   deleteModuleSchema,
+  duplicateLessonSchema,
+  duplicateQuizSchema,
+  duplicateSectionSchema,
   lessonSchema,
   moduleSchema,
   moveLessonSchema,
+  reorderCurriculumSchema,
   reorderLessonSchema,
   reorderModuleSchema,
+  reorderSectionsSchema,
 } from "@/features/courses/schema";
+import {
+  duplicateLessonRecord,
+  duplicateQuizRecord,
+  duplicateSectionRecord,
+} from "@/features/courses/builder/duplicate";
+import {
+  persistCurriculumOrder,
+  persistSectionOrder,
+} from "@/features/courses/builder/persist-order";
 import { lessonSlugExists } from "@/features/courses/queries";
 import type { ActionResult } from "@/features/courses/types";
 import { nextSortOrder, slugifyTitle, swapSortOrder } from "@/features/courses/builder/ordering";
@@ -32,7 +46,9 @@ function revalidateBuilder(courseId: string) {
   revalidatePath(`/courses/${courseId}/preview`);
 }
 
-export async function createModuleAction(input: unknown): Promise<ActionResult<{ moduleId: string }>> {
+export async function createModuleAction(
+  input: unknown
+): Promise<ActionResult<{ moduleId: string }>> {
   const parsed = moduleSchema.safeParse(input);
   if (!parsed.success) {
     return { success: false, error: parsed.error.errors[0]?.message || "Invalid module data." };
@@ -67,7 +83,10 @@ export async function createModuleAction(input: unknown): Promise<ActionResult<{
   await syncModuleToSection(supabase, moduleRow);
 
   if (description) {
-    await supabase.from("course_sections").update({ description } as never).eq("id", moduleRow.id);
+    await supabase
+      .from("course_sections")
+      .update({ description } as never)
+      .eq("id", moduleRow.id);
   }
 
   revalidateBuilder(courseId);
@@ -87,7 +106,10 @@ export async function updateModuleAction(input: unknown): Promise<ActionResult> 
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.from("modules").update({ title } as never).eq("id", moduleId);
+  const { error } = await supabase
+    .from("modules")
+    .update({ title } as never)
+    .eq("id", moduleId);
   if (error) return { success: false, error: error.message };
 
   const { data: moduleRow } = await supabase
@@ -99,7 +121,10 @@ export async function updateModuleAction(input: unknown): Promise<ActionResult> 
   if (moduleRow) {
     await syncModuleToSection(supabase, moduleRow);
     if (description !== undefined) {
-      await supabase.from("course_sections").update({ description } as never).eq("id", moduleId);
+      await supabase
+        .from("course_sections")
+        .update({ description } as never)
+        .eq("id", moduleId);
     }
   }
 
@@ -176,7 +201,10 @@ export async function reorderModuleAction(input: unknown): Promise<ActionResult>
   if (!swapped) return { success: true };
 
   for (const item of swapped) {
-    await supabase.from("modules").update({ sort_order: item.sortOrder } as never).eq("id", item.id);
+    await supabase
+      .from("modules")
+      .update({ sort_order: item.sortOrder } as never)
+      .eq("id", item.id);
     const { data: mod } = await supabase
       .from("modules")
       .select("id, course_id, title, sort_order")
@@ -189,7 +217,9 @@ export async function reorderModuleAction(input: unknown): Promise<ActionResult>
   return { success: true };
 }
 
-export async function createLessonAction(input: unknown): Promise<ActionResult<{ lessonId: string }>> {
+export async function createLessonAction(
+  input: unknown
+): Promise<ActionResult<{ lessonId: string }>> {
   const parsed = lessonSchema.safeParse(input);
   if (!parsed.success) {
     return { success: false, error: parsed.error.errors[0]?.message || "Invalid lesson data." };
@@ -246,7 +276,8 @@ export async function updateLessonAction(input: unknown): Promise<ActionResult> 
     return { success: false, error: parsed.error.errors[0]?.message || "Invalid lesson data." };
   }
 
-  const { courseId, moduleId, lessonId, title, slug, content, videoUrl, status } = parsed.data;
+  const { courseId, moduleId, lessonId, title, slug, content, excerpt, videoUrl, status } =
+    parsed.data;
   if (!lessonId) return { success: false, error: "Lesson ID is required." };
   if (!(await canManageCourse(courseId))) {
     return { success: false, error: "Unauthorized." };
@@ -262,6 +293,7 @@ export async function updateLessonAction(input: unknown): Promise<ActionResult> 
       title,
       slug,
       content: content ?? null,
+      excerpt: excerpt || null,
       video_url: videoUrl || null,
       module_id: moduleId,
       status: status || "draft",
@@ -347,7 +379,10 @@ export async function reorderLessonAction(input: unknown): Promise<ActionResult>
   for (const item of swapped) {
     const changed = sorted.find((l) => l.id === item.id);
     if (changed && changed.sort_order !== item.sortOrder) {
-      await supabase.from("lessons").update({ sort_order: item.sortOrder } as never).eq("id", item.id);
+      await supabase
+        .from("lessons")
+        .update({ sort_order: item.sortOrder } as never)
+        .eq("id", item.id);
     }
   }
 
@@ -398,20 +433,142 @@ export async function moveLessonAction(input: unknown): Promise<ActionResult> {
   return { success: true };
 }
 
+export async function reorderSectionsAction(input: unknown): Promise<ActionResult> {
+  const parsed = reorderSectionsSchema.safeParse(input);
+  if (!parsed.success) return { success: false, error: "Invalid request." };
+
+  const { courseId, sectionIds } = parsed.data;
+  if (!(await canManageCourse(courseId))) {
+    return { success: false, error: "Unauthorized." };
+  }
+
+  const supabase = await createClient();
+  try {
+    await persistSectionOrder(supabase, courseId, sectionIds);
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to reorder sections.",
+    };
+  }
+
+  revalidateBuilder(courseId);
+  return { success: true };
+}
+
+export async function reorderCurriculumAction(input: unknown): Promise<ActionResult> {
+  const parsed = reorderCurriculumSchema.safeParse(input);
+  if (!parsed.success) return { success: false, error: "Invalid request." };
+
+  const { courseId, sections } = parsed.data;
+  if (!(await canManageCourse(courseId))) {
+    return { success: false, error: "Unauthorized." };
+  }
+
+  const supabase = await createClient();
+  try {
+    await persistCurriculumOrder(supabase, courseId, sections);
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to reorder curriculum.",
+    };
+  }
+
+  revalidateBuilder(courseId);
+  return { success: true };
+}
+
+export async function duplicateSectionAction(
+  input: unknown
+): Promise<ActionResult<{ sectionId: string }>> {
+  const parsed = duplicateSectionSchema.safeParse(input);
+  if (!parsed.success) return { success: false, error: "Invalid request." };
+
+  const { courseId, sectionId } = parsed.data;
+  if (!(await canManageCourse(courseId))) {
+    return { success: false, error: "Unauthorized." };
+  }
+
+  const supabase = await createClient();
+  try {
+    const newSectionId = await duplicateSectionRecord(supabase, courseId, sectionId);
+    revalidateBuilder(courseId);
+    return { success: true, data: { sectionId: newSectionId } };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to duplicate section.",
+    };
+  }
+}
+
+export async function duplicateLessonAction(
+  input: unknown
+): Promise<ActionResult<{ lessonId: string }>> {
+  const parsed = duplicateLessonSchema.safeParse(input);
+  if (!parsed.success) return { success: false, error: "Invalid request." };
+
+  const { courseId, sectionId, lessonId } = parsed.data;
+  if (!(await canManageCourse(courseId))) {
+    return { success: false, error: "Unauthorized." };
+  }
+
+  const supabase = await createClient();
+  try {
+    const newLessonId = await duplicateLessonRecord(supabase, courseId, sectionId, lessonId);
+    revalidateBuilder(courseId);
+    return { success: true, data: { lessonId: newLessonId } };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to duplicate lesson.",
+    };
+  }
+}
+
+export async function duplicateQuizAction(
+  input: unknown
+): Promise<ActionResult<{ quizId: string }>> {
+  const parsed = duplicateQuizSchema.safeParse(input);
+  if (!parsed.success) return { success: false, error: "Invalid request." };
+
+  const { courseId, sectionId, quizId } = parsed.data;
+  if (!(await canManageCourse(courseId))) {
+    return { success: false, error: "Unauthorized." };
+  }
+
+  const supabase = await createClient();
+  try {
+    const newQuizId = await duplicateQuizRecord(supabase, courseId, sectionId, quizId);
+    revalidateBuilder(courseId);
+    return { success: true, data: { quizId: newQuizId } };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to duplicate quiz.",
+    };
+  }
+}
+
 export async function getLessonForEdit(
   courseId: string,
   lessonId: string
-): Promise<ActionResult<{
-  id: string;
-  moduleId: string | null;
-  title: string;
-  slug: string;
-  content: string | null;
-  videoUrl: string | null;
-  status: string;
-  sortOrder: number;
-  hasProgress: boolean;
-}>> {
+): Promise<
+  ActionResult<{
+    id: string;
+    moduleId: string | null;
+    title: string;
+    slug: string;
+    content: string | null;
+    excerpt: string | null;
+    videoUrl: string | null;
+    status: string;
+    sortOrder: number;
+    hasProgress: boolean;
+    wordpressLessonId: number | null;
+  }>
+> {
   if (!(await canManageCourse(courseId))) {
     return { success: false, error: "Unauthorized." };
   }
@@ -428,9 +585,11 @@ export async function getLessonForEdit(
       title: string;
       slug: string;
       content: string | null;
+      excerpt: string | null;
       video_url: string | null;
       status: string;
       sort_order: number;
+      wordpress_lesson_id: number | null;
     }>();
 
   if (!lesson) return { success: false, error: "Lesson not found." };
@@ -445,10 +604,12 @@ export async function getLessonForEdit(
       title: lesson.title,
       slug: lesson.slug,
       content: lesson.content,
+      excerpt: lesson.excerpt,
       videoUrl: lesson.video_url,
       status: lesson.status,
       sortOrder: lesson.sort_order,
       hasProgress,
+      wordpressLessonId: lesson.wordpress_lesson_id,
     },
   };
 }

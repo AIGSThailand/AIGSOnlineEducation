@@ -55,6 +55,23 @@ VALUES
     )
 ON CONFLICT (id) DO NOTHING;
 
+-- 2b. Mirror modules → course_sections (Phase 2 backfill runs before seed)
+INSERT INTO public.course_sections (id, course_id, title, sort_order)
+VALUES
+    (
+        'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+        '11111111-1111-1111-1111-111111111111',
+        'Module 1: Foundations of Modern AI',
+        1
+    ),
+    (
+        'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+        '11111111-1111-1111-1111-111111111111',
+        'Module 2: Advanced Prompt Engineering Techniques',
+        2
+    )
+ON CONFLICT (id) DO NOTHING;
+
 -- 3. Sample Lessons for Course 1
 INSERT INTO public.lessons (id, module_id, course_id, title, slug, content, video_url, sort_order, wordpress_lesson_id)
 VALUES
@@ -92,3 +109,37 @@ VALUES
         203
     )
 ON CONFLICT (id) DO NOTHING;
+
+-- 3b. Mirror lessons → course_steps (same UUIDs as modules for section_id)
+INSERT INTO public.course_steps (
+    course_id, step_type, lesson_id, section_id, sort_order, is_required, parent_step_id
+)
+VALUES
+    (
+        '11111111-1111-1111-1111-111111111111',
+        'lesson',
+        'cccccccc-cccc-cccc-cccc-cccccccccccc',
+        'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+        0,
+        true,
+        NULL
+    ),
+    (
+        '11111111-1111-1111-1111-111111111111',
+        'lesson',
+        'dddddddd-dddd-dddd-dddd-dddddddddddd',
+        'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+        1,
+        true,
+        NULL
+    ),
+    (
+        '11111111-1111-1111-1111-111111111111',
+        'lesson',
+        'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee',
+        'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+        2,
+        true,
+        NULL
+    )
+ON CONFLICT DO NOTHING;

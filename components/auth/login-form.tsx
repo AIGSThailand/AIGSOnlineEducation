@@ -62,7 +62,7 @@ export function LoginForm() {
       </div>
 
       <div>
-        <div className="flex items-center justify-between mb-1.5">
+        <div className="mb-1.5 flex items-center justify-between">
           <Label htmlFor="password" required className="mb-0">
             Password
           </Label>

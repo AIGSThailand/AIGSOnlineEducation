@@ -1,6 +1,7 @@
 Implement proper **development, staging, and production environment separation** for the AIGS Online Education Platform.
 
 Current stack:
+
 - Next.js App Router
 - TypeScript
 - Supabase
@@ -13,6 +14,7 @@ Current stack:
 - WordPress + LearnDash migration source
 
 Before making changes:
+
 1. Read `RULES.md`.
 2. Inspect the current Supabase configuration.
 3. Inspect existing `.env.example`, `.env.local`, deployment configuration, and Supabase migrations.
@@ -732,6 +734,7 @@ deploy production
 ```
 
 Do not create automatic production database deployment unless:
+
 - environment targeting is explicit
 - secrets are isolated
 - migrations have already passed staging
@@ -815,6 +818,7 @@ Confirm:
 ## Commands
 
 Provide the exact commands developers should use for:
+
 - starting local Supabase
 - resetting local DB
 - creating a migration

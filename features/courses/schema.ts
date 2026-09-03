@@ -50,6 +50,7 @@ export const lessonSchema = z.object({
   title: z.string().trim().min(2, "Lesson title must be at least 2 characters.").max(200),
   slug: slugField,
   content: z.string().optional(),
+  excerpt: z.string().trim().max(500).optional().or(z.literal("")),
   videoUrl: z.string().url().optional().or(z.literal("")),
   status: z.enum(["draft", "published", "archived"]).optional(),
 });
@@ -80,6 +81,43 @@ export const deleteModuleSchema = z.object({
 export const deleteLessonSchema = z.object({
   courseId: z.string().uuid(),
   lessonId: z.string().uuid(),
+});
+
+export const reorderSectionsSchema = z.object({
+  courseId: z.string().uuid(),
+  sectionIds: z.array(z.string().uuid()).min(1),
+});
+
+const curriculumOrderItemSchema = z.object({
+  kind: z.enum(["lesson", "quiz", "exam"]),
+  id: z.string().uuid(),
+});
+
+export const reorderCurriculumSchema = z.object({
+  courseId: z.string().uuid(),
+  sections: z.array(
+    z.object({
+      sectionId: z.string().uuid(),
+      items: z.array(curriculumOrderItemSchema),
+    })
+  ),
+});
+
+export const duplicateSectionSchema = z.object({
+  courseId: z.string().uuid(),
+  sectionId: z.string().uuid(),
+});
+
+export const duplicateLessonSchema = z.object({
+  courseId: z.string().uuid(),
+  sectionId: z.string().uuid(),
+  lessonId: z.string().uuid(),
+});
+
+export const duplicateQuizSchema = z.object({
+  courseId: z.string().uuid(),
+  sectionId: z.string().uuid(),
+  quizId: z.string().uuid(),
 });
 
 export type CreateCourseInput = z.infer<typeof createCourseSchema>;

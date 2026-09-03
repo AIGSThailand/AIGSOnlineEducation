@@ -5,16 +5,19 @@
 **Online Education Management System**
 
 Migration target:
+
 - From WordPress + LearnDash
 - To Next.js + Supabase
 - Existing Stripe customers/subscriptions must be preserved where possible
 
 Primary roles:
+
 - Admin
 - Instructor
 - Student
 
 Core stack:
+
 - Next.js with App Router
 - TypeScript
 - Tailwind CSS
@@ -28,6 +31,7 @@ Core stack:
 - Vercel
 
 Related documentation (keep in sync with this file):
+
 - `docs/environments.md` — local / staging / production separation
 - `docs/vercel-staging-setup.md` — Vercel staging domain and environment variables
 - `docs/github-actions.md` — CI and Supabase migration workflows (staging auto, production manual)
@@ -53,7 +57,7 @@ Related documentation (keep in sync with this file):
 10. Avoid premature abstraction and overengineering.
 11. New features must follow existing architecture rather than creating parallel patterns.
 12. Code should be readable without excessive comments.
-13. Comments should explain *why*, not restate what the code already says.
+13. Comments should explain _why_, not restate what the code already says.
 14. Never commit secrets, credentials, private keys, production exports, or customer data.
 
 ---
@@ -84,6 +88,7 @@ docs/           Architecture and migration documentation
 #### `app/`
 
 Use only for:
+
 - route definitions
 - layouts
 - page composition
@@ -186,6 +191,7 @@ lib/
 Supabase is the primary application backend.
 
 Use it for:
+
 - authentication
 - PostgreSQL
 - storage
@@ -388,6 +394,7 @@ Examples:
 ### Students
 
 Students may:
+
 - read/update their own profile where appropriate
 - read their own enrollments
 - read/write their own progress
@@ -395,6 +402,7 @@ Students may:
 - read their own submissions and results
 
 Students may not:
+
 - modify another student's records
 - modify enrollment authority
 - assign themselves paid courses
@@ -403,6 +411,7 @@ Students may not:
 ### Instructors
 
 Instructors may:
+
 - access assigned courses
 - manage allowed content for assigned courses
 - see students enrolled in assigned courses
@@ -417,6 +426,7 @@ Admins may manage LMS application data, but sensitive operations must still be i
 ### Service Role
 
 Service-role access is reserved for:
+
 - trusted migration scripts
 - Stripe webhooks
 - carefully controlled administrative jobs
@@ -449,6 +459,7 @@ Avoid repeating authorization logic across pages.
 ## 10. UI Design System
 
 Use:
+
 - Tailwind CSS for styling/layout
 - Project UI primitives in `components/ui/` (shadcn-inspired; extend in place)
 - Lucide icons unless a different icon system is deliberately selected
@@ -458,6 +469,7 @@ Do not mix multiple competing component libraries. Do not assume the full shadcn
 ### UI principles
 
 The LMS should feel:
+
 - clear
 - calm
 - professional
@@ -470,6 +482,7 @@ Prefer usability over decorative effects.
 ### Design tokens
 
 Use CSS variables/design tokens for:
+
 - colors
 - spacing
 - border radius
@@ -483,6 +496,7 @@ Avoid hardcoding arbitrary colors throughout components.
 Prefer Tailwind's standard spacing scale.
 
 Use consistent patterns for:
+
 - page gaps
 - section gaps
 - card padding
@@ -541,6 +555,7 @@ Role dashboards should share visual primitives but may have different informatio
 ### Student dashboard
 
 Prioritize:
+
 - continue learning
 - active courses
 - progress
@@ -550,6 +565,7 @@ Prioritize:
 ### Instructor dashboard
 
 Prioritize:
+
 - assigned courses
 - students
 - grading work
@@ -559,6 +575,7 @@ Prioritize:
 ### Admin dashboard
 
 Prioritize:
+
 - users
 - enrollments
 - courses
@@ -579,6 +596,7 @@ All application screens must support:
 Do not build desktop-only dashboards.
 
 Expected behavior:
+
 - responsive sidebar
 - mobile navigation
 - usable data tables or mobile alternatives
@@ -627,6 +645,7 @@ Form
 ```
 
 Do not trust:
+
 - hidden fields
 - user IDs from browser state
 - prices sent by the browser
@@ -651,6 +670,7 @@ The platform supports both:
 Do not assume all enrollments are subscription-based.
 
 Whenever possible, preserve:
+
 - Stripe customer IDs
 - subscription IDs
 - product IDs
@@ -773,6 +793,7 @@ Where practical, migration jobs should be repeatable/idempotent.
 Never assume a migration succeeded because the script completed.
 
 Reconcile:
+
 - total users
 - courses
 - lessons
@@ -793,6 +814,7 @@ Do not assume WordPress password hashes can simply be copied into Supabase Auth.
 The authentication migration approach must be documented separately.
 
 Possible strategies:
+
 - password reset migration
 - one-time legacy credential validation followed by Supabase account migration
 - approved identity migration mechanism
@@ -806,6 +828,7 @@ Do not weaken authentication security to avoid a password reset.
 Use Supabase Storage only after determining whether it is suitable for the asset type.
 
 Examples:
+
 - profile images
 - PDFs
 - assignments
@@ -859,6 +882,7 @@ NEXT_PUBLIC_APP_URL=
 Use the names in `.env.example` — the Supabase anon key is `NEXT_PUBLIC_SUPABASE_ANON_KEY`, not `PUBLISHABLE_KEY`.
 
 Rules:
+
 - variables beginning with `NEXT_PUBLIC_` are browser-visible
 - never place a secret in a `NEXT_PUBLIC_` variable
 - validate required server environment variables at startup where practical
@@ -870,6 +894,7 @@ Rules:
 Do not silently swallow errors.
 
 Errors should be categorized as:
+
 - validation error
 - authentication error
 - authorization error
@@ -879,6 +904,7 @@ Errors should be categorized as:
 - unexpected server error
 
 User-facing messages should be useful without exposing:
+
 - SQL
 - stack traces
 - keys/tokens
@@ -891,6 +917,7 @@ Log enough context server-side for troubleshooting.
 ## 23. Loading and Empty States
 
 Every meaningful asynchronous screen should account for:
+
 - loading
 - empty data
 - success
@@ -900,6 +927,7 @@ Every meaningful asynchronous screen should account for:
 Prefer skeletons for dashboard/content loading.
 
 Empty states should explain:
+
 - what is empty
 - why it might be empty
 - what action is available
@@ -937,9 +965,9 @@ stripe-webhook.ts
 Use PascalCase:
 
 ```ts
-CourseCard
-StudentDashboard
-LessonNavigation
+CourseCard;
+StudentDashboard;
+LessonNavigation;
 ```
 
 ### Functions and variables
@@ -947,8 +975,8 @@ LessonNavigation
 Use camelCase:
 
 ```ts
-getCourseById()
-studentEnrollment
+getCourseById();
+studentEnrollment;
 ```
 
 ### Database
@@ -991,6 +1019,7 @@ Highest priority scenarios:
 11. Migrated user/course reconciliation
 
 Add tests for bugs that could cause:
+
 - unauthorized access
 - billing errors
 - enrollment errors
@@ -1006,6 +1035,7 @@ Keep changes focused.
 Commit messages should explain the change.
 
 Before merging:
+
 - TypeScript passes
 - lint passes
 - tests pass where applicable

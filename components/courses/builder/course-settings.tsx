@@ -7,10 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  updateCourseAction,
-  updateStripeMappingAction,
-} from "@/features/courses/actions";
+import { updateCourseAction, updateStripeMappingAction } from "@/features/courses/actions";
 import type {
   CourseBuilderCourse,
   CourseBuilderPermissions,
@@ -182,7 +179,13 @@ export function CourseSettings({
             onChange={(e) => setStripePriceId(e.target.value)}
           />
           {stripeError && <p className="text-xs text-red-600">{stripeError}</p>}
-          <Button type="button" variant="outline" size="sm" onClick={saveStripe} isLoading={isPending}>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={saveStripe}
+            isLoading={isPending}
+          >
             Save Stripe mapping
           </Button>
         </section>
@@ -191,7 +194,7 @@ export function CourseSettings({
       {canEditMigration && course.wordpressCourseId && (
         <section className="space-y-2 border-t border-slate-100 pt-4">
           <h3 className="text-sm font-semibold text-slate-800">Migration (read-only)</h3>
-          <p className="text-xs font-mono text-slate-500">
+          <p className="font-mono text-xs text-slate-500">
             WordPress course ID: {course.wordpressCourseId}
           </p>
         </section>

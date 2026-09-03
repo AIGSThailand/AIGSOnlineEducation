@@ -19,22 +19,20 @@ export default async function AdminUsersPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-          User Management
-        </h1>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">User Management</h1>
         <p className="text-sm text-slate-500">
           View and manage registered learners, instructors, and system administrators
         </p>
       </div>
 
-      <Card className="p-0 overflow-hidden">
-        <CardHeader className="p-4 border-b border-slate-100">
+      <Card className="overflow-hidden p-0">
+        <CardHeader className="border-b border-slate-100 p-4">
           <CardTitle>Platform Accounts ({profiles.length})</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm text-slate-700">
-              <thead className="bg-slate-50 text-xs font-semibold uppercase text-slate-500 border-b border-slate-200">
+              <thead className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase text-slate-500">
                 <tr>
                   <th className="px-6 py-3">User</th>
                   <th className="px-6 py-3">Role</th>
@@ -58,8 +56,8 @@ export default async function AdminUsersPage() {
                             p.role === "admin"
                               ? "danger"
                               : p.role === "instructor"
-                              ? "warning"
-                              : "default"
+                                ? "warning"
+                                : "default"
                           }
                         >
                           {p.role}

@@ -14,13 +14,13 @@ Related docs: [deployment.md](./deployment.md) · [database-migrations.md](./dat
 
 ## Environment matrix
 
-| | Local | Staging | Production |
-|---|--------|---------|------------|
-| **APP_ENV** | `local` | `staging` | `production` |
-| **Next.js** | `http://localhost:3000` | Staging / preview URL | Production domain |
-| **Supabase** | `http://127.0.0.1:54321` (CLI) | Separate hosted project | Separate hosted project |
-| **Stripe** | Test (`pk_test_`, `sk_test_`) | Test | Live (`pk_live_`, `sk_live_`) |
-| **Webhook secret** | From `stripe listen` | Staging endpoint secret | Production endpoint secret |
+|                    | Local                          | Staging                 | Production                    |
+| ------------------ | ------------------------------ | ----------------------- | ----------------------------- |
+| **APP_ENV**        | `local`                        | `staging`               | `production`                  |
+| **Next.js**        | `http://localhost:3000`        | Staging / preview URL   | Production domain             |
+| **Supabase**       | `http://127.0.0.1:54321` (CLI) | Separate hosted project | Separate hosted project       |
+| **Stripe**         | Test (`pk_test_`, `sk_test_`)  | Test                    | Live (`pk_live_`, `sk_live_`) |
+| **Webhook secret** | From `stripe listen`           | Staging endpoint secret | Production endpoint secret    |
 
 ---
 
@@ -33,25 +33,25 @@ All variables are documented in `.env.example`. Configure per environment in:
 
 ### Required public variables
 
-| Variable | Description |
-|----------|-------------|
-| `NEXT_PUBLIC_APP_URL` | App origin for auth callbacks and Stripe redirects |
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase API URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon (publishable) key |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key |
+| Variable                             | Description                                        |
+| ------------------------------------ | -------------------------------------------------- |
+| `NEXT_PUBLIC_APP_URL`                | App origin for auth callbacks and Stripe redirects |
+| `NEXT_PUBLIC_SUPABASE_URL`           | Supabase API URL                                   |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY`      | Supabase anon (publishable) key                    |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key                             |
 
 ### Required server-only variables
 
-| Variable | Description |
-|----------|-------------|
+| Variable                    | Description                                              |
+| --------------------------- | -------------------------------------------------------- |
 | `SUPABASE_SERVICE_ROLE_KEY` | Admin Supabase access — webhooks, migration scripts only |
-| `STRIPE_SECRET_KEY` | Stripe secret API key |
-| `STRIPE_WEBHOOK_SECRET` | Webhook signing secret for `/api/stripe/webhook` |
+| `STRIPE_SECRET_KEY`         | Stripe secret API key                                    |
+| `STRIPE_WEBHOOK_SECRET`     | Webhook signing secret for `/api/stripe/webhook`         |
 
 ### Runtime label
 
-| Variable | Values | Notes |
-|----------|--------|-------|
+| Variable  | Values                           | Notes                                                |
+| --------- | -------------------------------- | ---------------------------------------------------- |
 | `APP_ENV` | `local`, `staging`, `production` | Explicit label; falls back to `VERCEL_ENV` on Vercel |
 
 **Never** prefix secrets with `NEXT_PUBLIC_`.
@@ -60,10 +60,10 @@ All variables are documented in `.env.example`. Configure per environment in:
 
 ## Typed validation (`lib/env/`)
 
-| Module | Purpose |
-|--------|---------|
-| `lib/env/client.ts` | Validates public env vars (Supabase URL/key, app URL) |
-| `lib/env/server.ts` | Validates secrets; Stripe/Supabase environment guards |
+| Module              | Purpose                                                               |
+| ------------------- | --------------------------------------------------------------------- |
+| `lib/env/client.ts` | Validates public env vars (Supabase URL/key, app URL)                 |
+| `lib/env/server.ts` | Validates secrets; Stripe/Supabase environment guards                 |
 | `lib/env/guards.ts` | Blocks `sk_live_*` in local/staging; warns on local + hosted Supabase |
 
 Guards run when server secrets are first accessed (Stripe checkout, webhooks, admin client).

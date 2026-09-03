@@ -32,7 +32,9 @@ export async function getInstructorOptions(): Promise<InstructorOption[]> {
     .select("id, email, first_name, last_name")
     .eq("role", "instructor")
     .order("first_name", { ascending: true })
-    .returns<{ id: string; email: string; first_name: string | null; last_name: string | null }[]>();
+    .returns<
+      { id: string; email: string; first_name: string | null; last_name: string | null }[]
+    >();
 
   return (data || []).map((p) => ({
     id: p.id,
@@ -75,7 +77,12 @@ export async function getCourseListForAdmin(
     slug: string;
     status: CourseRow["status"];
     updated_at: string;
-    course_instructors: { instructor: { first_name: string | null; last_name: string | null } | { first_name: string | null; last_name: string | null }[] | null }[];
+    course_instructors: {
+      instructor:
+        | { first_name: string | null; last_name: string | null }
+        | { first_name: string | null; last_name: string | null }[]
+        | null;
+    }[];
     enrollments: { id: string }[];
   }
 
@@ -136,7 +143,9 @@ export async function getCourseListForInstructor(
       status: CourseRow["status"];
       updated_at: string;
       enrollments: { id: string }[];
-      course_instructors: { instructor: { first_name: string | null; last_name: string | null } | null }[];
+      course_instructors: {
+        instructor: { first_name: string | null; last_name: string | null } | null;
+      }[];
     } | null;
   }
 
@@ -196,8 +205,7 @@ export async function getCourseBuilderData(
   if (!course) return null;
 
   const user = await getCurrentUser();
-  const isAdmin =
-    options?.isAdmin ?? user?.profile?.role === "admin";
+  const isAdmin = options?.isAdmin ?? user?.profile?.role === "admin";
 
   const { data: instructorRows } = await supabase
     .from("course_instructors")
@@ -271,13 +279,16 @@ export async function getCourseBuilderData(
         }[]
       >();
 
-    const quizIds = (steps || [])
-      .filter((s) => s.quiz_id)
-      .map((s) => s.quiz_id as string);
+    const quizIds = (steps || []).filter((s) => s.quiz_id).map((s) => s.quiz_id as string);
 
     const quizzesById = new Map<
       string,
-      { id: string; title: string; slug: string; status: Database["public"]["Enums"]["content_status"] }
+      {
+        id: string;
+        title: string;
+        slug: string;
+        status: Database["public"]["Enums"]["content_status"];
+      }
     >();
 
     if (quizIds.length > 0) {

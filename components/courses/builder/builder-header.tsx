@@ -46,7 +46,7 @@ export function BuilderHeader({
       <div className="flex flex-wrap items-center gap-3 px-4 py-3 lg:px-6">
         <Link
           href={`/${portal}/courses`}
-          className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500 rounded-md px-1"
+          className="inline-flex items-center gap-1 rounded-md px-1 text-sm text-slate-600 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
         >
           <ArrowLeft className="h-4 w-4" />
           <span className="hidden sm:inline">Courses</span>
@@ -55,7 +55,7 @@ export function BuilderHeader({
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <button
             type="button"
-            className="rounded-md p-2 text-slate-600 hover:bg-slate-100 lg:hidden focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="rounded-md p-2 text-slate-600 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 lg:hidden"
             onClick={onOpenStructure}
             aria-label="Open course structure"
           >
@@ -118,7 +118,7 @@ export function BuilderHeader({
 
           <button
             type="button"
-            className="rounded-md p-2 text-slate-600 hover:bg-slate-100 xl:hidden focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="rounded-md p-2 text-slate-600 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 xl:hidden"
             onClick={onOpenSettings}
             aria-label="Open settings"
           >

@@ -28,22 +28,22 @@ The app does **not** insert profiles directly — a **database trigger** does.
 
 **Settings → Environment Variables** — Production scope:
 
-| Variable | Must be |
-|----------|---------|
-| `NEXT_PUBLIC_SUPABASE_URL` | `https://bjtukjxodwthempjjude.supabase.co` |
+| Variable                        | Must be                                    |
+| ------------------------------- | ------------------------------------------ |
+| `NEXT_PUBLIC_SUPABASE_URL`      | `https://bjtukjxodwthempjjude.supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Keys from **staging** project API settings |
-| `SUPABASE_SERVICE_ROLE_KEY` | Staging service role / secret key |
-| `NEXT_PUBLIC_APP_URL` | Your staging Vercel URL (exact match) |
-| `APP_ENV` | `staging` |
+| `SUPABASE_SERVICE_ROLE_KEY`     | Staging service role / secret key          |
+| `NEXT_PUBLIC_APP_URL`           | Your staging Vercel URL (exact match)      |
+| `APP_ENV`                       | `staging`                                  |
 
 After any change → **Redeploy** (env vars are baked in at build time for `NEXT_PUBLIC_*`).
 
 ### Browser check (do this on live staging site)
 
-1. Open staging site → **Register** page  
-2. **F12 → Network** tab  
-3. Submit registration  
-4. Find request to `supabase.co` (auth signup)  
+1. Open staging site → **Register** page
+2. **F12 → Network** tab
+3. Submit registration
+4. Find request to `supabase.co` (auth signup)
 5. URL must contain **`bjtukjxodwthempjjude`**
 
 If it shows a **different** project ref → Vercel env vars are wrong or deploy is stale.
@@ -58,11 +58,11 @@ Project: **bjtukjxodwthempjjude**
 
 After signup, is the user listed?
 
-| Users table | profiles table | Likely cause |
-|-------------|----------------|--------------|
-| **No user** | empty | Wrong Supabase URL on Vercel, or signup error (check Network response) |
-| **User exists** | **empty** | Trigger failed — see step 3 |
-| **User exists** | **row exists** | Data is fine — login/RLS/session issue |
+| Users table     | profiles table | Likely cause                                                           |
+| --------------- | -------------- | ---------------------------------------------------------------------- |
+| **No user**     | empty          | Wrong Supabase URL on Vercel, or signup error (check Network response) |
+| **User exists** | **empty**      | Trigger failed — see step 3                                            |
+| **User exists** | **row exists** | Data is fine — login/RLS/session issue                                 |
 
 ### Table Editor → `profiles`
 
@@ -123,12 +123,12 @@ If **Confirm email** is ON in staging Supabase:
 
 **Auth → URL configuration:**
 
-- Site URL = staging Vercel URL  
+- Site URL = staging Vercel URL
 - Redirect URLs include `https://YOUR-STAGING-URL/api/auth/callback`
 
 **Quick fix for testing:**
 
-- Turn **Confirm email** OFF, or  
+- Turn **Confirm email** OFF, or
 - `npm run auth:verify-email -- --email you@example.com --role admin`  
   (with `.env.local` pointed at staging keys)
 
@@ -138,24 +138,24 @@ If **Confirm email** is ON in staging Supabase:
 
 GitHub does **not** affect signup at runtime. Only used for:
 
-- CI build on PR  
+- CI build on PR
 - Auto `supabase db push` when `supabase/migrations/**` changes on `develop`
 
 Check:
 
-- Repo → **Actions** — latest workflow green?  
-- **Settings → Secrets** — `SUPABASE_STAGING_PROJECT_REF` = `bjtukjxodwthempjjude`  
-- Branch **`develop`** pushed after migration fix  
+- Repo → **Actions** — latest workflow green?
+- **Settings → Secrets** — `SUPABASE_STAGING_PROJECT_REF` = `bjtukjxodwthempjjude`
+- Branch **`develop`** pushed after migration fix
 
 ---
 
 ## 6. Git / Vercel deploy alignment
 
-| Check | Expected |
-|-------|----------|
-| Vercel project | `aigs-lms-staging` |
-| Production branch | `develop` |
-| Latest deployment | From `develop`, after env vars set |
+| Check               | Expected                                                  |
+| ------------------- | --------------------------------------------------------- |
+| Vercel project      | `aigs-lms-staging`                                        |
+| Production branch   | `develop`                                                 |
+| Latest deployment   | From `develop`, after env vars set                        |
 | Supabase migrations | All applied (`supabase migration list` linked to staging) |
 
 ```powershell
@@ -169,14 +169,14 @@ All local migrations should show as applied on remote.
 
 ## Quick fix checklist
 
-1. [ ] Vercel `NEXT_PUBLIC_SUPABASE_URL` = `https://bjtukjxodwthempjjude.supabase.co`  
-2. [ ] Redeploy staging after env change  
-3. [ ] Network tab shows signup → `bjtukjxodwthempjjude.supabase.co`  
-4. [ ] User appears in staging **Authentication → Users**  
-5. [ ] Run `supabase db push` for profile trigger fix  
-6. [ ] `profiles` row exists (or backfill SQL above)  
-7. [ ] Auth redirect URLs match staging domain  
-8. [ ] Email confirmed or confirmation disabled for testing  
+1. [ ] Vercel `NEXT_PUBLIC_SUPABASE_URL` = `https://bjtukjxodwthempjjude.supabase.co`
+2. [ ] Redeploy staging after env change
+3. [ ] Network tab shows signup → `bjtukjxodwthempjjude.supabase.co`
+4. [ ] User appears in staging **Authentication → Users**
+5. [ ] Run `supabase db push` for profile trigger fix
+6. [ ] `profiles` row exists (or backfill SQL above)
+7. [ ] Auth redirect URLs match staging domain
+8. [ ] Email confirmed or confirmation disabled for testing
 
 ---
 

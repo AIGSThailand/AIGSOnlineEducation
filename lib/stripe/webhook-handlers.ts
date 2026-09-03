@@ -18,9 +18,7 @@ export async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Se
   // If subscription mode, sync the full subscription
   if (session.mode === "subscription" && session.subscription) {
     const subscriptionId =
-      typeof session.subscription === "string"
-        ? session.subscription
-        : session.subscription.id;
+      typeof session.subscription === "string" ? session.subscription : session.subscription.id;
 
     const subscription = await stripe.subscriptions.retrieve(subscriptionId);
     await syncStripeSubscriptionToDatabase(subscription, userId || undefined);
@@ -92,9 +90,7 @@ export async function handleInvoicePaid(invoice: Stripe.Invoice) {
   console.log(`[Stripe Webhook] Processing invoice.paid for invoice: ${invoice.id}`);
   if (invoice.subscription) {
     const subId =
-      typeof invoice.subscription === "string"
-        ? invoice.subscription
-        : invoice.subscription.id;
+      typeof invoice.subscription === "string" ? invoice.subscription : invoice.subscription.id;
     const subscription = await stripe.subscriptions.retrieve(subId);
     await syncStripeSubscriptionToDatabase(subscription);
   }
@@ -107,9 +103,7 @@ export async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
   console.warn(`[Stripe Webhook] Payment failed for invoice: ${invoice.id}`);
   if (invoice.subscription) {
     const subId =
-      typeof invoice.subscription === "string"
-        ? invoice.subscription
-        : invoice.subscription.id;
+      typeof invoice.subscription === "string" ? invoice.subscription : invoice.subscription.id;
     const subscription = await stripe.subscriptions.retrieve(subId);
     await syncStripeSubscriptionToDatabase(subscription);
   }

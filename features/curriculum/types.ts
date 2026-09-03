@@ -128,9 +128,7 @@ export function parseBuilderSelectionFromSearchParams(
   }
 }
 
-export function builderSelectionToSearchParams(
-  selection: CourseBuilderSelection
-): URLSearchParams {
+export function builderSelectionToSearchParams(selection: CourseBuilderSelection): URLSearchParams {
   const params = new URLSearchParams();
   if (selection.type === "course") return params;
   params.set("type", selection.type);
@@ -163,7 +161,8 @@ export type ActionResult<T = undefined> =
   | { success: true; data?: T }
   | { success: false; error: string; fieldErrors?: Record<string, string[]> };
 
-export type StructureItemType = "course" | "section" | "module" | "lesson" | "quiz" | "exam" | "topic";
+export type StructureItemType =
+  "course" | "section" | "module" | "lesson" | "quiz" | "exam" | "topic";
 
 export interface CourseListItem {
   id: string;

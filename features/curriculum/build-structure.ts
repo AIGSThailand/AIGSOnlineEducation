@@ -164,19 +164,17 @@ export function buildSectionsFromModules(
       wordpressSectionId: null,
       items: (lessonsByModule.get(mod.id) || [])
         .sort((a, b) => a.sort_order - b.sort_order)
-        .map(
-          (lesson): CurriculumLessonItem => ({
-            kind: "lesson",
-            id: lesson.id,
-            stepId: null,
-            sectionId: mod.id,
-            title: lesson.title,
-            slug: lesson.slug,
-            position: lesson.sort_order,
-            status: lesson.status ?? "published",
-            hasProgress: progressLessonIds.has(lesson.id),
-          })
-        ),
+        .map((lesson): CurriculumLessonItem => ({
+          kind: "lesson",
+          id: lesson.id,
+          stepId: null,
+          sectionId: mod.id,
+          title: lesson.title,
+          slug: lesson.slug,
+          position: lesson.sort_order,
+          status: lesson.status ?? "published",
+          hasProgress: progressLessonIds.has(lesson.id),
+        })),
     }));
 }
 

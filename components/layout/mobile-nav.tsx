@@ -26,30 +26,31 @@ export function MobileNav({ role }: MobileNavProps) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
-  const navItems = {
-    admin: [
-      { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
-      { label: "Users & Roles", href: "/admin/users", icon: Users },
-      { label: "Courses", href: "/admin/courses", icon: BookOpen },
-      { label: "Enrollments", href: "/admin/enrollments", icon: GraduationCap },
-      { label: "Reports", href: "/admin/reports", icon: BarChart3 },
-    ],
-    instructor: [
-      { label: "Dashboard", href: "/instructor/dashboard", icon: LayoutDashboard },
-      { label: "Courses", href: "/instructor/courses", icon: BookOpen },
-      { label: "Students", href: "/instructor/students", icon: Users },
-      { label: "Assignments", href: "/instructor/assignments", icon: FileCheck },
-      { label: "Quizzes", href: "/instructor/quizzes", icon: HelpCircle },
-    ],
-    student: [
-      { label: "Dashboard", href: "/student/dashboard", icon: LayoutDashboard },
-      { label: "My Courses", href: "/student/courses", icon: BookOpen },
-      { label: "Catalog", href: "/courses", icon: GraduationCap },
-      { label: "Assignments", href: "/student/assignments", icon: FileCheck },
-      { label: "Grades", href: "/student/grades", icon: BarChart3 },
-      { label: "Certificates", href: "/student/certificates", icon: Award },
-    ],
-  }[role] || [];
+  const navItems =
+    {
+      admin: [
+        { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
+        { label: "Users & Roles", href: "/admin/users", icon: Users },
+        { label: "Courses", href: "/admin/courses", icon: BookOpen },
+        { label: "Enrollments", href: "/admin/enrollments", icon: GraduationCap },
+        { label: "Reports", href: "/admin/reports", icon: BarChart3 },
+      ],
+      instructor: [
+        { label: "Dashboard", href: "/instructor/dashboard", icon: LayoutDashboard },
+        { label: "Courses", href: "/instructor/courses", icon: BookOpen },
+        { label: "Students", href: "/instructor/students", icon: Users },
+        { label: "Assignments", href: "/instructor/assignments", icon: FileCheck },
+        { label: "Quizzes", href: "/instructor/quizzes", icon: HelpCircle },
+      ],
+      student: [
+        { label: "Dashboard", href: "/student/dashboard", icon: LayoutDashboard },
+        { label: "My Courses", href: "/student/courses", icon: BookOpen },
+        { label: "Catalog", href: "/courses", icon: GraduationCap },
+        { label: "Assignments", href: "/student/assignments", icon: FileCheck },
+        { label: "Grades", href: "/student/grades", icon: BarChart3 },
+        { label: "Certificates", href: "/student/certificates", icon: Award },
+      ],
+    }[role] || [];
 
   return (
     <div className="md:hidden">
@@ -76,7 +77,7 @@ export function MobileNav({ role }: MobileNavProps) {
                   className={cn(
                     "flex items-center rounded-md px-3 py-2 text-sm font-medium",
                     isActive
-                      ? "bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-300 font-semibold"
+                      ? "dark:bg-brand-950 bg-brand-50 font-semibold text-brand-700 dark:text-brand-300"
                       : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
                   )}
                 >

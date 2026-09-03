@@ -10,10 +10,7 @@ interface EditCoursePageProps {
   searchParams: Record<string, string | string[] | undefined>;
 }
 
-export default async function AdminEditCoursePage({
-  params,
-  searchParams,
-}: EditCoursePageProps) {
+export default async function AdminEditCoursePage({ params, searchParams }: EditCoursePageProps) {
   await requireCourseBuilderAccess("admin");
   const data = await getCourseBuilderData(params.courseId, { isAdmin: true });
 
@@ -21,12 +18,5 @@ export default async function AdminEditCoursePage({
 
   const initialSelection = parseBuilderSelectionFromSearchParams(searchParams);
 
-  return (
-    <CourseBuilder
-      portal="admin"
-      data={data}
-      isAdmin
-      initialSelection={initialSelection}
-    />
-  );
+  return <CourseBuilder portal="admin" data={data} isAdmin initialSelection={initialSelection} />;
 }

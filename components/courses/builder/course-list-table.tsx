@@ -61,9 +61,7 @@ export function CourseListTable({
                   </td>
                 )}
                 <td className="px-6 py-4">{course.enrollmentCount}</td>
-                <td className="px-6 py-4 text-xs text-slate-500">
-                  {formatDate(course.updatedAt)}
-                </td>
+                <td className="px-6 py-4 text-xs text-slate-500">{formatDate(course.updatedAt)}</td>
                 <td className="px-6 py-4">
                   <div className="flex justify-end gap-2">
                     <Link href={`/${portal}/courses/${course.id}/edit`}>

@@ -12,7 +12,8 @@ export default async function StudentCoursesPage() {
 
   const { data: enrollments } = await supabase
     .from("enrollments")
-    .select(`
+    .select(
+      `
       id,
       status,
       course:courses(
@@ -26,7 +27,8 @@ export default async function StudentCoursesPage() {
         created_at,
         updated_at
       )
-    `)
+    `
+    )
     .eq("student_id", user?.id || "");
 
   interface StudentEnrollmentItem {
@@ -45,12 +47,8 @@ export default async function StudentCoursesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-            My Enrolled Courses
-          </h1>
-          <p className="text-sm text-slate-500">
-            Access your curriculum and video lessons
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">My Enrolled Courses</h1>
+          <p className="text-sm text-slate-500">Access your curriculum and video lessons</p>
         </div>
         <Link href="/courses">
           <Button variant="outline">Explore New Courses</Button>

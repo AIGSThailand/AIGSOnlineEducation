@@ -24,11 +24,11 @@ Production deployment
 
 ### Branch → environment mapping
 
-| Branch | Deployment | Supabase | Stripe |
-|--------|------------|----------|--------|
-| `feature/*` | Local / Vercel Preview | Local or staging | Test |
-| `develop` | Staging site | **Staging project** | Test |
-| `main` | Production site | **Production project** | Live |
+| Branch      | Deployment             | Supabase               | Stripe |
+| ----------- | ---------------------- | ---------------------- | ------ |
+| `feature/*` | Local / Vercel Preview | Local or staging       | Test   |
+| `develop`   | Staging site           | **Staging project**    | Test   |
+| `main`      | Production site        | **Production project** | Live   |
 
 Do not embed environment secrets in source code. Use Vercel environment variable scopes.
 
@@ -38,11 +38,11 @@ Do not embed environment secrets in source code. Use Vercel environment variable
 
 ### Environment scopes
 
-| Vercel scope | APP_ENV | Supabase | Stripe |
-|--------------|---------|----------|--------|
-| **Development** | `local` (local machine) | Supabase local | Test |
-| **Preview** | `staging` | Staging project | Test |
-| **Production** | `production` | Production project | Live |
+| Vercel scope    | APP_ENV                 | Supabase           | Stripe |
+| --------------- | ----------------------- | ------------------ | ------ |
+| **Development** | `local` (local machine) | Supabase local     | Test   |
+| **Preview**     | `staging`               | Staging project    | Test   |
+| **Production**  | `production`            | Production project | Live   |
 
 Set variables in Vercel → Project → Settings → Environment Variables. Mirror names from `.env.example`.
 
@@ -78,11 +78,11 @@ For preview URLs, configure Supabase Auth redirect URLs to include the preview d
 
 ## Stripe webhooks by environment
 
-| Environment | Endpoint | Secret source |
-|-------------|----------|---------------|
-| Local | `http://localhost:3000/api/stripe/webhook` | `stripe listen` output |
-| Staging | `https://<staging-domain>/api/stripe/webhook` | Stripe Dashboard → staging endpoint |
-| Production | `https://<production-domain>/api/stripe/webhook` | Stripe Dashboard → production endpoint |
+| Environment | Endpoint                                         | Secret source                          |
+| ----------- | ------------------------------------------------ | -------------------------------------- |
+| Local       | `http://localhost:3000/api/stripe/webhook`       | `stripe listen` output                 |
+| Staging     | `https://<staging-domain>/api/stripe/webhook`    | Stripe Dashboard → staging endpoint    |
+| Production  | `https://<production-domain>/api/stripe/webhook` | Stripe Dashboard → production endpoint |
 
 Each endpoint must have its **own** `STRIPE_WEBHOOK_SECRET`. Never reuse secrets across environments.
 
@@ -92,9 +92,9 @@ Each endpoint must have its **own** `STRIPE_WEBHOOK_SECRET`. Never reuse secrets
 
 Configure per Supabase project (Dashboard → Authentication → URL configuration):
 
-| Setting | Local | Staging | Production |
-|---------|-------|---------|------------|
-| Site URL | `http://localhost:3000` | Staging URL | Production URL |
+| Setting       | Local                                     | Staging              | Production              |
+| ------------- | ----------------------------------------- | -------------------- | ----------------------- |
+| Site URL      | `http://localhost:3000`                   | Staging URL          | Production URL          |
 | Redirect URLs | `http://localhost:3000/api/auth/callback` | Staging callback URL | Production callback URL |
 
 The application uses `NEXT_PUBLIC_APP_URL` for email redirect origins in auth actions — keep it aligned with the deployed domain.
@@ -105,11 +105,11 @@ The application uses `NEXT_PUBLIC_APP_URL` for email redirect origins in auth ac
 
 GitHub Actions workflows are in `.github/workflows/`:
 
-| Workflow | Trigger | Purpose |
-|----------|---------|---------|
-| `ci.yml` | PR / push to `develop`, `main` | Lint + build |
-| `supabase-migrations-staging.yml` | Push to `develop` (migrations) | `supabase db push` → staging |
-| `supabase-migrations-production.yml` | Manual only | `supabase db push` → production |
+| Workflow                             | Trigger                        | Purpose                         |
+| ------------------------------------ | ------------------------------ | ------------------------------- |
+| `ci.yml`                             | PR / push to `develop`, `main` | Lint + build                    |
+| `supabase-migrations-staging.yml`    | Push to `develop` (migrations) | `supabase db push` → staging    |
+| `supabase-migrations-production.yml` | Manual only                    | `supabase db push` → production |
 
 Setup: [github-actions.md](./github-actions.md)
 

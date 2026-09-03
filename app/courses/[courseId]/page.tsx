@@ -42,7 +42,8 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
   // Fetch modules and lessons
   const { data: rawModules } = await supabase
     .from("modules")
-    .select(`
+    .select(
+      `
       id,
       course_id,
       title,
@@ -55,7 +56,8 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
         slug,
         sort_order
       )
-    `)
+    `
+    )
     .eq("course_id", courseId)
     .order("sort_order", { ascending: true });
 
@@ -115,7 +117,7 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
       )}
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-3">
         {/* Left 2 Cols: Course Overview & Syllabus */}
-        <div className="lg:col-span-2 space-y-8">
+        <div className="space-y-8 lg:col-span-2">
           <div>
             <div className="mb-3 flex items-center space-x-2">
               <Badge variant={course.status === "published" ? "success" : "default"}>
@@ -140,7 +142,7 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
               <div className="space-y-3">
                 {modules.map((module, mIdx) => (
                   <Card key={module.id} className="p-4">
-                    <h3 className="text-sm font-bold text-slate-900 mb-3">
+                    <h3 className="mb-3 text-sm font-bold text-slate-900">
                       Section {mIdx + 1}: {module.title}
                     </h3>
                     <div className="space-y-2">
@@ -213,7 +215,7 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-slate-100">
+              <div className="border-t border-slate-100 pt-4">
                 {isEnrolled && firstLesson ? (
                   <Link href={`/courses/${courseId}/lessons/${firstLesson.id}`} className="block">
                     <Button className="w-full" size="lg">

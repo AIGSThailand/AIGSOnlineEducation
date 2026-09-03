@@ -56,23 +56,23 @@ Two common patterns:
 Map the **`develop`** branch to a stable staging URL.
 
 1. Vercel → Project → **Settings** → **Git**
-2. **Production Branch:** set to `develop` for a *staging-only* Vercel project, **OR** keep `main` as production and use Option B for staging
+2. **Production Branch:** set to `develop` for a _staging-only_ Vercel project, **OR** keep `main` as production and use Option B for staging
 
 **Recommended:** use **two Vercel projects** from the same repo:
 
-| Vercel project | Git branch | Purpose |
-|----------------|------------|---------|
-| `aigs-lms-staging` | `develop` | Staging |
-| `aigs-lms-production` | `main` | Production |
+| Vercel project        | Git branch | Purpose    |
+| --------------------- | ---------- | ---------- |
+| `aigs-lms-staging`    | `develop`  | Staging    |
+| `aigs-lms-production` | `main`     | Production |
 
 This avoids mixing Preview and Production scopes.
 
 ### Option B — Single Vercel project
 
-| Vercel scope | Branch / trigger | `APP_ENV` |
-|--------------|------------------|-----------|
-| **Preview** | PRs + non-production branches | `staging` |
-| **Production** | `main` | `production` |
+| Vercel scope   | Branch / trigger              | `APP_ENV`    |
+| -------------- | ----------------------------- | ------------ |
+| **Preview**    | PRs + non-production branches | `staging`    |
+| **Production** | `main`                        | `production` |
 
 Use a **custom Preview domain** or assign `develop` deploys to a fixed alias.
 
@@ -88,16 +88,16 @@ Replace placeholders with your real staging values.
 
 ### Required variables
 
-| Variable | Example / notes | Environments |
-|----------|-----------------|--------------|
-| `APP_ENV` | `staging` | Preview (or Production on staging project) |
-| `NEXT_PUBLIC_APP_URL` | `https://staging.your-domain.com` | Same |
-| `NEXT_PUBLIC_SUPABASE_URL` | `https://<staging-ref>.supabase.co` | Same |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | From Supabase → Settings → API (anon or publishable) | Same |
-| `SUPABASE_SERVICE_ROLE_KEY` | Server only — service_role or secret key | Same |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | `pk_test_...` | Same |
-| `STRIPE_SECRET_KEY` | `sk_test_...` | Same |
-| `STRIPE_WEBHOOK_SECRET` | From Stripe staging webhook (step 5) | Same |
+| Variable                             | Example / notes                                      | Environments                               |
+| ------------------------------------ | ---------------------------------------------------- | ------------------------------------------ |
+| `APP_ENV`                            | `staging`                                            | Preview (or Production on staging project) |
+| `NEXT_PUBLIC_APP_URL`                | `https://staging.your-domain.com`                    | Same                                       |
+| `NEXT_PUBLIC_SUPABASE_URL`           | `https://<staging-ref>.supabase.co`                  | Same                                       |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY`      | From Supabase → Settings → API (anon or publishable) | Same                                       |
+| `SUPABASE_SERVICE_ROLE_KEY`          | Server only — service_role or secret key             | Same                                       |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | `pk_test_...`                                        | Same                                       |
+| `STRIPE_SECRET_KEY`                  | `sk_test_...`                                        | Same                                       |
+| `STRIPE_WEBHOOK_SECRET`              | From Stripe staging webhook (step 5)                 | Same                                       |
 
 ### Example (copy structure, not values)
 
@@ -150,11 +150,11 @@ Optional: assign the domain to the `develop` branch deployment under **Domains**
 
 In the **staging** Supabase project → **Authentication** → **URL configuration**:
 
-| Setting | Value |
-|---------|--------|
-| **Site URL** | `https://staging.your-domain.com` |
+| Setting           | Value                                               |
+| ----------------- | --------------------------------------------------- |
+| **Site URL**      | `https://staging.your-domain.com`                   |
 | **Redirect URLs** | `https://staging.your-domain.com/api/auth/callback` |
-| | `https://staging.your-domain.com/reset-password` |
+|                   | `https://staging.your-domain.com/reset-password`    |
 
 If using Vercel Preview URLs without a custom domain, add each preview URL pattern you need, e.g.:
 
@@ -233,13 +233,13 @@ WHERE id = (SELECT id FROM auth.users ORDER BY created_at DESC LIMIT 1);
 
 Use a **separate Vercel project** or Production scope on `main`:
 
-| Variable | Production value |
-|----------|------------------|
-| `APP_ENV` | `production` |
-| `NEXT_PUBLIC_APP_URL` | `https://your-production-domain.com` |
-| Supabase | **Production** project URL and keys |
-| Stripe | `pk_live_` / `sk_live_` |
-| Webhook | Production endpoint + its own `whsec_` |
+| Variable              | Production value                       |
+| --------------------- | -------------------------------------- |
+| `APP_ENV`             | `production`                           |
+| `NEXT_PUBLIC_APP_URL` | `https://your-production-domain.com`   |
+| Supabase              | **Production** project URL and keys    |
+| Stripe                | `pk_live_` / `sk_live_`                |
+| Webhook               | Production endpoint + its own `whsec_` |
 
 Run production migrations only via the manual GitHub Action after staging QA.
 
@@ -249,23 +249,23 @@ Run production migrations only via the manual GitHub Action after staging QA.
 
 Fill this in for your team (do not commit real secrets):
 
-| Item | Staging value |
-|------|----------------|
-| Vercel project name | |
-| Staging URL | `https://staging._______________` |
-| Git branch | `develop` |
-| Supabase project ref | |
-| Stripe webhook URL | `https://staging._______________/api/stripe/webhook` |
+| Item                 | Staging value                                        |
+| -------------------- | ---------------------------------------------------- |
+| Vercel project name  |                                                      |
+| Staging URL          | `https://staging._______________`                    |
+| Git branch           | `develop`                                            |
+| Supabase project ref |                                                      |
+| Stripe webhook URL   | `https://staging._______________/api/stripe/webhook` |
 
 ---
 
 ## Troubleshooting
 
-| Symptom | Fix |
-|---------|-----|
-| Auth redirect goes to localhost | Set `NEXT_PUBLIC_APP_URL` on Vercel and redeploy |
-| "Invalid JWT" / auth errors | Confirm Supabase URL/key match the **staging** project |
-| Stripe checkout fails | Check `STRIPE_SECRET_KEY` is `sk_test_*` and keys match same Stripe account |
-| Webhook 400 | Update `STRIPE_WEBHOOK_SECRET` from the staging endpoint; redeploy |
-| Empty courses / RLS errors | Run `supabase db push` on staging; check migrations applied |
-| Live key error on deploy | Set `APP_ENV=staging`; remove any `sk_live_*` from Preview/staging vars |
+| Symptom                         | Fix                                                                         |
+| ------------------------------- | --------------------------------------------------------------------------- |
+| Auth redirect goes to localhost | Set `NEXT_PUBLIC_APP_URL` on Vercel and redeploy                            |
+| "Invalid JWT" / auth errors     | Confirm Supabase URL/key match the **staging** project                      |
+| Stripe checkout fails           | Check `STRIPE_SECRET_KEY` is `sk_test_*` and keys match same Stripe account |
+| Webhook 400                     | Update `STRIPE_WEBHOOK_SECRET` from the staging endpoint; redeploy          |
+| Empty courses / RLS errors      | Run `supabase db push` on staging; check migrations applied                 |
+| Live key error on deploy        | Set `APP_ENV=staging`; remove any `sk_live_*` from Preview/staging vars     |

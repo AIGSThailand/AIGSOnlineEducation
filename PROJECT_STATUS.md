@@ -3,15 +3,16 @@
 **Project Status**: ✅ Milestone 1 Completed & Production-Ready  
 **Date**: August 31, 2026  
 **Target Architecture**: Next.js 14 App Router + Supabase PostgreSQL (RLS) + Stripe Subscriptions  
-**Legacy Target**: WordPress + LearnDash Migration Compatibility  
+**Legacy Target**: WordPress + LearnDash Migration Compatibility
 
 ---
 
 ## Executive Summary
 
-Milestone 1 establishes the complete production foundation for the **AIGS Online Education Management System**, engineered to replace a legacy WordPress + LearnDash setup. 
+Milestone 1 establishes the complete production foundation for the **AIGS Online Education Management System**, engineered to replace a legacy WordPress + LearnDash setup.
 
 All primary architectural objectives have been implemented and verified:
+
 - Cookie-based authentication and edge session management via `@supabase/ssr`.
 - Strict multi-role authorization (Admin, Instructor, Student) enforced both at the application level and via PostgreSQL Row Level Security (RLS).
 - Stripe integration with server-side webhook ingestion supporting subscriptions and automated course enrollment.
@@ -22,14 +23,14 @@ All primary architectural objectives have been implemented and verified:
 
 ## 1. Implemented Architecture & Technology Stack
 
-| Layer | Technology | Details / Implementation |
-|---|---|---|
-| **Framework** | Next.js 14.2+ (App Router) | Server Components by default; Client Components (`"use client"`) strictly isolated to interactive UI boundaries. |
-| **Language** | TypeScript 5.7+ | Strict mode enabled (`strict: true`, `noImplicitAny`), explicit types across database queries, no `any` leaks. |
-| **Styling & UI** | Tailwind CSS + Lucide Icons | Responsive modern layout, role-specific color badges, stat cards, and collapsible sidebars. |
-| **Database & Auth** | Supabase (PostgreSQL 15+) | Cookie-based auth with `@supabase/ssr`, RLS policies, automated DB triggers. |
-| **Payments** | Stripe SDK | Server-only Stripe client, raw-body webhook signature verification. |
-| **Validation** | Zod 3.24+ | Schema validation for registration, login, course management, and checkout. |
+| Layer               | Technology                  | Details / Implementation                                                                                         |
+| ------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| **Framework**       | Next.js 14.2+ (App Router)  | Server Components by default; Client Components (`"use client"`) strictly isolated to interactive UI boundaries. |
+| **Language**        | TypeScript 5.7+             | Strict mode enabled (`strict: true`, `noImplicitAny`), explicit types across database queries, no `any` leaks.   |
+| **Styling & UI**    | Tailwind CSS + Lucide Icons | Responsive modern layout, role-specific color badges, stat cards, and collapsible sidebars.                      |
+| **Database & Auth** | Supabase (PostgreSQL 15+)   | Cookie-based auth with `@supabase/ssr`, RLS policies, automated DB triggers.                                     |
+| **Payments**        | Stripe SDK                  | Server-only Stripe client, raw-body webhook signature verification.                                              |
+| **Validation**      | Zod 3.24+                   | Schema validation for registration, login, course management, and checkout.                                      |
 
 ---
 
@@ -169,18 +170,19 @@ The initial database migration (`supabase/migrations/20260831000000_initial_sche
 
 ### Tables Created & Indexed
 
-| Table | Purpose | RLS Access Policy | LearnDash Legacy ID |
-|---|---|---|---|
-| `public.profiles` | User accounts & roles (`admin`, `instructor`, `student`) | Users see self; Instructors see enrolled students; Admins see all | `wordpress_user_id` |
-| `public.courses` | Course catalog (draft, published, archived) | Public reads published; Instructors edit assigned; Admins manage all | `wordpress_course_id` |
-| `public.course_instructors` | Many-to-many relationship linking courses to instructors | Instructors view assigned; Admins manage | — |
-| `public.modules` | Course chapters/sections | Enrolled students & instructors view; Admins manage | — |
-| `public.lessons` | Lesson content & video URLs | Enrolled students & assigned instructors read; Admins manage | `wordpress_lesson_id` |
-| `public.enrollments` | Active, completed, or cancelled student enrollments | Students view own; Instructors view their courses; Admins manage | `wordpress_enrollment_id` |
-| `public.lesson_progress` | Per-lesson completion tracking | Students manage own progress; Instructors & Admins view | — |
-| `public.subscriptions` | Stripe subscription state reconciliation | Users view own; Service-role webhook manages | — |
+| Table                       | Purpose                                                  | RLS Access Policy                                                    | LearnDash Legacy ID       |
+| --------------------------- | -------------------------------------------------------- | -------------------------------------------------------------------- | ------------------------- |
+| `public.profiles`           | User accounts & roles (`admin`, `instructor`, `student`) | Users see self; Instructors see enrolled students; Admins see all    | `wordpress_user_id`       |
+| `public.courses`            | Course catalog (draft, published, archived)              | Public reads published; Instructors edit assigned; Admins manage all | `wordpress_course_id`     |
+| `public.course_instructors` | Many-to-many relationship linking courses to instructors | Instructors view assigned; Admins manage                             | —                         |
+| `public.modules`            | Course chapters/sections                                 | Enrolled students & instructors view; Admins manage                  | —                         |
+| `public.lessons`            | Lesson content & video URLs                              | Enrolled students & assigned instructors read; Admins manage         | `wordpress_lesson_id`     |
+| `public.enrollments`        | Active, completed, or cancelled student enrollments      | Students view own; Instructors view their courses; Admins manage     | `wordpress_enrollment_id` |
+| `public.lesson_progress`    | Per-lesson completion tracking                           | Students manage own progress; Instructors & Admins view              | —                         |
+| `public.subscriptions`      | Stripe subscription state reconciliation                 | Users view own; Service-role webhook manages                         | —                         |
 
 ### Automated Database Functions & Triggers
+
 1. **`handle_new_user()`**: PostgreSQL `SECURITY DEFINER` trigger executed `AFTER INSERT ON auth.users` that automatically creates a matching row in `public.profiles` with the designated role and metadata.
 2. **`set_current_timestamp_updated_at()`**: Automatically maintains `updated_at` timestamps across all tables.
 3. **Security Helper Functions**: `current_user_role()`, `is_admin()`, `is_instructor()`, `is_assigned_instructor(course_id)`, and `is_enrolled_in_course(course_id)` to ensure fast, non-recursive RLS policy evaluation.
@@ -219,15 +221,15 @@ Course Access Check →  canAccessCourse(courseId)             → Unlock Lesson
 
 All database tables are equipped with unique, indexed legacy IDs (`wordpress_*`) to facilitate one-time or phased ETL migration from WordPress MySQL tables:
 
-| LearnDash CPT / Table | Supabase Destination | Strategy |
-|---|---|---|
-| `wp_users` + `wp_usermeta` | `public.profiles` | Migrates credentials into `auth.users` and maps `ID` to `wordpress_user_id`. |
-| `sfwd-courses` | `public.courses` | Maps course post content, slug, and status with `wordpress_course_id`. |
-| `sfwd-lessons` | `public.modules` | Maps chapter modules and sort orders. |
-| `sfwd-topic` / `sfwd-lessons` | `public.lessons` | Ingests video URLs and HTML content with `wordpress_lesson_id`. |
-| `_sfwd-course_progress` | `public.enrollments` & `public.lesson_progress` | Expands serialized PHP user progress into relational rows. |
+| LearnDash CPT / Table         | Supabase Destination                            | Strategy                                                                     |
+| ----------------------------- | ----------------------------------------------- | ---------------------------------------------------------------------------- |
+| `wp_users` + `wp_usermeta`    | `public.profiles`                               | Migrates credentials into `auth.users` and maps `ID` to `wordpress_user_id`. |
+| `sfwd-courses`                | `public.courses`                                | Maps course post content, slug, and status with `wordpress_course_id`.       |
+| `sfwd-lessons`                | `public.modules`                                | Maps chapter modules and sort orders.                                        |
+| `sfwd-topic` / `sfwd-lessons` | `public.lessons`                                | Ingests video URLs and HTML content with `wordpress_lesson_id`.              |
+| `_sfwd-course_progress`       | `public.enrollments` & `public.lesson_progress` | Expands serialized PHP user progress into relational rows.                   |
 
-*Future migration scripts will reside in `scripts/migration/` and execute with the `SUPABASE_SERVICE_ROLE_KEY` via `lib/supabase/admin.ts`.*
+_Future migration scripts will reside in `scripts/migration/` and execute with the `SUPABASE_SERVICE_ROLE_KEY` via `lib/supabase/admin.ts`._
 
 ---
 

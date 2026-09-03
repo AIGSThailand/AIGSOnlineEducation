@@ -18,7 +18,8 @@ export default function StudentCertificatesPage() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-slate-600">
-            Automated PDF certificate generation upon 100% course completion will be enabled in Phase 2.
+            Automated PDF certificate generation upon 100% course completion will be enabled in
+            Phase 2.
           </p>
         </CardContent>
       </Card>

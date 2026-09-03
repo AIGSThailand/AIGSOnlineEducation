@@ -53,7 +53,8 @@ export default async function LessonPage({ params }: LessonPageProps) {
   // Fetch modules & lessons for sidebar navigation
   const { data: rawModules } = await supabase
     .from("modules")
-    .select(`
+    .select(
+      `
       id,
       course_id,
       title,
@@ -66,7 +67,8 @@ export default async function LessonPage({ params }: LessonPageProps) {
         slug,
         sort_order
       )
-    `)
+    `
+    )
     .eq("course_id", courseId)
     .order("sort_order", { ascending: true });
 
@@ -120,9 +122,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
       <div className="flex-1 overflow-y-auto p-8">
         <div className="mx-auto max-w-4xl space-y-6">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-              {lesson.title}
-            </h1>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900">{lesson.title}</h1>
           </div>
 
           {/* Video Player */}
