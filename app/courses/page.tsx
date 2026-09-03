@@ -10,7 +10,8 @@ export default async function CourseCatalogPage() {
   // Fetch published courses
   const { data: courses } = await supabase
     .from("courses")
-    .select(`
+    .select(
+      `
       id,
       title,
       slug,
@@ -20,7 +21,8 @@ export default async function CourseCatalogPage() {
       wordpress_course_id,
       created_at,
       updated_at
-    `)
+    `
+    )
     .eq("status", "published")
     .order("created_at", { ascending: false });
 
@@ -43,9 +45,7 @@ export default async function CourseCatalogPage() {
   return (
     <div className="mx-auto max-w-7xl px-6 py-10">
       <div className="mb-8">
-        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
-          Course Catalog
-        </h1>
+        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">Course Catalog</h1>
         <p className="mt-2 text-base text-slate-600">
           Explore our complete selection of professional training courses.
         </p>

@@ -7,9 +7,7 @@ export default function InstructorQuizzesPage() {
         <h1 className="text-2xl font-bold tracking-tight text-slate-900">
           Quiz Assessment Manager
         </h1>
-        <p className="text-sm text-slate-500">
-          Design quizzes and review question responses
-        </p>
+        <p className="text-sm text-slate-500">Design quizzes and review question responses</p>
       </div>
 
       <Card>

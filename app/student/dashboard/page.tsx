@@ -15,7 +15,8 @@ export default async function StudentDashboardPage() {
   // Fetch active enrollments with course details
   const { data: enrollments } = await supabase
     .from("enrollments")
-    .select(`
+    .select(
+      `
       id,
       status,
       enrolled_at,
@@ -30,7 +31,8 @@ export default async function StudentDashboardPage() {
         created_at,
         updated_at
       )
-    `)
+    `
+    )
     .eq("student_id", user?.id || "")
     .eq("status", "active");
 
@@ -57,9 +59,7 @@ export default async function StudentDashboardPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-            Student Dashboard
-          </h1>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Student Dashboard</h1>
           <p className="text-sm text-slate-500">
             Track your ongoing courses, completed lessons, and certifications
           </p>
@@ -82,18 +82,8 @@ export default async function StudentDashboardPage() {
           description="Lessons finished"
           icon={CheckCircle}
         />
-        <StatCard
-          title="Time Spent"
-          value="—"
-          description="Weekly study time"
-          icon={Clock}
-        />
-        <StatCard
-          title="Certificates"
-          value="0"
-          description="Earned credentials"
-          icon={Award}
-        />
+        <StatCard title="Time Spent" value="—" description="Weekly study time" icon={Clock} />
+        <StatCard title="Certificates" value="0" description="Earned credentials" icon={Award} />
       </div>
 
       <div>

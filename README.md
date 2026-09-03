@@ -46,12 +46,14 @@ app/
 ## 2. Prerequisites & Installation
 
 ### Requirements
+
 - **Node.js**: v18.17.0+ (or v20.x recommended)
 - **Package Manager**: `npm`, `pnpm`, or `yarn`
 - **Supabase Account**: Local CLI or cloud project at [supabase.com](https://supabase.com)
 - **Stripe Account**: Developer dashboard at [stripe.com](https://stripe.com)
 
 ### Installation
+
 ```bash
 # Clone the repository
 git clone <repository-url>
@@ -95,11 +97,11 @@ Validated at runtime via `lib/env/` (Zod + Stripe/Supabase environment guards).
 
 ## 3a. Environments (summary)
 
-| Environment | Supabase | Stripe |
-|-------------|----------|--------|
-| **Local** | Supabase CLI (`127.0.0.1:54321`) | Test |
-| **Staging** | Dedicated hosted project | Test |
-| **Production** | Separate hosted project | Live |
+| Environment    | Supabase                         | Stripe |
+| -------------- | -------------------------------- | ------ |
+| **Local**      | Supabase CLI (`127.0.0.1:54321`) | Test   |
+| **Staging**    | Dedicated hosted project         | Test   |
+| **Production** | Separate hosted project          | Live   |
 
 - [docs/environments.md](./docs/environments.md) — variables, Auth URLs, webhooks
 - [docs/deployment.md](./docs/deployment.md) — Git branches, Vercel scopes
@@ -113,16 +115,16 @@ Validated at runtime via `lib/env/` (Zod + Stripe/Supabase environment guards).
 
 The initial database migration (`supabase/migrations/20260831000000_initial_schema.sql`) creates the core tables:
 
-| Table | Purpose | LearnDash Foreign ID |
-|---|---|---|
-| `profiles` | User profiles with roles (`admin`, `instructor`, `student`) | `wordpress_user_id` |
-| `courses` | Published and draft learning tracks | `wordpress_course_id` |
-| `course_instructors` | Many-to-many relationship linking courses to instructors | — |
-| `modules` | Curriculum sections inside a course | — |
-| `lessons` | Video/text lessons with sorting | `wordpress_lesson_id` |
-| `enrollments` | Active/completed student registrations | `wordpress_enrollment_id` |
-| `lesson_progress` | Per-lesson completion tracking | — |
-| `subscriptions` | Stripe subscription state reconciliation | — |
+| Table                | Purpose                                                     | LearnDash Foreign ID      |
+| -------------------- | ----------------------------------------------------------- | ------------------------- |
+| `profiles`           | User profiles with roles (`admin`, `instructor`, `student`) | `wordpress_user_id`       |
+| `courses`            | Published and draft learning tracks                         | `wordpress_course_id`     |
+| `course_instructors` | Many-to-many relationship linking courses to instructors    | —                         |
+| `modules`            | Curriculum sections inside a course                         | —                         |
+| `lessons`            | Video/text lessons with sorting                             | `wordpress_lesson_id`     |
+| `enrollments`        | Active/completed student registrations                      | `wordpress_enrollment_id` |
+| `lesson_progress`    | Per-lesson completion tracking                              | —                         |
+| `subscriptions`      | Stripe subscription state reconciliation                    | —                         |
 
 ---
 
@@ -181,6 +183,7 @@ Authorization is implemented with **Defense-in-Depth**:
 ### Webhook Endpoint: `/api/stripe/webhook`
 
 Supported Events:
+
 - `checkout.session.completed` (Creates subscription & auto-enrolls student)
 - `customer.subscription.created` (Syncs period end & price)
 - `customer.subscription.updated` (Updates status e.g. `past_due`, `canceled`)
@@ -188,6 +191,7 @@ Supported Events:
 - `invoice.paid` / `invoice.payment_failed` (Logs status)
 
 ### Local Webhook Forwarding with Stripe CLI:
+
 ```bash
 # Login to Stripe CLI
 stripe login
@@ -195,6 +199,7 @@ stripe login
 # Forward webhook events to localhost
 stripe listen --forward-to localhost:3000/api/stripe/webhook
 ```
+
 Copy the printed `whsec_...` secret into your `STRIPE_WEBHOOK_SECRET` in `.env.local`.
 
 ---
@@ -234,6 +239,7 @@ Summary:
 ## 11. LearnDash Migration Strategy
 
 To support the migration from WordPress + LearnDash, all tables include nullable legacy IDs:
+
 - `profiles.wordpress_user_id`
 - `courses.wordpress_course_id`
 - `lessons.wordpress_lesson_id`

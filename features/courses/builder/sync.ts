@@ -88,6 +88,40 @@ export async function swapLessonStepSortOrders(
   if (errA) throw new Error(errA.message);
 }
 
+/**
+ * Ensure course_sections has a row for the legacy module UUID before writing
+ * course_steps.section_id (FK). Seed modules and older data may lack sections
+ * because Phase 2 backfill runs before seed.sql.
+ */
+async function ensureSectionForModule(
+  supabase: Db,
+  courseId: string,
+  moduleId: string | null
+): Promise<void> {
+  if (!moduleId) return;
+
+  const { data: section } = await supabase
+    .from("course_sections")
+    .select("id")
+    .eq("id", moduleId)
+    .maybeSingle<{ id: string }>();
+
+  if (section) return;
+
+  const { data: moduleRow } = await supabase
+    .from("modules")
+    .select("id, course_id, title, sort_order")
+    .eq("id", moduleId)
+    .eq("course_id", courseId)
+    .maybeSingle<{ id: string; course_id: string; title: string; sort_order: number }>();
+
+  if (!moduleRow) {
+    throw new Error("Section/module not found for this lesson.");
+  }
+
+  await syncModuleToSection(supabase, moduleRow);
+}
+
 /** Keep Phase 2 course_steps in sync when a lesson is placed in the tree. */
 export async function syncLessonToStep(
   supabase: Db,
@@ -98,6 +132,8 @@ export async function syncLessonToStep(
     sort_order: number;
   }
 ): Promise<void> {
+  await ensureSectionForModule(supabase, lesson.course_id, lesson.module_id);
+
   const { data: existing } = await supabase
     .from("course_steps")
     .select("id, sort_order")
@@ -139,7 +175,11 @@ export async function syncLessonToStep(
   }
 }
 
-export async function removeLessonStep(supabase: Db, courseId: string, lessonId: string): Promise<void> {
+export async function removeLessonStep(
+  supabase: Db,
+  courseId: string,
+  lessonId: string
+): Promise<void> {
   const { error } = await supabase
     .from("course_steps")
     .delete()

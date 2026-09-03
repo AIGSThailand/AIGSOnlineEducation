@@ -87,7 +87,7 @@ CREATE INDEX IF NOT EXISTS idx_subscriptions_stripe_product ON public.subscripti
 -- 3. Course sections
 -- ------------------------------------------------------------------------------
 CREATE TABLE public.course_sections (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     course_id UUID NOT NULL REFERENCES public.courses(id) ON DELETE CASCADE,
     title TEXT NOT NULL,
     description TEXT,
@@ -106,7 +106,7 @@ CREATE INDEX idx_course_sections_wp_id ON public.course_sections(wordpress_secti
 -- 4. Topics
 -- ------------------------------------------------------------------------------
 CREATE TABLE public.topics (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title TEXT NOT NULL,
     slug TEXT NOT NULL,
     content TEXT,
@@ -126,7 +126,7 @@ CREATE INDEX idx_topics_status ON public.topics(status);
 -- 5. Quizzes
 -- ------------------------------------------------------------------------------
 CREATE TABLE public.quizzes (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title TEXT NOT NULL,
     slug TEXT NOT NULL,
     description TEXT,
@@ -150,7 +150,7 @@ CREATE INDEX idx_quizzes_status ON public.quizzes(status);
 -- 6. Course steps (typed FKs + CHECK — not unsafe polymorphic step_id)
 -- ------------------------------------------------------------------------------
 CREATE TABLE public.course_steps (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     course_id UUID NOT NULL REFERENCES public.courses(id) ON DELETE CASCADE,
     step_type public.course_step_type NOT NULL,
     lesson_id UUID REFERENCES public.lessons(id) ON DELETE RESTRICT,
@@ -199,7 +199,7 @@ CREATE UNIQUE INDEX uq_course_steps_quiz_placement
 -- 7. Questions & quiz composition
 -- ------------------------------------------------------------------------------
 CREATE TABLE public.questions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title TEXT,
     question_text TEXT NOT NULL,
     question_type TEXT NOT NULL
@@ -218,7 +218,7 @@ CREATE INDEX idx_questions_type ON public.questions(question_type);
 CREATE INDEX idx_questions_wp_id ON public.questions(wordpress_question_id);
 
 CREATE TABLE public.question_options (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     question_id UUID NOT NULL REFERENCES public.questions(id) ON DELETE CASCADE,
     answer_text TEXT NOT NULL,
     is_correct BOOLEAN NOT NULL DEFAULT false,
@@ -232,7 +232,7 @@ CREATE TABLE public.question_options (
 CREATE INDEX idx_question_options_question ON public.question_options(question_id, sort_order);
 
 CREATE TABLE public.quiz_questions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     quiz_id UUID NOT NULL REFERENCES public.quizzes(id) ON DELETE CASCADE,
     question_id UUID NOT NULL REFERENCES public.questions(id) ON DELETE RESTRICT,
     sort_order INTEGER NOT NULL DEFAULT 0,
@@ -249,7 +249,7 @@ CREATE INDEX idx_quiz_questions_question ON public.quiz_questions(question_id);
 -- 8. Quiz attempts & answers
 -- ------------------------------------------------------------------------------
 CREATE TABLE public.quiz_attempts (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     quiz_id UUID NOT NULL REFERENCES public.quizzes(id) ON DELETE RESTRICT,
     student_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     course_id UUID NOT NULL REFERENCES public.courses(id) ON DELETE CASCADE,
@@ -273,7 +273,7 @@ CREATE INDEX idx_quiz_attempts_quiz ON public.quiz_attempts(quiz_id, submitted_a
 CREATE INDEX idx_quiz_attempts_course ON public.quiz_attempts(course_id, submitted_at DESC);
 
 CREATE TABLE public.quiz_attempt_answers (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     attempt_id UUID NOT NULL REFERENCES public.quiz_attempts(id) ON DELETE CASCADE,
     question_id UUID NOT NULL REFERENCES public.questions(id) ON DELETE RESTRICT,
     answer_data JSONB NOT NULL DEFAULT '{}'::jsonb,
@@ -300,7 +300,7 @@ CREATE INDEX idx_quiz_attempt_answers_attempt ON public.quiz_attempt_answers(att
 -- 9. Groups (before certificate_rules group FK)
 -- ------------------------------------------------------------------------------
 CREATE TABLE public.groups (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
     slug TEXT NOT NULL,
     description TEXT,
@@ -346,7 +346,7 @@ CREATE INDEX idx_group_courses_course ON public.group_courses(course_id);
 -- 10. Certificates
 -- ------------------------------------------------------------------------------
 CREATE TABLE public.certificate_templates (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title TEXT NOT NULL,
     slug TEXT NOT NULL,
     description TEXT,
@@ -360,7 +360,7 @@ CREATE TABLE public.certificate_templates (
 CREATE INDEX idx_certificate_templates_wp_id ON public.certificate_templates(wordpress_certificate_id);
 
 CREATE TABLE public.certificate_rules (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     certificate_template_id UUID NOT NULL REFERENCES public.certificate_templates(id) ON DELETE CASCADE,
     source_type public.certificate_rule_source_type NOT NULL,
     course_id UUID REFERENCES public.courses(id) ON DELETE CASCADE,
@@ -382,7 +382,7 @@ CREATE INDEX idx_certificate_rules_quiz ON public.certificate_rules(quiz_id) WHE
 CREATE INDEX idx_certificate_rules_group ON public.certificate_rules(group_id) WHERE group_id IS NOT NULL;
 
 CREATE TABLE public.earned_certificates (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     certificate_template_id UUID NOT NULL REFERENCES public.certificate_templates(id) ON DELETE RESTRICT,
     student_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     course_id UUID REFERENCES public.courses(id) ON DELETE SET NULL,
@@ -406,7 +406,7 @@ CREATE INDEX idx_earned_certificates_verification ON public.earned_certificates(
 -- 11. Progress (complement lesson_progress — do not drop Phase 1 table)
 -- ------------------------------------------------------------------------------
 CREATE TABLE public.topic_progress (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     student_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     course_id UUID NOT NULL REFERENCES public.courses(id) ON DELETE CASCADE,
     topic_id UUID NOT NULL REFERENCES public.topics(id) ON DELETE CASCADE,
@@ -420,7 +420,7 @@ CREATE TABLE public.topic_progress (
 CREATE INDEX idx_topic_progress_student ON public.topic_progress(student_id, course_id);
 
 CREATE TABLE public.step_progress (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     student_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     course_id UUID NOT NULL REFERENCES public.courses(id) ON DELETE CASCADE,
     course_step_id UUID NOT NULL REFERENCES public.course_steps(id) ON DELETE CASCADE,

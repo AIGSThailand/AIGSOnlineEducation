@@ -86,9 +86,7 @@ export async function updateSession(request: NextRequest) {
   }
 
   const isAuthRoute =
-    pathname === "/login" ||
-    pathname === "/register" ||
-    pathname === "/forgot-password";
+    pathname === "/login" || pathname === "/register" || pathname === "/forgot-password";
 
   if (isAuthRoute && user) {
     const { data: profile } = await supabase

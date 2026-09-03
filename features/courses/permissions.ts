@@ -29,9 +29,7 @@ export async function canCreateCourse(): Promise<boolean> {
   return user.profile.role === "admin" || user.profile.role === "instructor";
 }
 
-export async function requireCourseBuilderAccess(
-  portal: BuilderPortal
-): Promise<AuthSessionUser> {
+export async function requireCourseBuilderAccess(portal: BuilderPortal): Promise<AuthSessionUser> {
   const authUser = await requireAuth();
   const role = authUser.profile?.role;
 

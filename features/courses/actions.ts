@@ -125,10 +125,17 @@ export async function updateCourseAction(input: unknown): Promise<ActionResult> 
   if (fields.description !== undefined) updatePayload.description = fields.description;
   if (fields.excerpt !== undefined) updatePayload.excerpt = fields.excerpt || null;
   if (fields.thumbnailUrl !== undefined) updatePayload.thumbnail_url = fields.thumbnailUrl || null;
+  if (fields.promotionalVideoUrl !== undefined) {
+    updatePayload.promotional_video_url = fields.promotionalVideoUrl || null;
+  }
   if (fields.progressionType !== undefined) updatePayload.progression_type = fields.progressionType;
+  if (fields.accessType !== undefined) updatePayload.access_type = fields.accessType;
 
   if (Object.keys(updatePayload).length > 0) {
-    const { error } = await supabase.from("courses").update(updatePayload as never).eq("id", courseId);
+    const { error } = await supabase
+      .from("courses")
+      .update(updatePayload as never)
+      .eq("id", courseId);
     if (error) return { success: false, error: error.message };
   }
 
@@ -170,7 +177,10 @@ export async function updateCourseStatusAction(input: unknown): Promise<ActionRe
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.from("courses").update({ status } as never).eq("id", courseId);
+  const { error } = await supabase
+    .from("courses")
+    .update({ status } as never)
+    .eq("id", courseId);
   if (error) return { success: false, error: error.message };
 
   revalidatePath(`/admin/courses/${courseId}/edit`);

@@ -23,9 +23,7 @@ Example from exported data:
 
 ```json
 {
-  "course_sections": [
-    { "order": 1, "post_title": "第一课", "type": "section-heading" }
-  ],
+  "course_sections": [{ "order": 1, "post_title": "第一课", "type": "section-heading" }],
   "ld_course_steps": {
     "steps": {
       "h": {
@@ -44,67 +42,67 @@ Example from exported data:
 
 ### Courses
 
-| LearnDash | WordPress storage | Supabase |
-|-----------|-------------------|----------|
-| Course | `sfwd-courses` post | `courses` |
-| Title, content, slug, status | `wp_post.*` | `title`, `description`, `slug`, `status` |
-| Featured image | `_thumbnail_id` → attachment | `thumbnail_url` |
-| Progression | `_sfwd-courses` meta | `progression_type` (`linear` / `free_form`) |
-| Price / product | WooCommerce / LD meta | `stripe_product_id`, `stripe_price_id` |
-| Legacy ID | post `ID` | `wordpress_course_id` |
+| LearnDash                    | WordPress storage            | Supabase                                    |
+| ---------------------------- | ---------------------------- | ------------------------------------------- |
+| Course                       | `sfwd-courses` post          | `courses`                                   |
+| Title, content, slug, status | `wp_post.*`                  | `title`, `description`, `slug`, `status`    |
+| Featured image               | `_thumbnail_id` → attachment | `thumbnail_url`                             |
+| Progression                  | `_sfwd-courses` meta         | `progression_type` (`linear` / `free_form`) |
+| Price / product              | WooCommerce / LD meta        | `stripe_product_id`, `stripe_price_id`      |
+| Legacy ID                    | post `ID`                    | `wordpress_course_id`                       |
 
 ### Sections
 
-| LearnDash | Supabase |
-|-----------|----------|
-| Section heading in course builder | `course_sections` |
-| Section title | `title` |
-| Order | `sort_order` |
-| Legacy ID | Often synthetic (`ID` in JSON) → nullable `wordpress_section_id` |
+| LearnDash                         | Supabase                                                         |
+| --------------------------------- | ---------------------------------------------------------------- |
+| Section heading in course builder | `course_sections`                                                |
+| Section title                     | `title`                                                          |
+| Order                             | `sort_order`                                                     |
+| Legacy ID                         | Often synthetic (`ID` in JSON) → nullable `wordpress_section_id` |
 
 **Important:** Sections are **not** lessons. Phase 1 incorrectly imported sections into `modules` and attached lessons to them as if modules were chapters.
 
 ### Lessons
 
-| LearnDash | Supabase |
-|-----------|----------|
-| Lesson CPT | `lessons` (content only) |
-| Video URL | post content / `_sfwd-lessons` meta | `video_url` + `content` |
-| Placement in course | `ld_course_steps` | `course_steps` (`step_type = 'lesson'`) |
-| Legacy ID | post `ID` | `wordpress_lesson_id` |
+| LearnDash           | Supabase                            |
+| ------------------- | ----------------------------------- |
+| Lesson CPT          | `lessons` (content only)            |
+| Video URL           | post content / `_sfwd-lessons` meta | `video_url` + `content`                 |
+| Placement in course | `ld_course_steps`                   | `course_steps` (`step_type = 'lesson'`) |
+| Legacy ID           | post `ID`                           | `wordpress_lesson_id`                   |
 
 ### Topics
 
-| LearnDash | Supabase |
-|-----------|----------|
-| Topic CPT | `topics` |
+| LearnDash     | Supabase     |
+| ------------- | ------------ |
+| Topic CPT     | `topics`     |
 | Parent lesson | builder tree | `course_steps.parent_step_id` → parent lesson step |
-| Legacy ID | post `ID` | `wordpress_topic_id` |
+| Legacy ID     | post `ID`    | `wordpress_topic_id`                               |
 
 ### Quizzes & questions
 
-| LearnDash | Supabase |
-|-----------|----------|
-| Quiz CPT | `quizzes` |
+| LearnDash                                  | Supabase                                          |
+| ------------------------------------------ | ------------------------------------------------- |
+| Quiz CPT                                   | `quizzes`                                         |
 | ProQuiz tables (`wp_learndash_pro_quiz_*`) | `questions`, `question_options`, `quiz_questions` |
-| Attempts | user activity / ProQuiz stat tables | `quiz_attempts`, `quiz_attempt_answers` |
-| Placement | course builder | `course_steps` (`step_type = 'quiz'`) |
+| Attempts                                   | user activity / ProQuiz stat tables               | `quiz_attempts`, `quiz_attempt_answers` |
+| Placement                                  | course builder                                    | `course_steps` (`step_type = 'quiz'`)   |
 
 ### Certificates
 
-| LearnDash | Supabase |
-|-----------|----------|
-| Certificate CPT | `certificate_templates` |
-| Linked to course/quiz/group | meta associations | `certificate_rules` |
-| User earned record | user meta / LD certificates | `earned_certificates` |
+| LearnDash                   | Supabase                    |
+| --------------------------- | --------------------------- |
+| Certificate CPT             | `certificate_templates`     |
+| Linked to course/quiz/group | meta associations           | `certificate_rules`   |
+| User earned record          | user meta / LD certificates | `earned_certificates` |
 
 ### Groups
 
-| LearnDash | Supabase |
-|-----------|----------|
-| Group CPT | `groups` |
-| Group users | usermeta / LD tables | `group_users` |
-| Group leaders | LD leader meta | `group_leaders` |
+| LearnDash     | Supabase             |
+| ------------- | -------------------- |
+| Group CPT     | `groups`             |
+| Group users   | usermeta / LD tables | `group_users`   |
+| Group leaders | LD leader meta       | `group_leaders` |
 | Group courses | LD group-course meta | `group_courses` |
 
 **Do not** store `group_id` on `profiles`. Leadership and membership are relationship tables.
@@ -127,25 +125,25 @@ This avoids duplicate content and matches LearnDash semantics.
 
 ## Progress & completion
 
-| LearnDash activity | Supabase (Phase 2) |
-|--------------------|-------------------|
-| Lesson complete | `lesson_progress` (legacy) + `step_progress` |
-| Topic complete | `topic_progress` + `step_progress` |
-| Quiz passed | `quiz_attempts.passed` + `step_progress` |
-| Course complete | `enrollments.status = 'completed'` + certificate rules |
+| LearnDash activity | Supabase (Phase 2)                                     |
+| ------------------ | ------------------------------------------------------ |
+| Lesson complete    | `lesson_progress` (legacy) + `step_progress`           |
+| Topic complete     | `topic_progress` + `step_progress`                     |
+| Quiz passed        | `quiz_attempts.passed` + `step_progress`               |
+| Course complete    | `enrollments.status = 'completed'` + certificate rules |
 
 ---
 
 ## User & enrollment mapping
 
-| LearnDash | Supabase |
-|-----------|----------|
-| WordPress user | `auth.users` + `profiles` |
-| Course access | `enrollments` |
-| Group-granted access | `group_users` + `group_courses` → materialized `enrollments` (`enrollment_source = 'group'`) |
-| WooCommerce / Stripe purchase | `enrollments` (`enrollment_source = 'stripe'`) |
-| Manual / admin grant | `enrollments` (`enrollment_source = 'manual'` or `'admin'`) |
-| Historical import | `enrollments` (`enrollment_source = 'migration'`) |
+| LearnDash                     | Supabase                                                                                     |
+| ----------------------------- | -------------------------------------------------------------------------------------------- |
+| WordPress user                | `auth.users` + `profiles`                                                                    |
+| Course access                 | `enrollments`                                                                                |
+| Group-granted access          | `group_users` + `group_courses` → materialized `enrollments` (`enrollment_source = 'group'`) |
+| WooCommerce / Stripe purchase | `enrollments` (`enrollment_source = 'stripe'`)                                               |
+| Manual / admin grant          | `enrollments` (`enrollment_source = 'manual'` or `'admin'`)                                  |
+| Historical import             | `enrollments` (`enrollment_source = 'migration'`)                                            |
 
 ---
 

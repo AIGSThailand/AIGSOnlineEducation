@@ -47,7 +47,7 @@ export function StructureItem({
       <button
         type="button"
         onClick={onSelect}
-        className="min-w-0 flex-1 truncate py-2 text-left text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 rounded-md px-1"
+        className="min-w-0 flex-1 truncate rounded-md px-1 py-2 text-left text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
       >
         {title}
       </button>
@@ -56,11 +56,12 @@ export function StructureItem({
   );
 }
 
-export function lessonItemFromRow(lesson: CourseStructureLessonItem) {
+export function lessonItemFromRow(lesson: CourseStructureLessonItem & { moduleId?: string }) {
   return {
     kind: "lesson" as const,
     id: lesson.id,
-    moduleId: lesson.moduleId,
+    sectionId: lesson.sectionId,
+    moduleId: lesson.moduleId ?? lesson.sectionId,
     title: lesson.title,
   };
 }

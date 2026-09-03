@@ -10,11 +10,13 @@ interface BuilderHeaderProps {
   portal: BuilderPortal;
   course: CourseBuilderCourse;
   saveStatus: SaveStatus;
+  structureSource?: "course_sections" | "modules_fallback";
   onPublish: () => void;
   onArchive: () => void;
   onSave?: () => void;
   onOpenStructure: () => void;
   onOpenSettings: () => void;
+  canPublish?: boolean;
 }
 
 const saveStatusLabel: Record<SaveStatus, string> = {
@@ -29,11 +31,13 @@ export function BuilderHeader({
   portal,
   course,
   saveStatus,
+  structureSource,
   onPublish,
   onArchive,
   onSave,
   onOpenStructure,
   onOpenSettings,
+  canPublish = true,
 }: BuilderHeaderProps) {
   const statusText = saveStatusLabel[saveStatus];
 
@@ -42,7 +46,7 @@ export function BuilderHeader({
       <div className="flex flex-wrap items-center gap-3 px-4 py-3 lg:px-6">
         <Link
           href={`/${portal}/courses`}
-          className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500 rounded-md px-1"
+          className="inline-flex items-center gap-1 rounded-md px-1 text-sm text-slate-600 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
         >
           <ArrowLeft className="h-4 w-4" />
           <span className="hidden sm:inline">Courses</span>
@@ -51,7 +55,7 @@ export function BuilderHeader({
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <button
             type="button"
-            className="rounded-md p-2 text-slate-600 hover:bg-slate-100 lg:hidden focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="rounded-md p-2 text-slate-600 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 lg:hidden"
             onClick={onOpenStructure}
             aria-label="Open course structure"
           >
@@ -63,6 +67,11 @@ export function BuilderHeader({
           <Badge variant={course.status === "published" ? "success" : "default"}>
             {course.status}
           </Badge>
+          {structureSource === "course_sections" && course.wordpressCourseId != null && (
+            <Badge variant="default" className="hidden sm:inline-flex">
+              LearnDash
+            </Badge>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
@@ -95,13 +104,13 @@ export function BuilderHeader({
             </Button>
           )}
 
-          {course.status === "draft" && (
+          {course.status === "draft" && canPublish && (
             <Button type="button" size="sm" onClick={onPublish}>
               Publish
             </Button>
           )}
 
-          {course.status === "published" && (
+          {course.status === "published" && canPublish && (
             <Button type="button" variant="outline" size="sm" onClick={onArchive}>
               Archive
             </Button>
@@ -109,7 +118,7 @@ export function BuilderHeader({
 
           <button
             type="button"
-            className="rounded-md p-2 text-slate-600 hover:bg-slate-100 xl:hidden focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="rounded-md p-2 text-slate-600 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 xl:hidden"
             onClick={onOpenSettings}
             aria-label="Open settings"
           >

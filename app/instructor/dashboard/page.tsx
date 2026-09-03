@@ -12,16 +12,21 @@ export default async function InstructorDashboardPage() {
 
   interface AssignedItem {
     course_id: string;
-    course: { id: string; title: string; status: string } | { id: string; title: string; status: string }[] | null;
+    course:
+      | { id: string; title: string; status: string }
+      | { id: string; title: string; status: string }[]
+      | null;
   }
 
   // Fetch instructor's assigned courses
   const { data: rawAssigned } = await supabase
     .from("course_instructors")
-    .select(`
+    .select(
+      `
       course_id,
       course:courses(id, title, status)
-    `)
+    `
+    )
     .eq("instructor_id", user?.id || "");
 
   const assignedCourses = (rawAssigned as unknown as AssignedItem[] | null) || [];
@@ -43,9 +48,7 @@ export default async function InstructorDashboardPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-            Instructor Dashboard
-          </h1>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Instructor Dashboard</h1>
           <p className="text-sm text-slate-500">
             Manage your teaching materials, student progress, and assignments
           </p>
@@ -68,12 +71,7 @@ export default async function InstructorDashboardPage() {
           description="Enrolled across your courses"
           icon={Users}
         />
-        <StatCard
-          title="Submissions"
-          value="0"
-          description="Pending review"
-          icon={FileText}
-        />
+        <StatCard title="Submissions" value="0" description="Pending review" icon={FileText} />
         <StatCard
           title="Completion Rate"
           value="—"
@@ -92,12 +90,12 @@ export default async function InstructorDashboardPage() {
               {assignedCourses.map((ac) => {
                 const course = Array.isArray(ac.course) ? ac.course[0] : ac.course;
                 return (
-                  <div key={ac.course_id} className="py-3 flex items-center justify-between">
+                  <div key={ac.course_id} className="flex items-center justify-between py-3">
                     <div>
                       <h4 className="text-sm font-semibold text-slate-900">
                         {course?.title || "Untitled Course"}
                       </h4>
-                      <span className="text-xs text-slate-500 capitalize">
+                      <span className="text-xs capitalize text-slate-500">
                         Status: {course?.status || "draft"}
                       </span>
                     </div>
@@ -112,7 +110,8 @@ export default async function InstructorDashboardPage() {
             </div>
           ) : (
             <p className="text-sm text-slate-500">
-              You are not currently assigned to any courses. An administrator can assign you to courses in the Admin Portal.
+              You are not currently assigned to any courses. An administrator can assign you to
+              courses in the Admin Portal.
             </p>
           )}
         </CardContent>

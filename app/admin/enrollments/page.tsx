@@ -17,7 +17,8 @@ export default async function AdminEnrollmentsPage() {
   const supabase = await createClient();
   const { data } = await supabase
     .from("enrollments")
-    .select(`
+    .select(
+      `
       id,
       status,
       enrolled_at,
@@ -25,7 +26,8 @@ export default async function AdminEnrollmentsPage() {
       stripe_subscription_id,
       student:profiles!enrollments_student_id_fkey(email, first_name, last_name),
       course:courses!enrollments_course_id_fkey(title)
-    `)
+    `
+    )
     .order("enrolled_at", { ascending: false })
     .limit(50);
 
@@ -34,22 +36,20 @@ export default async function AdminEnrollmentsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-          Enrollment Records
-        </h1>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Enrollment Records</h1>
         <p className="text-sm text-slate-500">
           Student course registrations, access statuses, and subscription links
         </p>
       </div>
 
-      <Card className="p-0 overflow-hidden">
-        <CardHeader className="p-4 border-b border-slate-100">
+      <Card className="overflow-hidden p-0">
+        <CardHeader className="border-b border-slate-100 p-4">
           <CardTitle>Enrollments ({enrollments.length})</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm text-slate-700">
-              <thead className="bg-slate-50 text-xs font-semibold uppercase text-slate-500 border-b border-slate-200">
+              <thead className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase text-slate-500">
                 <tr>
                   <th className="px-6 py-3">Student</th>
                   <th className="px-6 py-3">Course</th>
@@ -81,7 +81,8 @@ export default async function AdminEnrollmentsPage() {
                           </Badge>
                         </td>
                         <td className="px-6 py-4 font-mono text-xs text-slate-500">
-                          {e.stripe_subscription_id || (e.wordpress_enrollment_id ? `WP: ${e.wordpress_enrollment_id}` : "—")}
+                          {e.stripe_subscription_id ||
+                            (e.wordpress_enrollment_id ? `WP: ${e.wordpress_enrollment_id}` : "—")}
                         </td>
                         <td className="px-6 py-4 text-xs text-slate-500">
                           {formatDate(e.enrolled_at)}

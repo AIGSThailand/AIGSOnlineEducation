@@ -80,9 +80,7 @@ export async function syncStripeSubscriptionToDatabase(
 ) {
   const adminClient = createAdminClient();
   const customerId =
-    typeof subscription.customer === "string"
-      ? subscription.customer
-      : subscription.customer.id;
+    typeof subscription.customer === "string" ? subscription.customer : subscription.customer.id;
 
   let userId = overrideUserId;
 
@@ -121,9 +119,7 @@ export async function syncStripeSubscriptionToDatabase(
 
   const priceId = subscription.items.data[0]?.price.id || null;
   const status = mapStripeStatusToSupabase(subscription.status);
-  const currentPeriodEnd = new Date(
-    subscription.current_period_end * 1000
-  ).toISOString();
+  const currentPeriodEnd = new Date(subscription.current_period_end * 1000).toISOString();
 
   const payload: SubscriptionInsert = {
     user_id: userId,
@@ -135,12 +131,9 @@ export async function syncStripeSubscriptionToDatabase(
     updated_at: new Date().toISOString(),
   };
 
-  const { data, error } = await (adminClient.from("subscriptions") as any).upsert(
-    payload,
-    {
-      onConflict: "stripe_subscription_id",
-    }
-  );
+  const { data, error } = await (adminClient.from("subscriptions") as any).upsert(payload, {
+    onConflict: "stripe_subscription_id",
+  });
 
   if (error) {
     console.error(`[Stripe Sync Error] Failed to upsert subscription: ${error.message}`);

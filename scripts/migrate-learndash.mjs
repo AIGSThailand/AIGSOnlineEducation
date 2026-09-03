@@ -335,6 +335,7 @@ async function runMigration() {
     quizzes: 0,
     courseSteps: 0,
     stepsDeleted: 0,
+    stepsSkippedMissingLesson: 0,
   };
 
   if (isDryRun) {
@@ -504,14 +505,29 @@ async function runMigration() {
     );
   }
 
-  // Load lesson UUID map
-  const { data: lessonRowsDb } = await supabase
-    .from('lessons')
-    .select('id, wordpress_lesson_id')
-    .in('wordpress_lesson_id', [...lessonIdsToImport]);
-
-  for (const row of lessonRowsDb || []) {
-    if (row.wordpress_lesson_id) lessonUuidMap.set(Number(row.wordpress_lesson_id), row.id);
+  // Load lesson UUID map (chunked — a single .in() of 1k+ ids exceeds PostgREST URL limits)
+  const lessonIdList = [...lessonIdsToImport];
+  const IN_CHUNK = 100;
+  for (let i = 0; i < lessonIdList.length; i += IN_CHUNK) {
+    const slice = lessonIdList.slice(i, i + IN_CHUNK);
+    const { data: lessonRowsDb, error: mapErr } = await supabase
+      .from('lessons')
+      .select('id, wordpress_lesson_id')
+      .in('wordpress_lesson_id', slice);
+    if (mapErr) {
+      console.error(`Lesson UUID map chunk @${i}: ${mapErr.message}`);
+      continue;
+    }
+    for (const row of lessonRowsDb || []) {
+      if (row.wordpress_lesson_id) lessonUuidMap.set(Number(row.wordpress_lesson_id), row.id);
+    }
+  }
+  console.log(`  Lesson UUID map size: ${lessonUuidMap.size}/${lessonIdList.length}`);
+  if (lessonUuidMap.size === 0 && lessonIdList.length > 0) {
+    console.error(
+      'FATAL: lesson UUID map is empty — course_steps would be skipped. Aborting before deleting steps.'
+    );
+    process.exit(1);
   }
 
   // ---- Quiz stubs ----
@@ -570,7 +586,10 @@ async function runMigration() {
     for (let idx = 0; idx < orderedLessonWpIds.length; idx++) {
       const wpLessonId = orderedLessonWpIds[idx];
       const lessonUuid = lessonUuidMap.get(wpLessonId);
-      if (!lessonUuid) continue;
+      if (!lessonUuid) {
+        stats.stepsSkippedMissingLesson = (stats.stepsSkippedMissingLesson || 0) + 1;
+        continue;
+      }
 
       const stepIndex = idx + 1;
       const sectionIdx = resolveSectionIndex(stepIndex, sections);
@@ -650,6 +669,9 @@ async function runMigration() {
   }
 
   console.log(`✓ ${stats.courseSteps} course_steps created (${stats.stepsDeleted} old steps removed).`);
+  if (stats.stepsSkippedMissingLesson > 0) {
+    console.warn(`  ⚠ ${stats.stepsSkippedMissingLesson} lesson steps skipped (missing lesson UUID map entry)`);
+  }
 
   console.log('\n🎉 Phase 2 LearnDash migration complete');
   console.log(`  Courses:        ${stats.courses}`);

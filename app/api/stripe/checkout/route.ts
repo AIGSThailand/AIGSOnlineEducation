@@ -17,10 +17,7 @@ export async function POST(req: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return NextResponse.json(
-        { error: "Unauthorized. Please log in first." },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized. Please log in first." }, { status: 401 });
     }
 
     const body = await req.json();
@@ -47,10 +44,7 @@ export async function POST(req: NextRequest) {
     const { NEXT_PUBLIC_APP_URL: appUrl } = getClientEnv();
 
     // 1. Retrieve or create Stripe customer linked to this Supabase user
-    const { customerId } = await getOrCreateStripeCustomer(
-      user.id,
-      user.email!
-    );
+    const { customerId } = await getOrCreateStripeCustomer(user.id, user.email!);
 
     // 2. Build metadata so webhook can auto-enroll and track user
     const metadata: Record<string, string> = {
@@ -92,10 +86,8 @@ export async function POST(req: NextRequest) {
       line_items,
       metadata,
       success_url:
-        successUrl ||
-        `${appUrl}/student/dashboard?session_id={CHECKOUT_SESSION_ID}&success=true`,
-      cancel_url:
-        cancelUrl || (courseId ? `${appUrl}/courses/${courseId}` : `${appUrl}/courses`),
+        successUrl || `${appUrl}/student/dashboard?session_id={CHECKOUT_SESSION_ID}&success=true`,
+      cancel_url: cancelUrl || (courseId ? `${appUrl}/courses/${courseId}` : `${appUrl}/courses`),
     };
 
     if (mode === "subscription") {

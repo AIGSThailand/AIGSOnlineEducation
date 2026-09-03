@@ -19,5 +19,4 @@ export interface AuthSessionUser {
 }
 
 export type AuthActionResult =
-  | { success: true; message?: string; redirectUrl?: string }
-  | { success: false; error: string };
+  { success: true; message?: string; redirectUrl?: string } | { success: false; error: string };

@@ -7,20 +7,22 @@ export default async function AdminDashboardPage() {
   const supabase = await createClient();
 
   // Fetch counts with Supabase Server queries
-  const [{ count: userCount }, { count: courseCount }, { count: enrollmentCount }, { count: subscriptionCount }] =
-    await Promise.all([
-      supabase.from("profiles").select("*", { count: "exact", head: true }),
-      supabase.from("courses").select("*", { count: "exact", head: true }),
-      supabase.from("enrollments").select("*", { count: "exact", head: true }),
-      supabase.from("subscriptions").select("*", { count: "exact", head: true }),
-    ]);
+  const [
+    { count: userCount },
+    { count: courseCount },
+    { count: enrollmentCount },
+    { count: subscriptionCount },
+  ] = await Promise.all([
+    supabase.from("profiles").select("*", { count: "exact", head: true }),
+    supabase.from("courses").select("*", { count: "exact", head: true }),
+    supabase.from("enrollments").select("*", { count: "exact", head: true }),
+    supabase.from("subscriptions").select("*", { count: "exact", head: true }),
+  ]);
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-          Admin Overview
-        </h1>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Admin Overview</h1>
         <p className="text-sm text-slate-500">
           System-wide metrics, user administration, and LMS migration status
         </p>
@@ -63,9 +65,10 @@ export default async function AdminDashboardPage() {
           <CardContent>
             <div className="space-y-3">
               <p className="text-sm text-slate-600">
-                Database schema is equipped with legacy columns (`wordpress_user_id`, `wordpress_course_id`, `wordpress_lesson_id`).
+                Database schema is equipped with legacy columns (`wordpress_user_id`,
+                `wordpress_course_id`, `wordpress_lesson_id`).
               </p>
-              <div className="rounded-md bg-slate-50 p-4 border border-slate-200 text-xs font-mono text-slate-700">
+              <div className="rounded-md border border-slate-200 bg-slate-50 p-4 font-mono text-xs text-slate-700">
                 Status: Ready for migration script ingestion
               </div>
             </div>
@@ -79,9 +82,10 @@ export default async function AdminDashboardPage() {
           <CardContent>
             <div className="space-y-3">
               <p className="text-sm text-slate-600">
-                Server-side webhook endpoint at <code>/api/stripe/webhook</code> listening for customer & subscription events.
+                Server-side webhook endpoint at <code>/api/stripe/webhook</code> listening for
+                customer & subscription events.
               </p>
-              <div className="rounded-md bg-emerald-50 p-4 border border-emerald-200 text-xs font-mono text-emerald-800">
+              <div className="rounded-md border border-emerald-200 bg-emerald-50 p-4 font-mono text-xs text-emerald-800">
                 Endpoint: /api/stripe/webhook (Raw body verification enabled)
               </div>
             </div>

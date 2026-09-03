@@ -6,9 +6,7 @@ import { wordpressContentToPlainText } from "@/lib/utils/wordpress-content";
 import type { CourseWithInstructors } from "@/types/lms.types";
 import type { Database } from "@/types/database.types";
 
-type CourseCardData =
-  | CourseWithInstructors
-  | Database["public"]["Tables"]["courses"]["Row"];
+type CourseCardData = CourseWithInstructors | Database["public"]["Tables"]["courses"]["Row"];
 
 interface CourseCardProps {
   course: CourseCardData;
@@ -17,7 +15,7 @@ interface CourseCardProps {
 
 export function CourseCard({ course, isEnrolled }: CourseCardProps) {
   return (
-    <Card className="flex flex-col overflow-hidden transition-shadow hover:shadow-md p-0">
+    <Card className="flex flex-col overflow-hidden p-0 transition-shadow hover:shadow-md">
       {course.thumbnail_url ? (
         <div className="aspect-video w-full overflow-hidden bg-slate-100">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -41,11 +39,11 @@ export function CourseCard({ course, isEnrolled }: CourseCardProps) {
           {isEnrolled && <Badge variant="default">Enrolled</Badge>}
         </div>
 
-        <h4 className="mb-2 text-lg font-bold text-slate-900 dark:text-slate-100 line-clamp-1">
+        <h4 className="mb-2 line-clamp-1 text-lg font-bold text-slate-900 dark:text-slate-100">
           {course.title}
         </h4>
 
-        <p className="mb-4 flex-1 text-sm text-slate-600 dark:text-slate-400 line-clamp-2">
+        <p className="mb-4 line-clamp-2 flex-1 text-sm text-slate-600 dark:text-slate-400">
           {wordpressContentToPlainText(course.description) || "No description provided."}
         </p>
 
