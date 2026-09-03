@@ -21,7 +21,9 @@ export const updateCourseSchema = z.object({
   description: z.string().optional(),
   excerpt: z.string().trim().max(500).optional().or(z.literal("")),
   thumbnailUrl: z.string().url().optional().or(z.literal("")),
+  promotionalVideoUrl: z.string().url().optional().or(z.literal("")),
   progressionType: z.enum(["linear", "free_form"]).optional(),
+  accessType: z.enum(["open", "enrollment_required", "paid", "private"]).optional(),
   instructorIds: z.array(z.string().uuid()).optional(),
 });
 

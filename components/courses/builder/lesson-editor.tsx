@@ -226,6 +226,7 @@ export function LessonEditor({
             value={form.content}
             onChange={(html) => patchForm({ content: html })}
             placeholder="Lesson content — headings, lists, links, images…"
+            courseId={courseId}
           />
         </div>
 

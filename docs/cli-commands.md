@@ -4,7 +4,7 @@ Quick copy-paste commands for **Next.js**, **Supabase**, **Vercel**, **Stripe**,
 
 Run all commands from the **repository root** unless noted.
 
-Related docs: [environments.md](./environments.md) · [deployment.md](./deployment.md) · [database-migrations.md](./database-migrations.md) · [github-actions.md](./github-actions.md) · [vercel-staging-setup.md](./vercel-staging-setup.md)
+Related docs: [environments.md](./environments.md) · [deployment.md](./deployment.md) · [database-migrations.md](./database-migrations.md) · [github-actions.md](./github-actions.md) · [vercel-staging-setup.md](./vercel-staging-setup.md) · [media-s3.md](./media-s3.md)
 
 ---
 

@@ -5,21 +5,23 @@ import { canManageCourse } from "@/features/courses/permissions";
 import { getCoursePlayerData } from "@/features/player/queries";
 import { findStepByContent, lockedStepKeys } from "@/features/player/build-player";
 import { CoursePlayer } from "@/components/player/course-player";
-import { RichContent } from "@/components/courses/rich-content";
 import { Card } from "@/components/ui/card";
 import type { Database } from "@/types/database.types";
 
-type LessonRow = Database["public"]["Tables"]["lessons"]["Row"];
+type QuizRow = Database["public"]["Tables"]["quizzes"]["Row"];
 
-interface LessonPageProps {
+interface QuizPageProps {
   params: {
     courseId: string;
-    lessonId: string;
+    quizId: string;
+  };
+  searchParams?: {
+    step?: string;
   };
 }
 
-export default async function LessonPage({ params }: LessonPageProps) {
-  const { courseId, lessonId } = params;
+export default async function CourseQuizPage({ params, searchParams }: QuizPageProps) {
+  const { courseId, quizId } = params;
   const user = await requireAuth();
 
   const hasAccess = await canAccessCourse(courseId);
@@ -29,7 +31,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
         <Card className="p-8">
           <h2 className="text-xl font-bold text-slate-900">Access Restricted</h2>
           <p className="mt-2 text-sm text-slate-600">
-            You must be enrolled in this course with an active subscription to access its lessons.
+            You must be enrolled in this course with an active subscription to access its quizzes.
           </p>
         </Card>
       </div>
@@ -39,8 +41,10 @@ export default async function LessonPage({ params }: LessonPageProps) {
   const player = await getCoursePlayerData(courseId, user.id);
   if (!player) notFound();
 
-  const current = findStepByContent(player.flatSteps, "lesson", lessonId);
-  if (!current) notFound();
+  const current = searchParams?.step
+    ? player.flatSteps.find((s) => s.stepId === searchParams.step && s.kind === "quiz")
+    : findStepByContent(player.flatSteps, "quiz", quizId);
+  if (!current || current.contentId !== quizId) notFound();
 
   const bypass = await canManageCourse(courseId);
   const lockedKeys = lockedStepKeys(
@@ -52,13 +56,13 @@ export default async function LessonPage({ params }: LessonPageProps) {
   const isLocked = lockedKeys.has(current.key);
 
   const supabase = await createClient();
-  const { data: lesson } = await supabase
-    .from("lessons")
-    .select("*")
-    .eq("id", lessonId)
-    .maybeSingle<LessonRow>();
+  const { data: quiz } = await supabase
+    .from("quizzes")
+    .select("id, title, description")
+    .eq("id", quizId)
+    .maybeSingle<Pick<QuizRow, "id" | "title" | "description">>();
 
-  if (!lesson) notFound();
+  if (!quiz) notFound();
 
   return (
     <CoursePlayer
@@ -69,26 +73,16 @@ export default async function LessonPage({ params }: LessonPageProps) {
     >
       {isLocked ? (
         <p className="rounded-md border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600">
-          Complete the previous steps to unlock this lesson.
+          Complete the previous steps to unlock this quiz.
         </p>
       ) : (
-        <>
-          {lesson.video_url && (
-            <div className="aspect-video w-full overflow-hidden rounded-lg bg-black">
-              <iframe
-                src={lesson.video_url}
-                title={lesson.title}
-                className="h-full w-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            </div>
-          )}
-          <RichContent
-            html={lesson.content}
-            fallback="No supplementary textual notes provided for this lesson."
-          />
-        </>
+        <div className="space-y-4 text-sm text-slate-600">
+          {quiz.description ? <p>{quiz.description}</p> : null}
+          <p>
+            The interactive quiz player is not available yet. You can mark this step complete to
+            continue the course.
+          </p>
+        </div>
       )}
     </CoursePlayer>
   );

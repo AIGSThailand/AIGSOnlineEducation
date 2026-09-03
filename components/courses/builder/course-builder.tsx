@@ -283,6 +283,8 @@ export function CourseBuilder({
               isAdmin={isAdmin}
               permissions={data.permissions}
               onSaveStatusChange={setSaveStatus}
+              onPublish={() => setPublishOpen(true)}
+              onArchive={() => setArchiveOpen(true)}
             />
           </div>
         </aside>
@@ -305,6 +307,14 @@ export function CourseBuilder({
           isAdmin={isAdmin}
           permissions={data.permissions}
           onSaveStatusChange={setSaveStatus}
+          onPublish={() => {
+            setSettingsOpen(false);
+            setPublishOpen(true);
+          }}
+          onArchive={() => {
+            setSettingsOpen(false);
+            setArchiveOpen(true);
+          }}
         />
       </Sheet>
 

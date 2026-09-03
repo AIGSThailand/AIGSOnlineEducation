@@ -35,6 +35,8 @@ interface RichTextEditorProps {
   className?: string;
   /** When true, show a raw HTML textarea toggle for migrated LearnDash content. */
   allowHtmlSource?: boolean;
+  /** Enables S3 image upload from the toolbar when configured. */
+  courseId?: string;
 }
 
 export function RichTextEditor({
@@ -44,6 +46,7 @@ export function RichTextEditor({
   disabled,
   className,
   allowHtmlSource = true,
+  courseId,
 }: RichTextEditorProps) {
   const [sourceMode, setSourceMode] = React.useState(false);
   const [sourceHtml, setSourceHtml] = React.useState(value);
@@ -124,6 +127,7 @@ export function RichTextEditor({
           disabled={disabled || sourceMode}
           sourceMode={sourceMode}
           allowHtmlSource={allowHtmlSource}
+          courseId={courseId}
           onToggleSource={() => (sourceMode ? exitSourceMode() : enterSourceMode())}
         />
       )}
@@ -152,14 +156,20 @@ function Toolbar({
   disabled,
   sourceMode,
   allowHtmlSource,
+  courseId,
   onToggleSource,
 }: {
   editor: Editor;
   disabled?: boolean;
   sourceMode: boolean;
   allowHtmlSource: boolean;
+  courseId?: string;
   onToggleSource: () => void;
 }) {
+  const imageInputRef = React.useRef<HTMLInputElement>(null);
+  const [imageUploading, setImageUploading] = React.useState(false);
+  const [imageError, setImageError] = React.useState<string | null>(null);
+
   const setLink = () => {
     const previous = editor.getAttributes("link").href as string | undefined;
     const url = window.prompt("Link URL", previous || "https://");
@@ -171,18 +181,61 @@ function Toolbar({
     editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
   };
 
-  const addImage = () => {
+  const addImageFromUrl = () => {
     const url = window.prompt("Image URL", "https://");
     if (!url) return;
     editor.chain().focus().setImage({ src: url }).run();
   };
 
+  const addImage = () => {
+    setImageError(null);
+    if (courseId) {
+      imageInputRef.current?.click();
+      return;
+    }
+    addImageFromUrl();
+  };
+
   return (
-    <div
-      className="flex flex-wrap items-center gap-0.5 border-b border-slate-200 bg-slate-50 px-2 py-1.5"
-      role="toolbar"
-      aria-label="Text formatting"
-    >
+    <div className="space-y-0">
+      <input
+        ref={imageInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/gif"
+        className="sr-only"
+        onChange={async (e) => {
+          const file = e.target.files?.[0];
+          e.target.value = "";
+          if (!file || !courseId) return;
+          setImageUploading(true);
+          setImageError(null);
+          try {
+            const { uploadCourseMedia } = await import("@/features/media/upload-client");
+            const { publicUrl } = await uploadCourseMedia({
+              courseId,
+              kind: "lesson-image",
+              file,
+            });
+            editor.chain().focus().setImage({ src: publicUrl }).run();
+          } catch (err) {
+            setImageError(err instanceof Error ? err.message : "Image upload failed.");
+            // Fallback: allow pasting a URL if upload fails / not configured
+            if (
+              err instanceof Error &&
+              err.message.toLowerCase().includes("not configured")
+            ) {
+              addImageFromUrl();
+            }
+          } finally {
+            setImageUploading(false);
+          }
+        }}
+      />
+      <div
+        className="flex flex-wrap items-center gap-0.5 border-b border-slate-200 bg-slate-50 px-2 py-1.5"
+        role="toolbar"
+        aria-label="Text formatting"
+      >
       <ToolBtn
         label="Undo"
         disabled={disabled || !editor.can().undo()}
@@ -283,7 +336,11 @@ function Toolbar({
       <ToolBtn label="Insert link" active={editor.isActive("link")} disabled={disabled} onClick={setLink}>
         <Link2 className="h-3.5 w-3.5" />
       </ToolBtn>
-      <ToolBtn label="Insert image" disabled={disabled} onClick={addImage}>
+      <ToolBtn
+        label={courseId ? "Upload image" : "Insert image URL"}
+        disabled={disabled || imageUploading}
+        onClick={addImage}
+      >
         <ImageIcon className="h-3.5 w-3.5" />
       </ToolBtn>
       {allowHtmlSource && (
@@ -298,6 +355,18 @@ function Toolbar({
             <Code2 className="h-3.5 w-3.5" />
           </ToolBtn>
         </>
+      )}
+      </div>
+      {(imageUploading || imageError) && (
+        <p
+          className={cn(
+            "border-b border-slate-200 px-3 py-1 text-xs",
+            imageError ? "bg-red-50 text-red-700" : "bg-slate-50 text-slate-500"
+          )}
+          role={imageError ? "alert" : "status"}
+        >
+          {imageUploading ? "Uploading image…" : imageError}
+        </p>
       )}
     </div>
   );

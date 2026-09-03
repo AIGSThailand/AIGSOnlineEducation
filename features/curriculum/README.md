@@ -15,6 +15,7 @@ Do **not** duplicate `course_items` as a separate table — extend `course_step_
 
 - `getCourseBuilderData()` / `getCourseBuilder()` in `features/courses/queries.ts`
 - Structure assembly: `features/curriculum/build-structure.ts`
+- Student player: `getCoursePlayerData()` in `features/player/queries.ts`
 
 ## Selection URL
 
@@ -43,3 +44,20 @@ DnD state helpers: `features/curriculum/dnd-state.ts`
 - **HTML source** toggle for migrated LearnDash markup TipTap may not fully represent
 - **Autosave** (~1.2s debounce) for lesson fields + content; explicit Save still available
 - **Lesson settings** — video URL, excerpt, status; LearnDash ID read-only when present
+
+## Phase 4 (course settings)
+
+- Collapsible settings: Publishing, Access, Progression, Media, Instructors, Commerce, Migration
+- `courses.access_type` (`open` | `enrollment_required` | `paid` | `private`)
+- `courses.promotional_video_url`
+- Multi-instructor assignment (admin)
+- Autosave for settings; Stripe mapping remains explicit Save (admin only)
+- Migration metadata read-only
+
+Migration: `supabase/migrations/20260903120000_course_builder_phase4_settings.sql`
+
+## Media (S3)
+
+- Presigned uploads: `POST /api/media/presign` (requires `canManageCourse`)
+- TipTap lesson images + course thumbnail uploader
+- Docs: `docs/media-s3.md`

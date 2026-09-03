@@ -4,19 +4,51 @@ import {
   buildPermissions,
   buildSectionsFromModules,
   buildSectionsFromSteps,
+  countCurriculumItems,
   toLegacyStructure,
 } from "@/features/curriculum/build-structure";
 import type {
   CourseBuilderCourse,
   CourseBuilderData,
   CourseListItem,
+  CurriculumSection,
   InstructorOption,
 } from "@/features/curriculum/types";
 import type { Database } from "@/types/database.types";
+import type { ModuleWithLessons } from "@/types/lms.types";
 
 type CourseRow = Database["public"]["Tables"]["courses"]["Row"];
 type ModuleRow = Database["public"]["Tables"]["modules"]["Row"];
 type LessonRow = Database["public"]["Tables"]["lessons"]["Row"];
+
+type StepRow = {
+  id: string;
+  course_id: string;
+  step_type: "lesson" | "topic" | "quiz";
+  lesson_id: string | null;
+  quiz_id: string | null;
+  section_id: string | null;
+  sort_order: number;
+};
+
+type LessonMeta = {
+  id: string;
+  module_id: string | null;
+  title: string;
+  slug: string;
+  sort_order: number;
+  status: LessonRow["status"];
+};
+
+export type CourseSyllabus = {
+  sections: CurriculumSection[];
+  /** Legacy shape for ModuleWithLessons-based UI (course page + lesson sidebar). */
+  modules: ModuleWithLessons[];
+  lessonCount: number;
+  quizCount: number;
+  firstLessonId: string | null;
+  structureSource: "course_sections" | "modules_fallback";
+};
 
 export interface CourseListFilters {
   search?: string;
@@ -190,6 +222,140 @@ async function getCourseIdsForInstructor(instructorId: string): Promise<string[]
   return (data || []).map((r) => r.course_id);
 }
 
+async function loadLessonsByIds(ids: string[]): Promise<Map<string, LessonMeta>> {
+  const lessonsById = new Map<string, LessonMeta>();
+  if (ids.length === 0) return lessonsById;
+
+  const supabase = await createClient();
+  const unique = Array.from(new Set(ids));
+  const { data } = await supabase
+    .from("lessons")
+    .select("id, module_id, title, slug, sort_order, status")
+    .in("id", unique)
+    .returns<LessonMeta[]>();
+
+  for (const lesson of data || []) {
+    lessonsById.set(lesson.id, lesson);
+  }
+  return lessonsById;
+}
+
+/**
+ * Student/staff course syllabus from course_sections + course_steps (LearnDash),
+ * with modules → lessons fallback for older courses.
+ */
+export async function getCourseSyllabus(courseId: string): Promise<CourseSyllabus> {
+  const supabase = await createClient();
+
+  const { data: courseSections } = await supabase
+    .from("course_sections")
+    .select("id, course_id, title, description, sort_order, wordpress_section_id")
+    .eq("course_id", courseId)
+    .order("sort_order", { ascending: true });
+
+  let sections: CurriculumSection[];
+  let structureSource: CourseSyllabus["structureSource"] = "course_sections";
+
+  if (courseSections && courseSections.length > 0) {
+    const { data: steps } = await supabase
+      .from("course_steps")
+      .select("id, course_id, step_type, lesson_id, quiz_id, section_id, sort_order")
+      .eq("course_id", courseId)
+      .is("parent_step_id", null)
+      .order("sort_order", { ascending: true })
+      .returns<StepRow[]>();
+
+    const lessonIds = (steps || [])
+      .filter((s) => s.step_type === "lesson" && s.lesson_id)
+      .map((s) => s.lesson_id as string);
+
+    const quizIds = (steps || []).filter((s) => s.quiz_id).map((s) => s.quiz_id as string);
+
+    const lessonsById = await loadLessonsByIds(lessonIds);
+
+    const quizzesById = new Map<
+      string,
+      {
+        id: string;
+        title: string;
+        slug: string;
+        status: Database["public"]["Enums"]["content_status"];
+      }
+    >();
+
+    if (quizIds.length > 0) {
+      const { data: quizRows } = await supabase
+        .from("quizzes")
+        .select("id, title, slug, status")
+        .in("id", quizIds)
+        .returns<
+          {
+            id: string;
+            title: string;
+            slug: string;
+            status: Database["public"]["Enums"]["content_status"];
+          }[]
+        >();
+      for (const quiz of quizRows || []) {
+        quizzesById.set(quiz.id, quiz);
+      }
+    }
+
+    sections = buildSectionsFromSteps(
+      courseSections,
+      steps || [],
+      lessonsById,
+      quizzesById,
+      new Set()
+    );
+  } else {
+    structureSource = "modules_fallback";
+
+    const { data: modules } = await supabase
+      .from("modules")
+      .select("id, title, sort_order")
+      .eq("course_id", courseId)
+      .order("sort_order", { ascending: true })
+      .returns<ModuleRow[]>();
+
+    const { data: lessons } = await supabase
+      .from("lessons")
+      .select("id, module_id, title, slug, sort_order, status")
+      .eq("course_id", courseId)
+      .order("sort_order", { ascending: true })
+      .returns<LessonMeta[]>();
+
+    sections = buildSectionsFromModules(modules || [], lessons || [], new Set());
+  }
+
+  const counts = countCurriculumItems(sections);
+  const legacy = toLegacyStructure(sections);
+
+  const modules: ModuleWithLessons[] = legacy.map((section) => ({
+    id: section.id,
+    course_id: courseId,
+    title: section.title,
+    sort_order: section.sortOrder,
+    lessons: section.lessons.map((lesson) => ({
+      id: lesson.id,
+      module_id: lesson.moduleId,
+      course_id: courseId,
+      title: lesson.title,
+      slug: lesson.slug,
+      sort_order: lesson.sortOrder,
+    })),
+  }));
+
+  return {
+    sections,
+    modules,
+    lessonCount: counts.lessons,
+    quizCount: counts.quizzes,
+    firstLessonId: modules.flatMap((m) => m.lessons).map((l) => l.id)[0] ?? null,
+    structureSource,
+  };
+}
+
 export async function getCourseBuilderData(
   courseId: string,
   options?: { isAdmin?: boolean }
@@ -224,30 +390,7 @@ export async function getCourseBuilderData(
     .select("id, module_id, title, slug, sort_order, status")
     .eq("course_id", courseId)
     .order("sort_order", { ascending: true })
-    .returns<
-      {
-        id: string;
-        module_id: string | null;
-        title: string;
-        slug: string;
-        sort_order: number;
-        status: LessonRow["status"];
-      }[]
-    >();
-
-  const lessonIds = (lessons || []).map((l) => l.id);
-  const progressLessonIds = new Set<string>();
-
-  if (lessonIds.length > 0) {
-    const { data: progressRows } = await supabase
-      .from("lesson_progress")
-      .select("lesson_id")
-      .in("lesson_id", lessonIds)
-      .returns<{ lesson_id: string }[]>();
-    for (const row of progressRows || []) {
-      progressLessonIds.add(row.lesson_id);
-    }
-  }
+    .returns<LessonMeta[]>();
 
   const lessonsById = new Map((lessons || []).map((l) => [l.id, l]));
 
@@ -267,17 +410,31 @@ export async function getCourseBuilderData(
       .eq("course_id", courseId)
       .is("parent_step_id", null)
       .order("sort_order", { ascending: true })
-      .returns<
-        {
-          id: string;
-          course_id: string;
-          step_type: "lesson" | "topic" | "quiz";
-          lesson_id: string | null;
-          quiz_id: string | null;
-          section_id: string | null;
-          sort_order: number;
-        }[]
-      >();
+      .returns<StepRow[]>();
+
+    const missingLessonIds = (steps || [])
+      .filter((s) => s.lesson_id && !lessonsById.has(s.lesson_id))
+      .map((s) => s.lesson_id as string);
+
+    if (missingLessonIds.length > 0) {
+      const extras = await loadLessonsByIds(missingLessonIds);
+      Array.from(extras.entries()).forEach(([id, lesson]) => {
+        lessonsById.set(id, lesson);
+      });
+    }
+
+    const progressLessonIds = new Set<string>();
+    const allLessonIds = Array.from(lessonsById.keys());
+    if (allLessonIds.length > 0) {
+      const { data: progressRows } = await supabase
+        .from("lesson_progress")
+        .select("lesson_id")
+        .in("lesson_id", allLessonIds)
+        .returns<{ lesson_id: string }[]>();
+      for (const row of progressRows || []) {
+        progressLessonIds.add(row.lesson_id);
+      }
+    }
 
     const quizIds = (steps || []).filter((s) => s.quiz_id).map((s) => s.quiz_id as string);
 
@@ -319,6 +476,19 @@ export async function getCourseBuilderData(
   } else {
     structureSource = "modules_fallback";
 
+    const progressLessonIds = new Set<string>();
+    const fallbackLessonIds = (lessons || []).map((l) => l.id);
+    if (fallbackLessonIds.length > 0) {
+      const { data: progressRows } = await supabase
+        .from("lesson_progress")
+        .select("lesson_id")
+        .in("lesson_id", fallbackLessonIds)
+        .returns<{ lesson_id: string }[]>();
+      for (const row of progressRows || []) {
+        progressLessonIds.add(row.lesson_id);
+      }
+    }
+
     const { data: modules } = await supabase
       .from("modules")
       .select("id, title, sort_order")
@@ -339,7 +509,9 @@ export async function getCourseBuilderData(
     excerpt: course.excerpt,
     status: course.status,
     progressionType: course.progression_type,
+    accessType: course.access_type ?? "enrollment_required",
     thumbnailUrl: course.thumbnail_url,
+    promotionalVideoUrl: course.promotional_video_url ?? null,
     stripeProductId: course.stripe_product_id,
     stripePriceId: course.stripe_price_id,
     wordpressCourseId: course.wordpress_course_id,

@@ -1,15 +1,15 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentUser } from "@/lib/auth/permissions";
+import { canAccessCourse, getCurrentUser } from "@/lib/auth/permissions";
 import { canManageCourse } from "@/features/courses/permissions";
+import { getCourseSyllabus } from "@/features/courses/queries";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BuyCourseButton } from "@/components/stripe/buy-course-button";
 import { RichContent } from "@/components/courses/rich-content";
 import { BookOpen, CheckCircle, Clock, PlayCircle } from "lucide-react";
-import type { ModuleWithLessons } from "@/types/lms.types";
 import type { Database } from "@/types/database.types";
 
 type CourseRow = Database["public"]["Tables"]["courses"]["Row"];
@@ -28,7 +28,6 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
   const supabase = await createClient();
   const user = await getCurrentUser();
 
-  // Fetch course details
   const { data: course } = await supabase
     .from("courses")
     .select("*")
@@ -39,55 +38,9 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
     notFound();
   }
 
-  // Fetch modules and lessons
-  const { data: rawModules } = await supabase
-    .from("modules")
-    .select(
-      `
-      id,
-      course_id,
-      title,
-      sort_order,
-      lessons (
-        id,
-        module_id,
-        course_id,
-        title,
-        slug,
-        sort_order
-      )
-    `
-    )
-    .eq("course_id", courseId)
-    .order("sort_order", { ascending: true });
+  const syllabus = await getCourseSyllabus(courseId);
+  const { modules, lessonCount, firstLessonId } = syllabus;
 
-  interface RawModule {
-    id: string;
-    course_id: string;
-    title: string;
-    sort_order: number;
-    lessons: {
-      id: string;
-      module_id: string | null;
-      course_id: string;
-      title: string;
-      slug: string;
-      sort_order: number;
-    }[];
-  }
-
-  const modulesData = (rawModules as unknown as RawModule[] | null) || [];
-
-  // Format modules and sorted lessons
-  const modules: ModuleWithLessons[] = modulesData.map((m) => ({
-    id: m.id,
-    course_id: m.course_id,
-    title: m.title,
-    sort_order: m.sort_order,
-    lessons: (m.lessons || []).sort((a, b) => a.sort_order - b.sort_order),
-  }));
-
-  // Check enrollment
   let isEnrolled = false;
   if (user) {
     const { data: enrollment } = await supabase
@@ -101,8 +54,13 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
     isEnrolled = !!enrollment;
   }
 
-  const firstLesson = modules[0]?.lessons[0];
-  const isPreview = searchParams?.preview === "1" && (await canManageCourse(courseId));
+  const canManage = await canManageCourse(courseId);
+  const isPreview = searchParams?.preview === "1" && canManage;
+  // Admins / assigned instructors / group members unlock via canAccessCourse —
+  // enrollment is only required for regular students.
+  const hasContentAccess = isEnrolled || (await canAccessCourse(courseId)) || isPreview;
+  const role = user?.profile?.role;
+  const accessAsStaff = hasContentAccess && !isEnrolled && (role === "admin" || canManage);
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
@@ -116,7 +74,6 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
         </div>
       )}
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-3">
-        {/* Left 2 Cols: Course Overview & Syllabus */}
         <div className="space-y-8 lg:col-span-2">
           <div>
             <div className="mb-3 flex items-center space-x-2">
@@ -124,6 +81,7 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                 {course.status}
               </Badge>
               {isEnrolled && <Badge variant="default">Active Enrollment</Badge>}
+              {accessAsStaff && <Badge variant="warning">Staff access</Badge>}
             </div>
             <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
               {course.title}
@@ -135,7 +93,6 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
             />
           </div>
 
-          {/* Syllabus Section */}
           <div className="space-y-4">
             <h2 className="text-xl font-bold text-slate-900">Curriculum Syllabus</h2>
             {modules.length > 0 ? (
@@ -146,27 +103,31 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                       Section {mIdx + 1}: {module.title}
                     </h3>
                     <div className="space-y-2">
-                      {module.lessons.map((lesson) => (
-                        <div
-                          key={lesson.id}
-                          className="flex items-center justify-between py-1.5 text-sm text-slate-700"
-                        >
-                          <div className="flex items-center space-x-2">
-                            <PlayCircle className="h-4 w-4 text-slate-400" />
-                            <span>{lesson.title}</span>
+                      {module.lessons.length === 0 ? (
+                        <p className="text-xs text-slate-400">No lessons in this section yet.</p>
+                      ) : (
+                        module.lessons.map((lesson) => (
+                          <div
+                            key={lesson.id}
+                            className="flex items-center justify-between py-1.5 text-sm text-slate-700"
+                          >
+                            <div className="flex items-center space-x-2">
+                              <PlayCircle className="h-4 w-4 text-slate-400" />
+                              <span>{lesson.title}</span>
+                            </div>
+                            {hasContentAccess ? (
+                              <Link
+                                href={`/courses/${courseId}/lessons/${lesson.id}`}
+                                className="text-xs font-semibold text-brand-600 hover:text-brand-500"
+                              >
+                                Start →
+                              </Link>
+                            ) : (
+                              <span className="text-xs text-slate-400">Locked</span>
+                            )}
                           </div>
-                          {isEnrolled ? (
-                            <Link
-                              href={`/courses/${courseId}/lessons/${lesson.id}`}
-                              className="text-xs font-semibold text-brand-600 hover:text-brand-500"
-                            >
-                              Start →
-                            </Link>
-                          ) : (
-                            <span className="text-xs text-slate-400">Locked</span>
-                          )}
-                        </div>
-                      ))}
+                        ))
+                      )}
                     </div>
                   </Card>
                 ))}
@@ -177,7 +138,6 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
           </div>
         </div>
 
-        {/* Right 1 Col: Course Action Card */}
         <div>
           <Card className="sticky top-24 p-6">
             {course.thumbnail_url && (
@@ -203,30 +163,36 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                   <span className="flex items-center">
                     <Clock className="mr-2 h-4 w-4 text-slate-400" /> Total Lessons
                   </span>
-                  <span className="font-semibold text-slate-900">
-                    {modules.reduce((acc, m) => acc + m.lessons.length, 0)}
-                  </span>
+                  <span className="font-semibold text-slate-900">{lessonCount}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="flex items-center">
                     <CheckCircle className="mr-2 h-4 w-4 text-slate-400" /> Access
                   </span>
-                  <span className="font-semibold text-slate-900">Lifetime</span>
+                  <span className="font-semibold text-slate-900">
+                    {hasContentAccess ? (isEnrolled ? "Enrolled" : "Staff") : "Locked"}
+                  </span>
                 </div>
               </div>
 
               <div className="border-t border-slate-100 pt-4">
-                {isEnrolled && firstLesson ? (
-                  <Link href={`/courses/${courseId}/lessons/${firstLesson.id}`} className="block">
+                {hasContentAccess && firstLessonId ? (
+                  <Link href={`/courses/${courseId}/lessons/${firstLessonId}`} className="block">
                     <Button className="w-full" size="lg">
-                      Go to First Lesson
+                      {isEnrolled ? "Go to First Lesson" : "Open as staff"}
+                    </Button>
+                  </Link>
+                ) : hasContentAccess && canManage ? (
+                  <Link href={`/admin/courses/${courseId}/edit`} className="block">
+                    <Button className="w-full" size="lg" variant="outline">
+                      Open course builder
                     </Button>
                   </Link>
                 ) : user ? (
                   <BuyCourseButton
                     courseId={course.id}
                     courseTitle={course.title}
-                    amount={99} // Default price, or can be passed from Stripe priceId
+                    amount={99}
                     label="Enroll Now (One-Time)"
                   />
                 ) : (

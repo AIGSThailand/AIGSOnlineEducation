@@ -11,3 +11,5 @@ Student completion tracking across the course tree.
 ## Strategy
 
 Write to `step_progress` for new features; keep `lesson_progress` in sync during transition.
+
+Student player (`toggleStepCompleteAction`) dual-writes `lesson_progress` + `step_progress` for lessons, and `step_progress` only for quizzes.

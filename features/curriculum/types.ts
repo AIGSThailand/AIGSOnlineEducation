@@ -9,7 +9,7 @@
  * Legacy Phase 1 `modules` shares UUIDs with course_sections (dual-write sync).
  */
 
-import type { ContentStatus, CourseProgressionType, CourseStatus } from "@/types/database.types";
+import type { ContentStatus, CourseAccessType, CourseProgressionType, CourseStatus } from "@/types/database.types";
 
 /** URL-safe builder selection (also used in ?type=&id= search params). */
 export type CourseBuilderSelection =
@@ -73,7 +73,9 @@ export interface CourseBuilderCourse {
   excerpt: string | null;
   status: CourseStatus;
   progressionType: CourseProgressionType;
+  accessType: CourseAccessType;
   thumbnailUrl: string | null;
+  promotionalVideoUrl: string | null;
   stripeProductId: string | null;
   stripePriceId: string | null;
   wordpressCourseId: number | null;

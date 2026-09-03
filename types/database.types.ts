@@ -4,6 +4,7 @@ export type UserRole = "admin" | "instructor" | "student";
 export type CourseStatus = "draft" | "published" | "archived";
 export type ContentStatus = "draft" | "published" | "archived";
 export type CourseProgressionType = "linear" | "free_form";
+export type CourseAccessType = "open" | "enrollment_required" | "paid" | "private";
 export type CourseStepType = "lesson" | "topic" | "quiz";
 export type EnrollmentStatus = "active" | "completed" | "cancelled" | "expired";
 export type EnrollmentSource = "manual" | "stripe" | "migration" | "group" | "admin";
@@ -68,7 +69,9 @@ export interface Database {
           excerpt: string | null;
           status: CourseStatus;
           progression_type: CourseProgressionType;
+          access_type: CourseAccessType;
           thumbnail_url: string | null;
+          promotional_video_url: string | null;
           stripe_product_id: string | null;
           stripe_price_id: string | null;
           wordpress_course_id: number | null;
@@ -83,7 +86,9 @@ export interface Database {
           excerpt?: string | null;
           status?: CourseStatus;
           progression_type?: CourseProgressionType;
+          access_type?: CourseAccessType;
           thumbnail_url?: string | null;
+          promotional_video_url?: string | null;
           stripe_product_id?: string | null;
           stripe_price_id?: string | null;
           wordpress_course_id?: number | null;
@@ -98,7 +103,9 @@ export interface Database {
           excerpt?: string | null;
           status?: CourseStatus;
           progression_type?: CourseProgressionType;
+          access_type?: CourseAccessType;
           thumbnail_url?: string | null;
+          promotional_video_url?: string | null;
           stripe_product_id?: string | null;
           stripe_price_id?: string | null;
           wordpress_course_id?: number | null;
@@ -974,6 +981,7 @@ export interface Database {
       user_role: UserRole;
       enrollment_source: EnrollmentSource;
       course_progression_type: CourseProgressionType;
+      course_access_type: CourseAccessType;
       content_status: ContentStatus;
       course_step_type: CourseStepType;
       certificate_rule_source_type: CertificateRuleSourceType;
