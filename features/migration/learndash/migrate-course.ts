@@ -114,11 +114,17 @@ async function upsertLessonFromItem(
   item: ProposedCurriculumItem,
   sortOrder: number
 ): Promise<string> {
-  const content = wordpressContentToHtml(item.contentHtml);
-  const excerpt = item.excerpt ? wordpressContentToHtml(item.excerpt) : null;
+  // Preserve imported HTML; do not strip for storage. source_content_html is set once.
+  const content = item.contentHtml || "";
+  const excerpt = item.excerpt ? item.excerpt : null;
 
   if (item.source.type === "sfwd-lessons" && item.source.id != null) {
-    const row = {
+    const { data: existing } = await fromTable(admin, "lessons")
+      .select("id, source_content_html")
+      .eq("wordpress_lesson_id", item.source.id)
+      .maybeSingle();
+
+    const row: Record<string, unknown> = {
       title: item.title,
       slug: item.slug,
       content,
@@ -130,6 +136,11 @@ async function upsertLessonFromItem(
       sort_order: sortOrder,
       updated_at: new Date().toISOString(),
     };
+    // Immutable after first import — only set when missing.
+    if (!existing?.source_content_html) {
+      row.source_content_html = content;
+    }
+
     const { data, error } = await fromTable(admin, "lessons")
       .upsert(row, { onConflict: "wordpress_lesson_id" })
       .select("id")
@@ -143,19 +154,27 @@ async function upsertLessonFromItem(
   if (item.source.type === "sfwd-topic" && item.source.id != null) {
     const existingId = await findMappedTarget(admin, "sfwd-topic", item.source.id);
     if (existingId) {
-      const { error } = await fromTable(admin, "lessons")
-        .update({
-          title: item.title,
-          slug: item.slug,
-          content,
-          excerpt,
-          status: item.status,
-          course_id: courseUuid,
-          module_id: moduleId,
-          sort_order: sortOrder,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", existingId);
+      const { data: existing } = await fromTable(admin, "lessons")
+        .select("source_content_html")
+        .eq("id", existingId)
+        .maybeSingle();
+
+      const patch: Record<string, unknown> = {
+        title: item.title,
+        slug: item.slug,
+        content,
+        excerpt,
+        status: item.status,
+        course_id: courseUuid,
+        module_id: moduleId,
+        sort_order: sortOrder,
+        updated_at: new Date().toISOString(),
+      };
+      if (!existing?.source_content_html) {
+        patch.source_content_html = content;
+      }
+
+      const { error } = await fromTable(admin, "lessons").update(patch).eq("id", existingId);
       if (error) {
         throw new Error(`Topic→lesson update ${item.source.id}: ${error.message}`);
       }
@@ -173,6 +192,7 @@ async function upsertLessonFromItem(
         module_id: moduleId,
         sort_order: sortOrder,
         wordpress_lesson_id: null,
+        source_content_html: content,
       })
       .select("id")
       .single();

@@ -171,18 +171,20 @@ lib/
 3. Add `"use client"` only when client-side behavior is required.
 4. Do not convert an entire page into a Client Component for one interactive child.
 5. Prefer Server Actions for authenticated application mutations when appropriate.
-6. Use Route Handlers for:
+6. TipTap `editor.getJSON()` (and similar editor docs) must be passed through `JSON.parse(JSON.stringify(...))` before Server Action args — Next only accepts plain JSON-serializable objects.
+7. Use Route Handlers for:
    - Stripe webhooks
    - external integrations
    - public APIs
    - endpoints requiring raw request bodies
-7. Keep authentication and authorization checks server-side.
-8. Do not depend on middleware as the only authorization layer.
-9. Use `loading.tsx`, `error.tsx`, and `not-found.tsx` where they improve UX.
-10. Avoid unnecessary client-side fetching if the data can be fetched in a Server Component.
-11. Validate all mutation inputs.
-12. Handle expected errors explicitly.
-13. Never return secret/internal fields to the client.
+8. Keep authentication and authorization checks server-side.
+9. Do not depend on middleware as the only authorization layer.
+10. Use `loading.tsx`, `error.tsx`, and `not-found.tsx` where they improve UX.
+11. Avoid unnecessary client-side fetching if the data can be fetched in a Server Component.
+12. Validate all mutation inputs.
+13. Handle expected errors explicitly.
+14. Never return secret/internal fields to the client.
+15. Never format dates with bare `toLocaleString()` / `toLocaleDateString()` in SSR or hydrated Client Components — use a fixed locale (and preferably `timeZone`) via `formatDate` / `formatDateTime` in `lib/utils`, or the server and client will mismatch.
 
 ---
 
@@ -806,6 +808,7 @@ Never assume a migration succeeded because the script completed.
 10. Course-progress **steps** responses may be a nested `[[step,…]]` array (X-WP-Total=1); always flatten before mapping.
 11. Treat a progress step as completed only when `step_status === "completed"` (ignore lone timestamps).
 12. When materializing group enrollments, never overwrite an existing enrollment whose `enrollment_source` is `stripe`, `migration`, `admin`, or `group`; only insert missing rows or upgrade weak `manual` rows.
+13. Lesson HTML: store imported LearnDash HTML in `lessons.content` without destructive stripping at migrate time; set `source_content_html` only when it is null. Normal lesson editor/server mutations must never update `source_content_html` (immutable migration/audit data). Sanitize for display at render boundaries (`RichContent` / `wordpressContentToHtml`), not by overwriting stored source.
 
 Reconcile:
 

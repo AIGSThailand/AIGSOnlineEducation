@@ -57,6 +57,7 @@ interface CourseStructureProps {
   onSelect: (item: SelectedItem) => void;
   onAddSection: () => void;
   onAddLesson: (sectionId: string) => void;
+  onAddQuiz: (sectionId: string) => void;
   onMoveSection: (sectionId: string, direction: "up" | "down") => void;
   onMoveLesson: (lessonId: string, direction: "up" | "down") => void;
   onDeleteSection: (sectionId: string) => void;
@@ -77,6 +78,7 @@ export function CourseStructure({
   onSelect,
   onAddSection,
   onAddLesson,
+  onAddQuiz,
   onMoveSection,
   onMoveLesson,
   onDeleteSection,
@@ -313,6 +315,7 @@ export function CourseStructure({
                     onSelect={onSelect}
                     onToggleSection={onToggleSection}
                     onAddLesson={onAddLesson}
+                    onAddQuiz={onAddQuiz}
                     onMoveSection={onMoveSection}
                     onMoveLesson={onMoveLesson}
                     onDeleteSection={onDeleteSection}
@@ -380,6 +383,7 @@ interface SortableSectionRowProps {
   onSelect: (item: SelectedItem) => void;
   onToggleSection: (sectionId: string) => void;
   onAddLesson: (sectionId: string) => void;
+  onAddQuiz: (sectionId: string) => void;
   onMoveSection: (sectionId: string, direction: "up" | "down") => void;
   onMoveLesson: (lessonId: string, direction: "up" | "down") => void;
   onDeleteSection: (sectionId: string) => void;
@@ -399,6 +403,7 @@ function SortableSectionRow({
   onSelect,
   onToggleSection,
   onAddLesson,
+  onAddQuiz,
   onMoveSection,
   onMoveLesson,
   onDeleteSection,
@@ -501,6 +506,14 @@ function SortableSectionRow({
                 >
                   Add lesson
                 </button>
+                {" · "}
+                <button
+                  type="button"
+                  className="text-brand-600 underline focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  onClick={() => onAddQuiz(section.id)}
+                >
+                  Add quiz
+                </button>
               </li>
             ) : (
               items.map((item) => {
@@ -546,7 +559,7 @@ function SortableSectionRow({
                 return null;
               })
             )}
-            <li className="px-1 py-1">
+            <li className="flex flex-col gap-0.5 px-1 py-1">
               <Button
                 type="button"
                 variant="ghost"
@@ -556,6 +569,16 @@ function SortableSectionRow({
               >
                 <Plus className="mr-1 h-3.5 w-3.5" />
                 Add lesson
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-8 w-full justify-start text-xs"
+                onClick={() => onAddQuiz(section.id)}
+              >
+                <Plus className="mr-1 h-3.5 w-3.5" />
+                Add quiz
               </Button>
             </li>
           </ul>

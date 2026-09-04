@@ -85,6 +85,14 @@ export const deleteLessonSchema = z.object({
   lessonId: z.string().uuid(),
 });
 
+export const createQuizSchema = z.object({
+  courseId: z.string().uuid(),
+  sectionId: z.string().uuid(),
+  title: z.string().trim().min(2, "Quiz title must be at least 2 characters.").max(200),
+  slug: slugField.optional(),
+  status: z.enum(["draft", "published", "archived"]).optional(),
+});
+
 export const reorderSectionsSchema = z.object({
   courseId: z.string().uuid(),
   sectionIds: z.array(z.string().uuid()).min(1),

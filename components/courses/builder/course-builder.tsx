@@ -13,6 +13,7 @@ import { DeleteItemDialog } from "./delete-item-dialog";
 import {
   createLessonAction,
   createModuleAction,
+  createQuizAction,
   deleteLessonAction,
   deleteModuleAction,
   duplicateLessonAction,
@@ -137,6 +138,26 @@ export function CourseBuilder({
     });
   };
 
+  const handleAddQuiz = (sectionId: string) => {
+    const section = data.structure.find((s) => s.id === sectionId);
+    const quizCount =
+      section?.items.filter((i) => i.kind === "quiz" || i.kind === "exam").length ?? 0;
+    const title = `Quiz ${quizCount + 1}`;
+    startTransition(async () => {
+      const result = await createQuizAction({
+        courseId: data.course.id,
+        sectionId,
+        title,
+        status: "draft",
+      });
+      if (result.success && result.data) {
+        handleSelect({ type: "quiz", id: result.data.quizId, sectionId });
+        setExpanded((prev) => new Set(prev).add(sectionId));
+        router.refresh();
+      }
+    });
+  };
+
   const handleMoveSection = (sectionId: string, direction: "up" | "down") => {
     startTransition(async () => {
       await reorderModuleAction({ courseId: data.course.id, moduleId: sectionId, direction });
@@ -230,6 +251,7 @@ export function CourseBuilder({
     onSelect: handleSelect,
     onAddSection: handleAddSection,
     onAddLesson: handleAddLesson,
+    onAddQuiz: handleAddQuiz,
     onMoveSection: handleMoveSection,
     onMoveLesson: handleMoveLesson,
     onDeleteSection: (id: string) => setDeleteTarget({ kind: "section", id }),

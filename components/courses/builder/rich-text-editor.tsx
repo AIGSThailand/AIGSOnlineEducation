@@ -1,12 +1,16 @@
 "use client";
 
 import * as React from "react";
-import { useEditor, EditorContent, type Editor } from "@tiptap/react";
+import { useEditor, EditorContent, type Editor, type JSONContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
 import Placeholder from "@tiptap/extension-placeholder";
+import { Table } from "@tiptap/extension-table";
+import { TableRow } from "@tiptap/extension-table-row";
+import { TableCell } from "@tiptap/extension-table-cell";
+import { TableHeader } from "@tiptap/extension-table-header";
 import {
   Bold,
   Italic,
@@ -23,13 +27,21 @@ import {
   Undo2,
   Redo2,
   Code2,
+  Table2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { stripWordPressBlockComments } from "@/lib/utils/wordpress-content";
 
+export type RichTextChange = {
+  html: string;
+  json: JSONContent;
+};
+
 interface RichTextEditorProps {
   value: string;
-  onChange: (html: string) => void;
+  /** Prefer TipTap JSON when present (after first structured save). */
+  jsonValue?: JSONContent | Record<string, unknown> | null;
+  onChange: (change: RichTextChange) => void;
   placeholder?: string;
   disabled?: boolean;
   className?: string;
@@ -39,8 +51,13 @@ interface RichTextEditorProps {
   courseId?: string;
 }
 
+function emptyDoc(): JSONContent {
+  return { type: "doc", content: [{ type: "paragraph" }] };
+}
+
 export function RichTextEditor({
   value,
+  jsonValue,
   onChange,
   placeholder = "Write lesson content…",
   disabled,
@@ -50,7 +67,14 @@ export function RichTextEditor({
 }: RichTextEditorProps) {
   const [sourceMode, setSourceMode] = React.useState(false);
   const [sourceHtml, setSourceHtml] = React.useState(value);
-  const lastEmitted = React.useRef(value);
+  const lastEmittedHtml = React.useRef(value);
+
+  const initialContent = React.useMemo(() => {
+    if (jsonValue && typeof jsonValue === "object" && "type" in jsonValue) {
+      return jsonValue as JSONContent;
+    }
+    return stripWordPressBlockComments(value) || "";
+  }, [jsonValue, value]);
 
   const editor = useEditor({
     extensions: [
@@ -65,9 +89,16 @@ export function RichTextEditor({
       Image.configure({
         HTMLAttributes: { class: "rounded-lg max-w-full h-auto" },
       }),
+      Table.configure({
+        resizable: false,
+        HTMLAttributes: { class: "lesson-table border-collapse w-full" },
+      }),
+      TableRow,
+      TableHeader,
+      TableCell,
       Placeholder.configure({ placeholder }),
     ],
-    content: stripWordPressBlockComments(value) || "",
+    content: initialContent || emptyDoc(),
     editable: !disabled && !sourceMode,
     immediatelyRender: false,
     editorProps: {
@@ -78,20 +109,30 @@ export function RichTextEditor({
     },
     onUpdate: ({ editor: ed }) => {
       const html = ed.getHTML();
-      lastEmitted.current = html;
-      onChange(html === "<p></p>" ? "" : html);
+      const normalized = html === "<p></p>" ? "" : html;
+      lastEmittedHtml.current = normalized;
+      onChange({ html: normalized, json: ed.getJSON() });
     },
   });
 
   React.useEffect(() => {
     if (!editor || sourceMode) return;
+    if (jsonValue && typeof jsonValue === "object" && "type" in jsonValue) {
+      const current = JSON.stringify(editor.getJSON());
+      const incoming = JSON.stringify(jsonValue);
+      if (current !== incoming && lastEmittedHtml.current !== value) {
+        editor.commands.setContent(jsonValue as JSONContent, { emitUpdate: false });
+        lastEmittedHtml.current = editor.getHTML() === "<p></p>" ? "" : editor.getHTML();
+      }
+      return;
+    }
     const incoming = stripWordPressBlockComments(value) || "";
     const current = editor.getHTML();
-    if (incoming !== lastEmitted.current && incoming !== current) {
-      editor.commands.setContent(incoming, { emitUpdate: false });
-      lastEmitted.current = incoming;
+    if (incoming !== lastEmittedHtml.current && incoming !== current) {
+      editor.commands.setContent(incoming || emptyDoc(), { emitUpdate: false });
+      lastEmittedHtml.current = incoming;
     }
-  }, [value, editor, sourceMode]);
+  }, [value, jsonValue, editor, sourceMode]);
 
   React.useEffect(() => {
     if (editor) editor.setEditable(!disabled && !sourceMode);
@@ -107,9 +148,9 @@ export function RichTextEditor({
   const exitSourceMode = () => {
     if (!editor) return;
     const cleaned = stripWordPressBlockComments(sourceHtml);
-    editor.commands.setContent(cleaned || "", { emitUpdate: false });
-    lastEmitted.current = cleaned;
-    onChange(cleaned);
+    editor.commands.setContent(cleaned || emptyDoc(), { emitUpdate: false });
+    lastEmittedHtml.current = cleaned;
+    onChange({ html: cleaned, json: editor.getJSON() });
     setSourceMode(false);
   };
 
@@ -138,7 +179,10 @@ export function RichTextEditor({
           disabled={disabled}
           onChange={(e) => {
             setSourceHtml(e.target.value);
-            onChange(e.target.value);
+            onChange({
+              html: e.target.value,
+              json: editor?.getJSON() || emptyDoc(),
+            });
           }}
           className="min-h-[280px] w-full resize-y border-0 bg-slate-50 px-4 py-3 font-mono text-sm text-slate-800 focus:outline-none"
           aria-label="HTML source"
@@ -196,6 +240,10 @@ function Toolbar({
     addImageFromUrl();
   };
 
+  const insertTable = () => {
+    editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
+  };
+
   return (
     <div className="space-y-0">
       <input
@@ -219,7 +267,6 @@ function Toolbar({
             editor.chain().focus().setImage({ src: publicUrl }).run();
           } catch (err) {
             setImageError(err instanceof Error ? err.message : "Image upload failed.");
-            // Fallback: allow pasting a URL if upload fails / not configured
             if (
               err instanceof Error &&
               err.message.toLowerCase().includes("not configured")
@@ -236,126 +283,134 @@ function Toolbar({
         role="toolbar"
         aria-label="Text formatting"
       >
-      <ToolBtn
-        label="Undo"
-        disabled={disabled || !editor.can().undo()}
-        onClick={() => editor.chain().focus().undo().run()}
-      >
-        <Undo2 className="h-3.5 w-3.5" />
-      </ToolBtn>
-      <ToolBtn
-        label="Redo"
-        disabled={disabled || !editor.can().redo()}
-        onClick={() => editor.chain().focus().redo().run()}
-      >
-        <Redo2 className="h-3.5 w-3.5" />
-      </ToolBtn>
-      <Sep />
-      <ToolBtn
-        label="Heading 2"
-        active={editor.isActive("heading", { level: 2 })}
-        disabled={disabled}
-        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-      >
-        <Heading2 className="h-3.5 w-3.5" />
-      </ToolBtn>
-      <ToolBtn
-        label="Heading 3"
-        active={editor.isActive("heading", { level: 3 })}
-        disabled={disabled}
-        onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-      >
-        <Heading3 className="h-3.5 w-3.5" />
-      </ToolBtn>
-      <Sep />
-      <ToolBtn
-        label="Bold"
-        active={editor.isActive("bold")}
-        disabled={disabled}
-        onClick={() => editor.chain().focus().toggleBold().run()}
-      >
-        <Bold className="h-3.5 w-3.5" />
-      </ToolBtn>
-      <ToolBtn
-        label="Italic"
-        active={editor.isActive("italic")}
-        disabled={disabled}
-        onClick={() => editor.chain().focus().toggleItalic().run()}
-      >
-        <Italic className="h-3.5 w-3.5" />
-      </ToolBtn>
-      <ToolBtn
-        label="Underline"
-        active={editor.isActive("underline")}
-        disabled={disabled}
-        onClick={() => editor.chain().focus().toggleUnderline().run()}
-      >
-        <UnderlineIcon className="h-3.5 w-3.5" />
-      </ToolBtn>
-      <Sep />
-      <ToolBtn
-        label="Bullet list"
-        active={editor.isActive("bulletList")}
-        disabled={disabled}
-        onClick={() => editor.chain().focus().toggleBulletList().run()}
-      >
-        <List className="h-3.5 w-3.5" />
-      </ToolBtn>
-      <ToolBtn
-        label="Numbered list"
-        active={editor.isActive("orderedList")}
-        disabled={disabled}
-        onClick={() => editor.chain().focus().toggleOrderedList().run()}
-      >
-        <ListOrdered className="h-3.5 w-3.5" />
-      </ToolBtn>
-      <ToolBtn
-        label="Blockquote"
-        active={editor.isActive("blockquote")}
-        disabled={disabled}
-        onClick={() => editor.chain().focus().toggleBlockquote().run()}
-      >
-        <Quote className="h-3.5 w-3.5" />
-      </ToolBtn>
-      <ToolBtn
-        label="Inline code"
-        active={editor.isActive("code")}
-        disabled={disabled}
-        onClick={() => editor.chain().focus().toggleCode().run()}
-      >
-        <Code className="h-3.5 w-3.5" />
-      </ToolBtn>
-      <ToolBtn
-        label="Horizontal rule"
-        disabled={disabled}
-        onClick={() => editor.chain().focus().setHorizontalRule().run()}
-      >
-        <Minus className="h-3.5 w-3.5" />
-      </ToolBtn>
-      <Sep />
-      <ToolBtn label="Insert link" active={editor.isActive("link")} disabled={disabled} onClick={setLink}>
-        <Link2 className="h-3.5 w-3.5" />
-      </ToolBtn>
-      <ToolBtn
-        label={courseId ? "Upload image" : "Insert image URL"}
-        disabled={disabled || imageUploading}
-        onClick={addImage}
-      >
-        <ImageIcon className="h-3.5 w-3.5" />
-      </ToolBtn>
-      {allowHtmlSource && (
-        <>
-          <Sep />
-          <ToolBtn
-            label={sourceMode ? "Visual editor" : "HTML source"}
-            active={sourceMode}
-            disabled={false}
-            onClick={onToggleSource}
-          >
-            <Code2 className="h-3.5 w-3.5" />
-          </ToolBtn>
-        </>
-      )}
+        <ToolBtn
+          label="Undo"
+          disabled={disabled || !editor.can().undo()}
+          onClick={() => editor.chain().focus().undo().run()}
+        >
+          <Undo2 className="h-3.5 w-3.5" />
+        </ToolBtn>
+        <ToolBtn
+          label="Redo"
+          disabled={disabled || !editor.can().redo()}
+          onClick={() => editor.chain().focus().redo().run()}
+        >
+          <Redo2 className="h-3.5 w-3.5" />
+        </ToolBtn>
+        <Sep />
+        <ToolBtn
+          label="Heading 2"
+          active={editor.isActive("heading", { level: 2 })}
+          disabled={disabled}
+          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+        >
+          <Heading2 className="h-3.5 w-3.5" />
+        </ToolBtn>
+        <ToolBtn
+          label="Heading 3"
+          active={editor.isActive("heading", { level: 3 })}
+          disabled={disabled}
+          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+        >
+          <Heading3 className="h-3.5 w-3.5" />
+        </ToolBtn>
+        <Sep />
+        <ToolBtn
+          label="Bold"
+          active={editor.isActive("bold")}
+          disabled={disabled}
+          onClick={() => editor.chain().focus().toggleBold().run()}
+        >
+          <Bold className="h-3.5 w-3.5" />
+        </ToolBtn>
+        <ToolBtn
+          label="Italic"
+          active={editor.isActive("italic")}
+          disabled={disabled}
+          onClick={() => editor.chain().focus().toggleItalic().run()}
+        >
+          <Italic className="h-3.5 w-3.5" />
+        </ToolBtn>
+        <ToolBtn
+          label="Underline"
+          active={editor.isActive("underline")}
+          disabled={disabled}
+          onClick={() => editor.chain().focus().toggleUnderline().run()}
+        >
+          <UnderlineIcon className="h-3.5 w-3.5" />
+        </ToolBtn>
+        <Sep />
+        <ToolBtn
+          label="Bullet list"
+          active={editor.isActive("bulletList")}
+          disabled={disabled}
+          onClick={() => editor.chain().focus().toggleBulletList().run()}
+        >
+          <List className="h-3.5 w-3.5" />
+        </ToolBtn>
+        <ToolBtn
+          label="Numbered list"
+          active={editor.isActive("orderedList")}
+          disabled={disabled}
+          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+        >
+          <ListOrdered className="h-3.5 w-3.5" />
+        </ToolBtn>
+        <ToolBtn
+          label="Blockquote"
+          active={editor.isActive("blockquote")}
+          disabled={disabled}
+          onClick={() => editor.chain().focus().toggleBlockquote().run()}
+        >
+          <Quote className="h-3.5 w-3.5" />
+        </ToolBtn>
+        <ToolBtn
+          label="Inline code"
+          active={editor.isActive("code")}
+          disabled={disabled}
+          onClick={() => editor.chain().focus().toggleCode().run()}
+        >
+          <Code className="h-3.5 w-3.5" />
+        </ToolBtn>
+        <ToolBtn
+          label="Horizontal rule"
+          disabled={disabled}
+          onClick={() => editor.chain().focus().setHorizontalRule().run()}
+        >
+          <Minus className="h-3.5 w-3.5" />
+        </ToolBtn>
+        <Sep />
+        <ToolBtn label="Insert link" active={editor.isActive("link")} disabled={disabled} onClick={setLink}>
+          <Link2 className="h-3.5 w-3.5" />
+        </ToolBtn>
+        <ToolBtn
+          label={courseId ? "Upload image" : "Insert image URL"}
+          disabled={disabled || imageUploading}
+          onClick={addImage}
+        >
+          <ImageIcon className="h-3.5 w-3.5" />
+        </ToolBtn>
+        <ToolBtn
+          label="Insert table"
+          active={editor.isActive("table")}
+          disabled={disabled}
+          onClick={insertTable}
+        >
+          <Table2 className="h-3.5 w-3.5" />
+        </ToolBtn>
+        {allowHtmlSource && (
+          <>
+            <Sep />
+            <ToolBtn
+              label={sourceMode ? "Visual editor" : "HTML source"}
+              active={sourceMode}
+              disabled={false}
+              onClick={onToggleSource}
+            >
+              <Code2 className="h-3.5 w-3.5" />
+            </ToolBtn>
+          </>
+        )}
       </div>
       {(imageUploading || imageError) && (
         <p

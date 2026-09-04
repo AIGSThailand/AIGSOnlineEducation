@@ -38,6 +38,65 @@ async function uniqueQuizSlug(supabase: Db, base: string): Promise<string> {
   }
 }
 
+/** Create an empty draft quiz and place it as a course_steps quiz under a section. */
+export async function createQuizRecord(
+  supabase: Db,
+  courseId: string,
+  sectionId: string,
+  input: { title: string; slug?: string; status?: string }
+): Promise<string> {
+  const { data: module } = await supabase
+    .from("modules")
+    .select("id, course_id, title, sort_order")
+    .eq("id", sectionId)
+    .eq("course_id", courseId)
+    .maybeSingle<{ id: string; course_id: string; title: string; sort_order: number }>();
+
+  if (!module) throw new Error("Section not found.");
+
+  await syncModuleToSection(supabase, module);
+
+  const slug = await uniqueQuizSlug(
+    supabase,
+    input.slug?.trim() || slugifyTitle(`${input.title}-${Date.now()}`)
+  );
+
+  const { data: quiz, error: quizErr } = await supabase
+    .from("quizzes")
+    .insert({
+      title: input.title,
+      slug,
+      description: null,
+      status: input.status || "draft",
+      passing_percentage: 80,
+      require_all_questions: true,
+      randomize_questions: false,
+    } as never)
+    .select("id")
+    .single<{ id: string }>();
+
+  if (quizErr || !quiz) {
+    throw new Error(quizErr?.message || "Failed to create quiz.");
+  }
+
+  const sortOrder = await getNextTopLevelStepSortOrder(supabase, courseId);
+  const { error: stepErr } = await supabase.from("course_steps").insert({
+    course_id: courseId,
+    step_type: "quiz",
+    quiz_id: quiz.id,
+    lesson_id: null,
+    topic_id: null,
+    parent_step_id: null,
+    section_id: sectionId,
+    sort_order: sortOrder,
+    is_required: true,
+  } as never);
+
+  if (stepErr) throw new Error(stepErr.message);
+
+  return quiz.id;
+}
+
 export async function duplicateLessonRecord(
   supabase: Db,
   courseId: string,
