@@ -4,38 +4,35 @@
  * Usage:
  *   npm run inspect:learndash-course -- 26475
  *   npm run inspect:learndash-course -- 26475 --json
+ *   npm run inspect:learndash-course -- 26475 --env staging
  *
- * Requires LEARNDASH_BASE_URL, LEARNDASH_USERNAME, LEARNDASH_APP_PASSWORD in .env.local
+ * Requires LEARNDASH_* in .env.local / .env.staging / .env.production (--env).
  */
-import fs from "fs";
-import path from "path";
 import { inspectLearnDashCourse, formatCourseStructureReport } from "../features/migration/learndash/inspect-course";
 import { LearnDashError } from "../lib/learndash/errors";
 import { isLearnDashConfigured } from "../lib/learndash/config";
-
-function loadEnvLocal(): void {
-  const envPath = path.resolve(process.cwd(), ".env.local");
-  if (!fs.existsSync(envPath)) return;
-  for (const line of fs.readFileSync(envPath, "utf8").split(/\r?\n/)) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith("#") || !trimmed.includes("=")) continue;
-    const i = trimmed.indexOf("=");
-    const key = trimmed.slice(0, i).trim();
-    const value = trimmed.slice(i + 1).trim().replace(/^["']|["']$/g, "");
-    if (!(key in process.env)) process.env[key] = value;
-  }
-}
+import { loadCliEnv, parseEnvFlag, stripEnvArgs } from "./lib/load-cli-env.mjs";
 
 async function main(): Promise<void> {
-  loadEnvLocal();
+  let envName: string;
+  try {
+    envName = parseEnvFlag(process.argv);
+    const loaded = loadCliEnv(envName);
+    console.log(`env file=${loaded.filePath} (--env ${envName})`);
+  } catch (err) {
+    console.error(err instanceof Error ? err.message : err);
+    process.exit(1);
+  }
 
-  const args = process.argv.slice(2).filter((a) => a !== "--");
+  const args = stripEnvArgs(process.argv.slice(2).filter((a) => a !== "--"));
   const jsonMode = args.includes("--json");
   const idArg = args.find((a) => !a.startsWith("--"));
   const courseId = Number(idArg || 26475);
 
   if (!Number.isFinite(courseId) || courseId <= 0) {
-    console.error("Usage: npm run inspect:learndash-course -- <courseId> [--json]");
+    console.error(
+      "Usage: npm run inspect:learndash-course -- <courseId> [--env local|staging|production] [--json]"
+    );
     process.exit(1);
   }
 
@@ -46,7 +43,7 @@ async function main(): Promise<void> {
 
   if (!isLearnDashConfigured()) {
     console.error(
-      "LearnDash is not configured. Add to .env.local:\n" +
+      `LearnDash is not configured. Add to .env.${envName}:\n` +
         "  LEARNDASH_BASE_URL=https://your-wp-site.example\n" +
         "  LEARNDASH_USERNAME=...\n" +
         "  LEARNDASH_APP_PASSWORD=...\n"
@@ -57,7 +54,6 @@ async function main(): Promise<void> {
   try {
     const inspection = await inspectLearnDashCourse(courseId);
     if (jsonMode) {
-      // Avoid dumping huge HTML content in default summary — trim content fields
       const slim = {
         ...inspection,
         entities: {

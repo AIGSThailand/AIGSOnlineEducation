@@ -35,8 +35,22 @@
 Validated: quiz **26556** returns 8 questions with ProQuiz options via v1.  
 Course **26475** dry-run `--with-questions`: 77 questions across 8 quizzes, **0 missing options**.
 
-## Not started (Phase 4+)
+## Phase 4 delivered
 
-- Users, enrollments, progress
-- Stripe
+- Course enrollment IDs via `GET /ldlms/v1/sfwd-courses/{id}/users` (v2 unfiltered on this site)
+- Hydrate users via `GET /wp/v2/users/{id}?context=edit` (email + roles)
+- **Writes:** enrolled users only → Auth (`email_confirm` + random password) + `enrollments` (`migration`)
+- CLI: `npm run inspect:learndash-users` / `migrate:learndash-users`
+
+## Phase 5 delivered
+
+- Progress steps via `…/course-progress/{courseId}/steps` (flatten nested `[[steps]]`)
+- Writes: `lesson_progress` / `topic_progress` / `step_progress`; mark completed enrollments
+- Groups via `ldlms/v2/groups` + v1 member ids; materialize `enrollment_source=group`
+- CLI: `inspect|migrate:learndash-progress`, `inspect|migrate:learndash-groups`
+
+## Not started (Phase 6+)
+
+- Certificates, Stripe customer linkage
 - Admin UI
+- Quiz attempt answer history

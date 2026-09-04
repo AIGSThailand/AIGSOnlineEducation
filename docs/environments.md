@@ -28,8 +28,22 @@ Related docs: [deployment.md](./deployment.md) · [database-migrations.md](./dat
 
 All variables are documented in `.env.example`. Configure per environment in:
 
-- **Local:** `.env.local` (gitignored)
-- **Staging / Production:** Vercel project environment settings (never commit secrets)
+| File / place | Used by |
+|--------------|---------|
+| `.env.local` | `npm run dev` (Next.js) + CLI default (`--env local`) |
+| `.env.cli.staging` | CLI scripts only (`--env staging`) |
+| `.env.cli.production` | CLI scripts only (`--env production`) |
+| Vercel project env | Deployed staging / production apps |
+
+**Create CLI files (gitignored):**
+
+```bash
+cp .env.example .env.local
+cp .env.example .env.cli.staging
+cp .env.example .env.cli.production
+```
+
+Do **not** name a secrets file `.env.production` — Next.js loads that during `next build`.
 
 ### Required public variables
 
@@ -66,12 +80,15 @@ All variables are documented in `.env.example`. Configure per environment in:
 | `lib/env/server.ts` | Validates secrets; Stripe/Supabase environment guards                 |
 | `lib/env/guards.ts` | Blocks `sk_live_*` in local/staging; warns on local + hosted Supabase |
 
-Guards run when server secrets are first accessed (Stripe checkout, webhooks, admin client).
+Guards:
+
+- **Supabase** — when the service-role / admin client is used (LearnDash migrate, etc.)
+- **Stripe** — only when Stripe secrets are accessed (checkout, webhooks), not on content migrate
 
 Optional overrides (use sparingly):
 
 - `ALLOW_HOSTED_SUPABASE_LOCAL=true` — suppress warning when local dev uses a hosted Supabase URL
-- `ALLOW_STRIPE_TEST_IN_PRODUCTION=true` — allow `sk_test_*` when `APP_ENV=production`
+- `ALLOW_STRIPE_TEST_IN_PRODUCTION=true` — allow `sk_test_*` when `APP_ENV=production` (Stripe ops only)
 
 ---
 

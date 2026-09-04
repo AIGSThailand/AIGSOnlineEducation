@@ -4,34 +4,20 @@
  * Use when email confirmation is enabled and you need to activate test accounts
  * without waiting for the confirmation email.
  *
- * Requires SUPABASE_SERVICE_ROLE_KEY for the target environment (.env.local).
+ * Requires SUPABASE_SERVICE_ROLE_KEY for the target environment
+ * (.env.local / .env.staging / .env.production via --env).
  *
  * Usage:
  *   node scripts/verify-user-email.mjs --list
- *   node scripts/verify-user-email.mjs --email test@example.com
+ *   node scripts/verify-user-email.mjs --email test@example.com --env staging
  *   node scripts/verify-user-email.mjs --email test@example.com --role admin
  *   node scripts/verify-user-email.mjs --id <user-uuid>
  *
  * npm run auth:verify-email -- --email test@example.com --role admin
  */
 
-import fs from "fs";
-import path from "path";
 import { createClient } from "@supabase/supabase-js";
-
-function loadEnv() {
-  const envPath = path.resolve(process.cwd(), ".env.local");
-  if (!fs.existsSync(envPath)) return;
-  fs.readFileSync(envPath, "utf8")
-    .split("\n")
-    .forEach((line) => {
-      const trimmed = line.trim();
-      if (trimmed && !trimmed.startsWith("#") && trimmed.includes("=")) {
-        const [key, ...rest] = trimmed.split("=");
-        process.env[key.trim()] = rest.join("=").trim();
-      }
-    });
-}
+import { loadCliEnv, parseEnvFlag } from "./lib/load-cli-env.mjs";
 
 function parseArgs(argv) {
   const args = { email: null, id: null, role: null, list: false, help: false };
@@ -39,7 +25,9 @@ function parseArgs(argv) {
     const arg = argv[i];
     if (arg === "--list") args.list = true;
     else if (arg === "--help" || arg === "-h") args.help = true;
-    else if (arg === "--email" && argv[i + 1]) args.email = argv[++i];
+    else if (arg === "--env" || arg.startsWith("--env=")) {
+      if (arg === "--env") i += 1; // skip value; handled by loadCliEnv
+    } else if (arg === "--email" && argv[i + 1]) args.email = argv[++i];
     else if (arg === "--id" && argv[i + 1]) args.id = argv[++i];
     else if (arg === "--role" && argv[i + 1]) args.role = argv[++i];
   }
@@ -50,6 +38,7 @@ function printHelp() {
   console.log(`
 Verify Supabase Auth email (admin utility)
 
+  --env local|staging|production   Env file to load (default: local)
   --list                 List recent users and verification status
   --email <address>      Confirm email for this user
   --id <uuid>            Confirm email by user id
@@ -58,17 +47,27 @@ Verify Supabase Auth email (admin utility)
 
 Examples:
   npm run auth:verify-email -- --list
-  npm run auth:verify-email -- --email you@example.com --role admin
+  npm run auth:verify-email -- --env staging --email you@example.com --role admin
 `);
 }
 
-loadEnv();
+let envName;
+try {
+  envName = parseEnvFlag(process.argv);
+  const loaded = loadCliEnv(envName);
+  console.log(`env file=${loaded.filePath} (--env ${envName})`);
+} catch (err) {
+  console.error(err instanceof Error ? err.message : err);
+  process.exit(1);
+}
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !serviceRoleKey) {
-  console.error("Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env.local");
+  console.error(
+    `Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env.${envName}`
+  );
   process.exit(1);
 }
 

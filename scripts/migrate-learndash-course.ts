@@ -3,32 +3,17 @@
  *
  * Usage:
  *   npm run migrate:learndash-course -- 26475 --dry-run
- *   npm run migrate:learndash-course -- 26475 --dry-run --with-questions
- *   npm run migrate:learndash-course -- 26475 --write --with-questions
- *   npm run migrate:learndash-course -- 26475 --write --allow-production-write
+ *   npm run migrate:learndash-course -- 26475 --env staging --write --with-questions
+ *   npm run migrate:learndash-course -- 26475 --env production --write --with-questions --allow-production-write
  *
- * Requires LEARNDASH_* and (for --write) NEXT_PUBLIC_SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY.
+ * Env files: .env.local | .env.staging | .env.production (see --env)
  */
-import fs from "fs";
-import path from "path";
 import { LearnDashError } from "../lib/learndash/errors";
 import { isLearnDashConfigured } from "../lib/learndash/config";
 import { describeMigrationTarget } from "../features/migration/learndash/env-safety";
 import { migrateLearnDashCourse } from "../features/migration/learndash/migrate-course";
 import type { MappingPolicyId } from "../features/migration/learndash/proposed-types";
-
-function loadEnvLocal(): void {
-  const envPath = path.resolve(process.cwd(), ".env.local");
-  if (!fs.existsSync(envPath)) return;
-  for (const line of fs.readFileSync(envPath, "utf8").split(/\r?\n/)) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith("#") || !trimmed.includes("=")) continue;
-    const i = trimmed.indexOf("=");
-    const key = trimmed.slice(0, i).trim();
-    const value = trimmed.slice(i + 1).trim().replace(/^["']|["']$/g, "");
-    if (!(key in process.env)) process.env[key] = value;
-  }
-}
+import { loadCliEnv, parseEnvFlag, stripEnvArgs } from "./lib/load-cli-env.mjs";
 
 function parseArgs(argv: string[]): {
   courseId: number;
@@ -38,7 +23,7 @@ function parseArgs(argv: string[]): {
   policy?: MappingPolicyId;
   json: boolean;
 } {
-  const args = argv.filter((a) => a !== "--");
+  const args = stripEnvArgs(argv.filter((a) => a !== "--"));
   const write = args.includes("--write");
   const dryRunFlag = args.includes("--dry-run");
   const dryRun = write ? false : true;
@@ -60,7 +45,7 @@ function parseArgs(argv: string[]): {
   const courseId = Number(idArg || 26475);
   if (!Number.isFinite(courseId) || courseId <= 0) {
     throw new Error(
-      "Usage: npm run migrate:learndash-course -- <courseId> [--dry-run|--write] [--with-questions]"
+      "Usage: npm run migrate:learndash-course -- <courseId> [--env local|staging|production] [--dry-run|--write] [--with-questions]"
     );
   }
 
@@ -77,7 +62,15 @@ function parseArgs(argv: string[]): {
 }
 
 async function main(): Promise<void> {
-  loadEnvLocal();
+  let envName: string;
+  try {
+    envName = parseEnvFlag(process.argv);
+    const loaded = loadCliEnv(envName);
+    console.log(`env file=${loaded.filePath} (--env ${envName})`);
+  } catch (err) {
+    console.error(err instanceof Error ? err.message : err);
+    process.exit(1);
+  }
 
   let opts;
   try {
@@ -98,7 +91,7 @@ async function main(): Promise<void> {
 
   if (!isLearnDashConfigured()) {
     console.error(
-      "LearnDash is not configured. Add LEARNDASH_BASE_URL, LEARNDASH_USERNAME, LEARNDASH_APP_PASSWORD to .env.local"
+      `LearnDash is not configured. Add LEARNDASH_BASE_URL, LEARNDASH_USERNAME, LEARNDASH_APP_PASSWORD to .env.${envName}`
     );
     process.exit(1);
   }

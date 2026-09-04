@@ -1,29 +1,29 @@
 /**
  * One-time fix: normalize WordPress block markup in existing courses & lessons.
  *
- * Usage: node scripts/normalize-wordpress-content.mjs [--dry-run]
+ * Usage: node scripts/normalize-wordpress-content.mjs [--dry-run] [--env staging]
  */
 
 import { createClient } from '@supabase/supabase-js';
-import fs from 'fs';
-import path from 'path';
 import { wordpressContentToHtml } from './lib/wordpress-content.mjs';
+import { loadCliEnv, parseEnvFlag } from './lib/load-cli-env.mjs';
 
-function loadEnv() {
-  const envPath = path.resolve(process.cwd(), '.env.local');
-  if (!fs.existsSync(envPath)) return;
-  fs.readFileSync(envPath, 'utf8')
-    .split('\n')
-    .forEach((line) => {
-      const trimmed = line.trim();
-      if (trimmed && !trimmed.startsWith('#') && trimmed.includes('=')) {
-        const [key, ...rest] = trimmed.split('=');
-        process.env[key.trim()] = rest.join('=').trim();
-      }
-    });
+let envName;
+try {
+  envName = parseEnvFlag(process.argv);
+  const loaded = loadCliEnv(envName);
+  console.log(`env file=${loaded.filePath} (--env ${envName})`);
+} catch (err) {
+  console.error(err instanceof Error ? err.message : err);
+  process.exit(1);
 }
 
-loadEnv();
+if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  console.error(
+    `Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env.${envName}`
+  );
+  process.exit(1);
+}
 
 const isDryRun = process.argv.includes('--dry-run');
 const supabase = createClient(

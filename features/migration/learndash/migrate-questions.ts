@@ -32,9 +32,14 @@ export type MigrateQuestionsResult = {
 
 type AdminClient = ReturnType<typeof createAdminClient>;
 
+/** Bypass incomplete Database Relationships typing (`upsert` → `never[]`). */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function migrationMap(admin: AdminClient): any {
-  return (admin as any).from("wordpress_migration_map");
+function fromTable(admin: AdminClient, table: string): any {
+  return (admin as any).from(table);
+}
+
+function migrationMap(admin: AdminClient) {
+  return fromTable(admin, "wordpress_migration_map");
 }
 
 function truthy(value: unknown): boolean {
@@ -45,13 +50,12 @@ async function resolveQuizUuid(
   admin: AdminClient,
   wordpressQuizId: number
 ): Promise<string | null> {
-  const { data, error } = await admin
-    .from("quizzes")
+  const { data, error } = await fromTable(admin, "quizzes")
     .select("id")
     .eq("wordpress_quiz_id", wordpressQuizId)
     .maybeSingle();
   if (error) throw new Error(`Quiz lookup ${wordpressQuizId}: ${error.message}`);
-  return data?.id ?? null;
+  return (data?.id as string | undefined) ?? null;
 }
 
 async function enrichQuizMetadata(
@@ -74,8 +78,7 @@ async function enrichQuizMetadata(
       ? Number(repeatsRaw)
       : null;
 
-  const { error } = await admin
-    .from("quizzes")
+  const { error } = await fromTable(admin, "quizzes")
     .update({
       passing_percentage: Number.isFinite(passing) ? passing : 80,
       time_limit_seconds: timeLimitEnabled && timeLimit > 0 ? timeLimit : null,
@@ -103,7 +106,9 @@ export async function migrateLearnDashQuestions(
     allowProductionWrite: options.allowProductionWrite,
   });
 
-  const uniqueQuizIds = [...new Set(options.wordpressQuizIds.filter((id) => id > 0))];
+  const uniqueQuizIds = Array.from(
+    new Set(options.wordpressQuizIds.filter((id) => id > 0))
+  );
   const quizzes: ProposedQuizQuestions[] = [];
   const reportParts: string[] = [];
 
@@ -146,8 +151,7 @@ export async function migrateLearnDashQuestions(
     quizzesUpdated += 1;
 
     // Rebuild quiz_questions links for this quiz
-    const { error: delLinksErr } = await admin
-      .from("quiz_questions")
+    const { error: delLinksErr } = await fromTable(admin, "quiz_questions")
       .delete()
       .eq("quiz_id", quizUuid);
     if (delLinksErr) {
@@ -165,8 +169,7 @@ export async function migrateLearnDashQuestions(
         updated_at: new Date().toISOString(),
       };
 
-      const { data: question, error: qErr } = await admin
-        .from("questions")
+      const { data: question, error: qErr } = await fromTable(admin, "questions")
         .upsert(questionRow, { onConflict: "wordpress_question_id" })
         .select("id")
         .single();
@@ -199,8 +202,7 @@ export async function migrateLearnDashQuestions(
       }
       mapRows += 1;
 
-      const { error: delOptErr } = await admin
-        .from("question_options")
+      const { error: delOptErr } = await fromTable(admin, "question_options")
         .delete()
         .eq("question_id", question.id);
       if (delOptErr) {
@@ -215,14 +217,14 @@ export async function migrateLearnDashQuestions(
           sort_order: o.sortOrder,
           feedback: o.feedback,
         }));
-        const { error: optErr } = await admin.from("question_options").insert(optionRows);
+        const { error: optErr } = await fromTable(admin, "question_options").insert(optionRows);
         if (optErr) {
           throw new Error(`Insert options ${q.wordpressQuestionId}: ${optErr.message}`);
         }
         optionCount += optionRows.length;
       }
 
-      const { error: linkErr } = await admin.from("quiz_questions").insert({
+      const { error: linkErr } = await fromTable(admin, "quiz_questions").insert({
         quiz_id: quizUuid,
         question_id: question.id,
         sort_order: q.sortOrder,
