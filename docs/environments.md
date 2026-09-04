@@ -28,8 +28,22 @@ Related docs: [deployment.md](./deployment.md) · [database-migrations.md](./dat
 
 All variables are documented in `.env.example`. Configure per environment in:
 
-- **Local:** `.env.local` (gitignored)
-- **Staging / Production:** Vercel project environment settings (never commit secrets)
+| File / place | Used by |
+|--------------|---------|
+| `.env.local` | `npm run dev` (Next.js) + CLI default (`--env local`) |
+| `.env.cli.staging` | CLI scripts only (`--env staging`) |
+| `.env.cli.production` | CLI scripts only (`--env production`) |
+| Vercel project env | Deployed staging / production apps |
+
+**Create CLI files (gitignored):**
+
+```bash
+cp .env.example .env.local
+cp .env.example .env.cli.staging
+cp .env.example .env.cli.production
+```
+
+Do **not** name a secrets file `.env.production` — Next.js loads that during `next build`.
 
 ### Required public variables
 

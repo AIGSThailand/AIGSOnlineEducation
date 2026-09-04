@@ -46,16 +46,23 @@ Writes: `questions` (by `wordpress_question_id`), replace `question_options`, re
 ## Env
 
 ```ini
+# In .env.local / .env.staging / .env.production:
 LEARNDASH_BASE_URL=https://your-wordpress-site.example
 LEARNDASH_USERNAME=wp-username
 LEARNDASH_APP_PASSWORD=xxxx xxxx xxxx xxxx
 
-# For --write:
 NEXT_PUBLIC_SUPABASE_URL=...
 SUPABASE_SERVICE_ROLE_KEY=...
 
+# Only for intentional production Supabase writes:
 # ALLOW_LEARNDASH_MIGRATE_PRODUCTION=true
 ```
+
+```bash
+npm run migrate:learndash-courses -- --env staging --write --with-questions
+```
+
+Use a WordPress **Application Password**. Never commit credentials.
 
 ## Commands
 
@@ -68,11 +75,11 @@ npm run inspect:learndash-course -- 26475
 
 # Single course
 npm run migrate:learndash-course -- 26475 --dry-run --with-questions
-npm run migrate:learndash-course -- 26475 --write --with-questions
+npm run migrate:learndash-course -- 26475 --env staging --write --with-questions
 
 # All published courses
 npm run migrate:learndash-courses -- --dry-run
-npm run migrate:learndash-courses -- --write --with-questions
+npm run migrate:learndash-courses -- --env staging --write --with-questions
 npm run migrate:learndash-courses -- --write --with-questions --after 26475
 ```
 

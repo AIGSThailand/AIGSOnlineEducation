@@ -17,9 +17,13 @@
 .DS_Store
 *.pem
 
-# Local env files
-.env*.local
+# Local env files — never commit secrets
 .env
+.env*.local
+.env.staging
+.env.production
+.env.cli.staging
+.env.cli.production
 
 # TypeScript
 *.tsbuildinfo

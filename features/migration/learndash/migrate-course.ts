@@ -52,15 +52,23 @@ function collectQuizWordpressIds(proposed: ProposedAigsCurriculum): number[] {
       }
     }
   }
-  return [...new Set(ids)];
+  return Array.from(new Set(ids));
 }
 
 type AdminClient = ReturnType<typeof createAdminClient>;
 
-/** wordpress_migration_map is not yet in generated Database types. */
+/**
+ * Bypass incomplete Database Relationships typing that makes `.upsert()` expect `never[]`.
+ * Same pattern as Stripe webhook admin writes.
+ */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function migrationMap(admin: AdminClient): any {
-  return (admin as any).from("wordpress_migration_map");
+function fromTable(admin: AdminClient, table: string): any {
+  return (admin as any).from(table);
+}
+
+/** wordpress_migration_map is not yet in generated Database types. */
+function migrationMap(admin: AdminClient) {
+  return fromTable(admin, "wordpress_migration_map");
 }
 
 async function upsertMapRow(
@@ -122,22 +130,20 @@ async function upsertLessonFromItem(
       sort_order: sortOrder,
       updated_at: new Date().toISOString(),
     };
-    const { data, error } = await admin
-      .from("lessons")
+    const { data, error } = await fromTable(admin, "lessons")
       .upsert(row, { onConflict: "wordpress_lesson_id" })
       .select("id")
       .single();
     if (error || !data) {
       throw new Error(`Lesson upsert (wp ${item.source.id}): ${error?.message || "no data"}`);
     }
-    return data.id;
+    return data.id as string;
   }
 
   if (item.source.type === "sfwd-topic" && item.source.id != null) {
     const existingId = await findMappedTarget(admin, "sfwd-topic", item.source.id);
     if (existingId) {
-      const { error } = await admin
-        .from("lessons")
+      const { error } = await fromTable(admin, "lessons")
         .update({
           title: item.title,
           slug: item.slug,
@@ -156,8 +162,7 @@ async function upsertLessonFromItem(
       return existingId;
     }
 
-    const { data, error } = await admin
-      .from("lessons")
+    const { data, error } = await fromTable(admin, "lessons")
       .insert({
         title: item.title,
         slug: item.slug,
@@ -174,7 +179,7 @@ async function upsertLessonFromItem(
     if (error || !data) {
       throw new Error(`Topic→lesson insert ${item.source.id}: ${error?.message || "no data"}`);
     }
-    return data.id;
+    return data.id as string;
   }
 
   throw new Error(`Unsupported lesson source: ${item.source.type}`);
@@ -195,15 +200,14 @@ async function upsertQuizFromItem(
     wordpress_quiz_id: item.source.id,
     updated_at: new Date().toISOString(),
   };
-  const { data, error } = await admin
-    .from("quizzes")
+  const { data, error } = await fromTable(admin, "quizzes")
     .upsert(row, { onConflict: "wordpress_quiz_id" })
     .select("id")
     .single();
   if (error || !data) {
     throw new Error(`Quiz upsert (wp ${item.source.id}): ${error?.message || "no data"}`);
   }
-  return data.id;
+  return data.id as string;
 }
 
 /**
@@ -255,8 +259,7 @@ export async function migrateLearnDashCourse(
     updated_at: new Date().toISOString(),
   };
 
-  const { data: course, error: courseErr } = await admin
-    .from("courses")
+  const { data: course, error: courseErr } = await fromTable(admin, "courses")
     .upsert(courseRow, { onConflict: "wordpress_course_id" })
     .select("id")
     .single();
@@ -265,7 +268,7 @@ export async function migrateLearnDashCourse(
     throw new Error(`Course upsert failed: ${courseErr?.message || "no data"}`);
   }
 
-  const courseUuid = course.id;
+  const courseUuid = course.id as string;
   let mapRows = 0;
 
   await upsertMapRow(admin, {
@@ -280,26 +283,29 @@ export async function migrateLearnDashCourse(
   mapRows += 1;
 
   // Rebuild placement: delete steps then sections/modules for this course
-  const { error: delStepsErr } = await admin.from("course_steps").delete().eq("course_id", courseUuid);
+  const { error: delStepsErr } = await fromTable(admin, "course_steps")
+    .delete()
+    .eq("course_id", courseUuid);
   if (delStepsErr) {
     throw new Error(`Delete course_steps failed: ${delStepsErr.message}`);
   }
 
-  const { data: oldSections } = await admin
-    .from("course_sections")
+  const { data: oldSections } = await fromTable(admin, "course_sections")
     .select("id")
     .eq("course_id", courseUuid);
-  const oldSectionIds = (oldSections || []).map((s) => s.id);
+  const oldSectionIds = ((oldSections || []) as { id: string }[]).map((s) => s.id);
 
-  const { error: delSecErr } = await admin.from("course_sections").delete().eq("course_id", courseUuid);
+  const { error: delSecErr } = await fromTable(admin, "course_sections")
+    .delete()
+    .eq("course_id", courseUuid);
   if (delSecErr) {
     throw new Error(`Delete course_sections failed: ${delSecErr.message}`);
   }
 
   if (oldSectionIds.length > 0) {
-    await admin.from("modules").delete().in("id", oldSectionIds);
+    await fromTable(admin, "modules").delete().in("id", oldSectionIds);
   } else {
-    await admin.from("modules").delete().eq("course_id", courseUuid);
+    await fromTable(admin, "modules").delete().eq("course_id", courseUuid);
   }
 
   let lessonCount = 0;
@@ -313,8 +319,7 @@ export async function migrateLearnDashCourse(
         ? section.source.id
         : null;
 
-    const { data: sectionRow, error: secErr } = await admin
-      .from("course_sections")
+    const { data: sectionRow, error: secErr } = await fromTable(admin, "course_sections")
       .insert({
         course_id: courseUuid,
         title: section.title,
@@ -328,9 +333,9 @@ export async function migrateLearnDashCourse(
       throw new Error(`Section insert "${section.title}": ${secErr?.message || "no data"}`);
     }
 
-    const sectionId = sectionRow.id;
+    const sectionId = sectionRow.id as string;
 
-    const { error: modErr } = await admin.from("modules").upsert(
+    const { error: modErr } = await fromTable(admin, "modules").upsert(
       {
         id: sectionId,
         course_id: courseUuid,
@@ -385,7 +390,7 @@ export async function migrateLearnDashCourse(
           mapRows += 1;
         }
 
-        const { error: stepErr } = await admin.from("course_steps").insert({
+        const { error: stepErr } = await fromTable(admin, "course_steps").insert({
           course_id: courseUuid,
           step_type: "lesson",
           lesson_id: lessonId,
@@ -416,7 +421,7 @@ export async function migrateLearnDashCourse(
         mapRows += 1;
       }
 
-      const { error: stepErr } = await admin.from("course_steps").insert({
+      const { error: stepErr } = await fromTable(admin, "course_steps").insert({
         course_id: courseUuid,
         step_type: "quiz",
         quiz_id: quizId,

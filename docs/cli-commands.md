@@ -21,12 +21,18 @@ npm install
 ```bash
 # macOS / Linux / Git Bash
 cp .env.example .env.local
+cp .env.example .env.cli.staging      # optional — CLI --env staging
+cp .env.example .env.cli.production   # optional — CLI --env production
 
 # Windows PowerShell
 Copy-Item .env.example .env.local
+Copy-Item .env.example .env.cli.staging
+Copy-Item .env.example .env.cli.production
 ```
 
-Edit `.env.local` with keys from `npm run supabase:status` (local) or your hosted Supabase / Vercel dashboard.
+Edit each file with that environment’s keys (`APP_ENV` + Supabase / Stripe).  
+`npm run dev` uses `.env.local` only. Scripts accept `--env local|staging|production` (default `local`).  
+Do **not** use `.env.production` for CLI secrets (Next.js loads it on `next build`). Never commit these files.
 
 ### Install CLIs (optional but recommended)
 
@@ -311,7 +317,8 @@ Place LearnDash export data under `learndash_data/` before running. See [migrati
 ### REST v2 inspection + single-course migrate (Phases 1–3)
 
 Requires `LEARNDASH_BASE_URL`, `LEARNDASH_USERNAME`, `LEARNDASH_APP_PASSWORD` (WordPress Application Password).  
-`--write` also needs `NEXT_PUBLIC_SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`. Production writes require `--allow-production-write` (or `ALLOW_LEARNDASH_MIGRATE_PRODUCTION=true`).
+`--write` also needs `NEXT_PUBLIC_SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` from the selected env file.  
+Production writes require `--allow-production-write` (or `ALLOW_LEARNDASH_MIGRATE_PRODUCTION=true`).
 
 ```bash
 # Offline checks
@@ -319,13 +326,15 @@ npm run test:learndash-parse
 npm run test:learndash-transform
 npm run test:learndash-questions
 
-# Inspect course structure (no Supabase writes)
+# Inspect (loads .env.local by default)
 npm run inspect:learndash-course -- 26475
 
-# Propose AIGS curriculum (default = dry-run)
-npm run migrate:learndash-course -- 26475 --dry-run
+# Migrate against staging / production env files
+npm run migrate:learndash-courses -- --env staging --dry-run --with-questions
+npm run migrate:learndash-courses -- --env staging --write --with-questions
+npm run migrate:learndash-courses -- --env production --write --with-questions --allow-production-write
 
-# Propose / migrate all published courses
+# Propose / migrate all published courses (local)
 npm run migrate:learndash-courses -- --dry-run
 npm run migrate:learndash-courses -- --write --with-questions
 
@@ -334,23 +343,25 @@ npm run migrate:learndash-courses -- --write --with-questions --after 26475
 npm run migrate:learndash-courses -- --dry-run --only 26475,30660
 ```
 
-See [features/migration/learndash/README.md](../features/migration/learndash/README.md).
+See [features/migration/learndash/README.md](../features/migration/learndash/README.md) and [environments.md](./environments.md).
 
 ---
 
 ## Project scripts — auth utility
 
-Manually confirm emails on **local** or **staging** (uses `SUPABASE_SERVICE_ROLE_KEY` from `.env.local`):
+Manually confirm emails (uses `SUPABASE_SERVICE_ROLE_KEY` from the selected env file):
 
 ```bash
-# List recent auth users
+# List recent auth users (local)
 npm run auth:verify-email -- --list
 
 # Confirm email + set role
 npm run auth:verify-email -- --email test@example.com
 npm run auth:verify-email -- --email test@example.com --role admin
 npm run auth:verify-email -- --email test@example.com --role instructor
-npm run auth:verify-email -- --email test@example.com --role student
+
+# Against staging
+npm run auth:verify-email -- --env staging --email you@example.com --role admin
 
 # By user UUID
 npm run auth:verify-email -- --id <user-uuid>
