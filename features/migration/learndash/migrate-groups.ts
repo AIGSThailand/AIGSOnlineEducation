@@ -376,8 +376,10 @@ export async function migrateLearnDashGroups(
           .eq("wordpress_course_id", wpCourseId)
           .maybeSingle();
         if (error) throw new Error(error.message);
-        courseUuid = data?.id ?? null;
-        courseCache.set(wpCourseId, courseUuid);
+        const resolved: string | null =
+          typeof data?.id === "string" && data.id.length > 0 ? data.id : null;
+        courseUuid = resolved;
+        courseCache.set(wpCourseId, resolved);
       }
       if (!courseUuid) {
         stats.skippedNoCourse += 1;
