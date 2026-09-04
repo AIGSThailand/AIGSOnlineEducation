@@ -16,6 +16,7 @@ import type {
   SaveStatus,
 } from "@/features/courses/types";
 import type { CourseAccessType, CourseProgressionType } from "@/types/database.types";
+import { formatDateTime } from "@/lib/utils";
 
 const AUTOSAVE_MS = 1200;
 
@@ -215,11 +216,11 @@ export function CourseSettings({
         <dl className="grid grid-cols-1 gap-1 text-xs text-slate-500 sm:grid-cols-2">
           <div>
             <dt className="inline text-slate-400">Created </dt>
-            <dd className="inline">{formatDate(course.createdAt)}</dd>
+            <dd className="inline">{formatDateTime(course.createdAt)}</dd>
           </div>
           <div>
             <dt className="inline text-slate-400">Updated </dt>
-            <dd className="inline">{formatDate(course.updatedAt)}</dd>
+            <dd className="inline">{formatDateTime(course.updatedAt)}</dd>
           </div>
         </dl>
       </SettingsSection>
@@ -456,12 +457,4 @@ function SettingsSection({
       <div className="space-y-3 border-t border-slate-100 px-3 pt-3">{children}</div>
     </details>
   );
-}
-
-function formatDate(iso: string) {
-  try {
-    return new Date(iso).toLocaleString();
-  } catch {
-    return iso;
-  }
 }

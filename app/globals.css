@@ -67,6 +67,20 @@
     @apply my-6 border-slate-200;
   }
 
+  .rich-content table,
+  .rich-content .lesson-table {
+    @apply my-4 w-full border-collapse text-sm text-slate-700;
+  }
+
+  .rich-content th,
+  .rich-content td {
+    @apply border border-slate-200 px-3 py-2 align-top;
+  }
+
+  .rich-content th {
+    @apply bg-slate-50 font-semibold text-slate-900;
+  }
+
   /* TipTap editor surface */
   .tiptap-editor.ProseMirror p.is-editor-empty:first-child::before {
     @apply float-left h-0 pointer-events-none text-slate-400;

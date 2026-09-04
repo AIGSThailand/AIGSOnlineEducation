@@ -9,6 +9,7 @@ import {
   duplicateLessonSchema,
   duplicateQuizSchema,
   duplicateSectionSchema,
+  createQuizSchema,
   lessonSchema,
   moduleSchema,
   moveLessonSchema,
@@ -18,6 +19,7 @@ import {
   reorderSectionsSchema,
 } from "@/features/courses/schema";
 import {
+  createQuizRecord,
   duplicateLessonRecord,
   duplicateQuizRecord,
   duplicateSectionRecord,
@@ -268,6 +270,36 @@ export async function createLessonAction(
   await syncLessonToStep(supabase, lesson);
   revalidateBuilder(courseId);
   return { success: true, data: { lessonId: lesson.id } };
+}
+
+export async function createQuizAction(
+  input: unknown
+): Promise<ActionResult<{ quizId: string }>> {
+  const parsed = createQuizSchema.safeParse(input);
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.errors[0]?.message || "Invalid quiz data." };
+  }
+
+  const { courseId, sectionId, title, slug, status } = parsed.data;
+  if (!(await canManageCourse(courseId))) {
+    return { success: false, error: "Unauthorized." };
+  }
+
+  const supabase = await createClient();
+  try {
+    const quizId = await createQuizRecord(supabase, courseId, sectionId, {
+      title,
+      slug,
+      status,
+    });
+    revalidateBuilder(courseId);
+    return { success: true, data: { quizId } };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to create quiz.",
+    };
+  }
 }
 
 export async function updateLessonAction(input: unknown): Promise<ActionResult> {

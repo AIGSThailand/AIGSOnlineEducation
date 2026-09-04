@@ -7,11 +7,29 @@ export function cn(...inputs: ClassValue[]): string {
 
 export function formatDate(dateString: string | null | undefined): string {
   if (!dateString) return "N/A";
+  const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return "N/A";
+  // Fixed locale — never use default toLocaleString() (SSR/client locale mismatch).
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
-  }).format(new Date(dateString));
+    timeZone: "UTC",
+  }).format(date);
+}
+
+export function formatDateTime(dateString: string | null | undefined): string {
+  if (!dateString) return "N/A";
+  const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return "N/A";
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "UTC",
+  }).format(date);
 }
 
 export function getInitials(firstName?: string | null, lastName?: string | null): string {

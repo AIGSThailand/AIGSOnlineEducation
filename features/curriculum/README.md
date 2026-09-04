@@ -30,6 +30,7 @@ Types: `course`, `section`, `lesson`, `quiz`, `exam`
 ## Phase 2 (curriculum interactions)
 
 - **Drag-and-drop** via `@dnd-kit` — reorder sections, lessons, and quizzes; move items between sections
+- **Add** section, lesson, or quiz (empty draft quiz opens Quiz editor)
 - **Duplicate** section, lesson, or quiz (deep copy for quizzes includes questions/options)
 - **Persist order** — `reorderSectionsAction`, `reorderCurriculumAction` dual-write `modules`/`course_sections` and `course_steps`
 - Keyboard **move up/down** controls remain as accessible alternatives
@@ -55,6 +56,19 @@ DnD state helpers: `features/curriculum/dnd-state.ts`
 - Migration metadata read-only
 
 Migration: `supabase/migrations/20260903120000_course_builder_phase4_settings.sql`
+
+## Phase 5 (quiz editor)
+
+- Quiz settings editor with autosave (title, slug, description, status, passing %, time limit, attempts, flags)
+- Question list: add/edit/reorder/remove for `single_choice`, `multiple_choice`, `true_false`
+- Server actions in `features/quizzes/actions.ts`
+- Student quiz player still deferred
+
+## Lesson editor (Phase 1)
+
+- TipTap content + `content` / `content_json` / immutable `source_content_html`
+- Media metadata, resources (`lesson_resources`), learning/drip fields (schema + editor)
+- See `features/lessons/README.md`
 
 ## Media (S3)
 

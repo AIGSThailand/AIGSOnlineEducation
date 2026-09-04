@@ -1,14 +1,12 @@
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 import { requireAuth, canAccessCourse } from "@/lib/auth/permissions";
 import { canManageCourse } from "@/features/courses/permissions";
 import { getCoursePlayerData } from "@/features/player/queries";
 import { findStepByContent, lockedStepKeys } from "@/features/player/build-player";
 import { CoursePlayer } from "@/components/player/course-player";
+import { QuizPlayer } from "@/components/player/quiz-player";
+import { getQuizForPlay } from "@/features/quizzes/player-actions";
 import { Card } from "@/components/ui/card";
-import type { Database } from "@/types/database.types";
-
-type QuizRow = Database["public"]["Tables"]["quizzes"]["Row"];
 
 interface QuizPageProps {
   params: {
@@ -55,14 +53,7 @@ export default async function CourseQuizPage({ params, searchParams }: QuizPageP
   );
   const isLocked = lockedKeys.has(current.key);
 
-  const supabase = await createClient();
-  const { data: quiz } = await supabase
-    .from("quizzes")
-    .select("id, title, description")
-    .eq("id", quizId)
-    .maybeSingle<Pick<QuizRow, "id" | "title" | "description">>();
-
-  if (!quiz) notFound();
+  const quizResult = isLocked ? null : await getQuizForPlay(courseId, quizId);
 
   return (
     <CoursePlayer
@@ -75,14 +66,19 @@ export default async function CourseQuizPage({ params, searchParams }: QuizPageP
         <p className="rounded-md border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600">
           Complete the previous steps to unlock this quiz.
         </p>
+      ) : !quizResult?.success || !quizResult.data ? (
+        <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {quizResult && !quizResult.success
+            ? quizResult.error
+            : "Unable to load this quiz."}
+        </p>
       ) : (
-        <div className="space-y-4 text-sm text-slate-600">
-          {quiz.description ? <p>{quiz.description}</p> : null}
-          <p>
-            The interactive quiz player is not available yet. You can mark this step complete to
-            continue the course.
-          </p>
-        </div>
+        <QuizPlayer
+          courseId={courseId}
+          quizId={quizId}
+          stepId={current.stepId}
+          initial={quizResult.data}
+        />
       )}
     </CoursePlayer>
   );
