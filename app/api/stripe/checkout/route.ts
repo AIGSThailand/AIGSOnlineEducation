@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import type Stripe from "stripe";
 import { getStripe } from "@/lib/stripe/server";
 import { getClientEnv } from "@/lib/env/client";
 import { createClient } from "@/lib/supabase/server";
@@ -68,8 +69,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 3. Build line items
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let line_items: any[] = [];
+    let line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
     if (priceId) {
       line_items = [{ price: priceId, quantity: 1 }];
     } else if (amount && courseTitle) {
@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 4. Create Stripe Checkout Session (One-time payment by default)
-    const sessionConfig: any = {
+    const sessionConfig: Stripe.Checkout.SessionCreateParams = {
       customer: customerId,
       mode: mode, // "payment" for one-time
       payment_method_types: ["card"],
@@ -116,11 +116,9 @@ export async function POST(req: NextRequest) {
     const session = await getStripe().checkout.sessions.create(sessionConfig);
 
     return NextResponse.json({ url: session.url });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[Stripe Checkout Error]:", error);
-    return NextResponse.json(
-      { error: error.message || "Failed to create checkout session" },
-      { status: 500 }
-    );
+    const message = error instanceof Error ? error.message : "Failed to create checkout session";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
