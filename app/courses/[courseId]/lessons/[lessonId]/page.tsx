@@ -6,6 +6,8 @@ import { getCoursePlayerData } from "@/features/player/queries";
 import { findStepByContent, lockedStepKeys } from "@/features/player/build-player";
 import { CoursePlayer } from "@/components/player/course-player";
 import { RichContent } from "@/components/courses/rich-content";
+import { LessonVideo } from "@/components/courses/lesson-video";
+import { LessonResourcesList } from "@/components/courses/lesson-resources-list";
 import { Card } from "@/components/ui/card";
 import type { Database } from "@/types/database.types";
 
@@ -60,6 +62,32 @@ export default async function LessonPage({ params }: LessonPageProps) {
 
   if (!lesson) notFound();
 
+  const { data: resourceRows } = isLocked
+    ? { data: null }
+    : await supabase
+        .from("lesson_resources")
+        .select("id, resource_type, title, url, is_downloadable, position")
+        .eq("lesson_id", lessonId)
+        .order("position", { ascending: true })
+        .returns<
+          Array<{
+            id: string;
+            resource_type: string;
+            title: string;
+            url: string | null;
+            is_downloadable: boolean;
+            position: number;
+          }>
+        >();
+
+  const resources = (resourceRows || []).map((r) => ({
+    id: r.id,
+    resourceType: r.resource_type,
+    title: r.title,
+    url: r.url,
+    isDownloadable: r.is_downloadable,
+  }));
+
   return (
     <CoursePlayer
       player={player}
@@ -72,23 +100,16 @@ export default async function LessonPage({ params }: LessonPageProps) {
           Complete the previous steps to unlock this lesson.
         </p>
       ) : (
-        <>
+        <div className="space-y-6">
           {lesson.video_url && (
-            <div className="aspect-video w-full overflow-hidden rounded-lg bg-black">
-              <iframe
-                src={lesson.video_url}
-                title={lesson.title}
-                className="h-full w-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            </div>
+            <LessonVideo url={lesson.video_url} title={lesson.title} />
           )}
           <RichContent
             html={lesson.content}
             fallback="No supplementary textual notes provided for this lesson."
           />
-        </>
+          <LessonResourcesList resources={resources} />
+        </div>
       )}
     </CoursePlayer>
   );

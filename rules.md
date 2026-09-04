@@ -185,6 +185,7 @@ lib/
 13. Handle expected errors explicitly.
 14. Never return secret/internal fields to the client.
 15. Never format dates with bare `toLocaleString()` / `toLocaleDateString()` in SSR or hydrated Client Components — use a fixed locale (and preferably `timeZone`) via `formatDate` / `formatDateTime` in `lib/utils`, or the server and client will mismatch.
+16. Direct video file URLs (`.mp4`, `.webm`, WordPress uploads, etc.) must render with `<video controls playsInline>`, never as an `<iframe src>` or bare download `<a href>` — iframes/file navigation commonly force a download instead of inline playback. Use `LessonVideo` / `enhanceHtmlVideoPlayback`.
 
 ---
 

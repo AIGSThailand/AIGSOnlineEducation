@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     }
 
     const {
-      priceId,
+      priceId: requestedPriceId,
       courseId,
       courseTitle,
       amount,
@@ -42,6 +42,19 @@ export async function POST(req: NextRequest) {
     } = validation.data;
 
     const { NEXT_PUBLIC_APP_URL: appUrl } = getClientEnv();
+
+    // Prefer mapped course price when courseId is present (builder Commerce settings).
+    let priceId = requestedPriceId;
+    if (courseId && !priceId) {
+      const { data: course } = await supabase
+        .from("courses")
+        .select("stripe_price_id, title")
+        .eq("id", courseId)
+        .maybeSingle<{ stripe_price_id: string | null; title: string }>();
+      if (course?.stripe_price_id) {
+        priceId = course.stripe_price_id;
+      }
+    }
 
     // 1. Retrieve or create Stripe customer linked to this Supabase user
     const { customerId } = await getOrCreateStripeCustomer(user.id, user.email!);
@@ -55,6 +68,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 3. Build line items
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let line_items: any[] = [];
     if (priceId) {
       line_items = [{ price: priceId, quantity: 1 }];
@@ -73,7 +87,10 @@ export async function POST(req: NextRequest) {
       ];
     } else {
       return NextResponse.json(
-        { error: "Either a Stripe priceId or courseTitle + amount is required." },
+        {
+          error:
+            "No Stripe price is mapped for this course. An admin must set stripe_price_id under Course settings → Commerce.",
+        },
         { status: 400 }
       );
     }

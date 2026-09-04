@@ -189,12 +189,20 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                     </Button>
                   </Link>
                 ) : user ? (
-                  <BuyCourseButton
-                    courseId={course.id}
-                    courseTitle={course.title}
-                    amount={99}
-                    label="Enroll Now (One-Time)"
-                  />
+                  course.stripe_price_id ? (
+                    <BuyCourseButton
+                      courseId={course.id}
+                      courseTitle={course.title}
+                      priceId={course.stripe_price_id}
+                      label="Enroll Now"
+                    />
+                  ) : (
+                    <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                      This course is not available for purchase yet. An admin must map a Stripe
+                      price under Course settings → Commerce and click{" "}
+                      <span className="font-medium">Save Stripe mapping</span>.
+                    </p>
+                  )
                 ) : (
                   <Link href={`/login?redirect=/courses/${courseId}`} className="block">
                     <Button className="w-full" size="lg">
