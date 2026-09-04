@@ -32,23 +32,32 @@ export function CourseListTable({
   return (
     <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm text-slate-700">
+        <table className="w-full table-fixed text-left text-sm text-slate-700">
           <thead className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase text-slate-500">
             <tr>
-              <th className="px-6 py-3">Course</th>
-              <th className="px-6 py-3">Status</th>
-              {showInstructorColumn && <th className="px-6 py-3">Instructor</th>}
-              <th className="px-6 py-3">Students</th>
-              <th className="px-6 py-3">Updated</th>
-              <th className="px-6 py-3 text-right">Actions</th>
+              <th className="w-[40%] px-6 py-3">Course</th>
+              <th className="w-[10%] whitespace-nowrap px-6 py-3">Status</th>
+              {showInstructorColumn && (
+                <th className="w-[16%] whitespace-nowrap px-6 py-3">Instructor</th>
+              )}
+              <th className="w-[10%] whitespace-nowrap px-6 py-3">Students</th>
+              <th className="w-[12%] whitespace-nowrap px-6 py-3">Updated</th>
+              <th className="w-[12%] whitespace-nowrap px-6 py-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {courses.map((course) => (
               <tr key={course.id} className="hover:bg-slate-50/50">
                 <td className="px-6 py-4">
-                  <div className="font-semibold text-slate-900">{course.title}</div>
-                  <div className="font-mono text-xs text-slate-500">/{course.slug}</div>
+                  <div className="truncate font-semibold text-slate-900" title={course.title}>
+                    {course.title}
+                  </div>
+                  <div
+                    className="truncate font-mono text-xs text-slate-500"
+                    title={`/${course.slug}`}
+                  >
+                    /{course.slug}
+                  </div>
                 </td>
                 <td className="px-6 py-4">
                   <Badge variant={course.status === "published" ? "success" : "default"}>
@@ -57,7 +66,12 @@ export function CourseListTable({
                 </td>
                 {showInstructorColumn && (
                   <td className="px-6 py-4 text-xs text-slate-600">
-                    {course.instructorNames.join(", ") || "—"}
+                    <div
+                      className="truncate"
+                      title={course.instructorNames.join(", ") || undefined}
+                    >
+                      {course.instructorNames.join(", ") || "—"}
+                    </div>
                   </td>
                 )}
                 <td className="px-6 py-4">{course.enrollmentCount}</td>

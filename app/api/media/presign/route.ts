@@ -16,7 +16,7 @@ export async function POST(request: Request) {
         {
           success: false,
           error:
-            "Media upload is not configured. Set AWS_REGION, AWS_S3_BUCKET, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_S3_PUBLIC_BASE_URL (or AWS_CLOUDFRONT_URL).",
+            "Media upload is not configured. Set AWS_REGION, AWS_S3_BUCKET, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY. For public mode also set AWS_S3_PUBLIC_BASE_URL (or AWS_CLOUDFRONT_URL). For private paid media set AWS_S3_MEDIA_ACCESS=private.",
         },
         { status: 503 }
       );

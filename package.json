@@ -15,6 +15,12 @@
     "db:migration:new": "supabase migration new",
     "migrate:learndash": "node scripts/migrate-learndash.mjs",
     "migrate:learndash:quizzes": "node scripts/migrate-learndash-quizzes.mjs",
+    "inspect:learndash-course": "tsx scripts/inspect-learndash-course.ts",
+    "migrate:learndash-course": "tsx scripts/migrate-learndash-course.ts",
+    "migrate:learndash-courses": "tsx scripts/migrate-learndash-courses.ts",
+    "test:learndash-parse": "tsx scripts/test-learndash-parse-steps.ts",
+    "test:learndash-transform": "tsx scripts/test-learndash-transform.ts",
+    "test:learndash-questions": "tsx scripts/test-learndash-questions.ts",
     "migrate:normalize-content": "node scripts/normalize-wordpress-content.mjs",
     "auth:verify-email": "node scripts/verify-user-email.mjs"
   },
@@ -55,6 +61,7 @@
     "prettier": "^3.5.0",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "tailwindcss": "^3.4.17",
+    "tsx": "^4.23.13",
     "typescript": "^5.7.3"
   }
 }
