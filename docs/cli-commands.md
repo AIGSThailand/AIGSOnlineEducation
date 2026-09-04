@@ -341,6 +341,25 @@ npm run migrate:learndash-courses -- --write --with-questions
 # Resume after a course id, or limit set
 npm run migrate:learndash-courses -- --write --with-questions --after 26475
 npm run migrate:learndash-courses -- --dry-run --only 26475,30660
+
+# Phase 4 — users + enrollments (enrolled users only; not full WP directory)
+npm run inspect:learndash-users -- 26475
+npm run inspect:learndash-users -- --all [--json]
+npm run migrate:learndash-users -- --all --dry-run
+npm run migrate:learndash-users -- 26475 --write
+npm run migrate:learndash-users -- --all --env staging --write
+# Auth: email confirmed + random password (forgot-password to sign in)
+# Production: add --allow-production-write
+
+# Phase 5 — progress (enrolled users only)
+npm run inspect:learndash-progress -- 26475
+npm run migrate:learndash-progress -- --all --dry-run
+npm run migrate:learndash-progress -- 26475 --write
+
+# Phase 5 — groups + materialize group enrollments
+npm run inspect:learndash-groups
+npm run migrate:learndash-groups -- --dry-run
+npm run migrate:learndash-groups -- --write
 ```
 
 See [features/migration/learndash/README.md](../features/migration/learndash/README.md) and [environments.md](./environments.md).

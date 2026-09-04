@@ -80,12 +80,15 @@ Do **not** name a secrets file `.env.production` — Next.js loads that during `
 | `lib/env/server.ts` | Validates secrets; Stripe/Supabase environment guards                 |
 | `lib/env/guards.ts` | Blocks `sk_live_*` in local/staging; warns on local + hosted Supabase |
 
-Guards run when server secrets are first accessed (Stripe checkout, webhooks, admin client).
+Guards:
+
+- **Supabase** — when the service-role / admin client is used (LearnDash migrate, etc.)
+- **Stripe** — only when Stripe secrets are accessed (checkout, webhooks), not on content migrate
 
 Optional overrides (use sparingly):
 
 - `ALLOW_HOSTED_SUPABASE_LOCAL=true` — suppress warning when local dev uses a hosted Supabase URL
-- `ALLOW_STRIPE_TEST_IN_PRODUCTION=true` — allow `sk_test_*` when `APP_ENV=production`
+- `ALLOW_STRIPE_TEST_IN_PRODUCTION=true` — allow `sk_test_*` when `APP_ENV=production` (Stripe ops only)
 
 ---
 

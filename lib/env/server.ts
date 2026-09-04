@@ -11,22 +11,30 @@ const serverSecretsSchema = z.object({
 });
 
 let cachedSecrets: ServerSecrets | null = null;
-let guardsApplied = false;
+let supabaseGuardsApplied = false;
+let stripeGuardsApplied = false;
 
-function applyEnvironmentGuards(): void {
-  if (guardsApplied) return;
+/** Supabase URL/env pairing — safe for admin/CLI jobs that do not touch Stripe. */
+function applySupabaseGuards(): void {
+  if (supabaseGuardsApplied) return;
 
   const appEnv = resolveAppEnv();
   const client = getClientEnv();
-
   assertSupabaseEnvironment(appEnv, client.NEXT_PUBLIC_SUPABASE_URL);
+
+  supabaseGuardsApplied = true;
+}
+
+/** Stripe live/test vs APP_ENV — only when Stripe secrets are used. */
+function applyStripeGuards(): void {
+  if (stripeGuardsApplied) return;
 
   const stripeKey = process.env.STRIPE_SECRET_KEY;
   if (stripeKey) {
-    assertStripeEnvironment(appEnv, stripeKey);
+    assertStripeEnvironment(resolveAppEnv(), stripeKey);
   }
 
-  guardsApplied = true;
+  stripeGuardsApplied = true;
 }
 
 /**
@@ -40,7 +48,8 @@ export function getAppEnv(): AppEnv {
  * Server-only secrets. Validates on first access and applies environment guards.
  */
 export function getServerSecrets(): ServerSecrets {
-  applyEnvironmentGuards();
+  applySupabaseGuards();
+  applyStripeGuards();
 
   if (cachedSecrets) return cachedSecrets;
 
@@ -63,7 +72,8 @@ export function getServerSecrets(): ServerSecrets {
 
 /** Stripe secret only — for routes that do not need the full secret bundle. */
 export function getStripeSecretKey(): string {
-  applyEnvironmentGuards();
+  applySupabaseGuards();
+  applyStripeGuards();
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) {
     throw new Error("STRIPE_SECRET_KEY is required for this operation.");
@@ -81,9 +91,13 @@ export function getStripeWebhookSecret(): string {
   return secret;
 }
 
-/** Service role key only — admin client / trusted server jobs. */
+/**
+ * Service role key only — admin client / trusted server jobs (LearnDash migrate, etc.).
+ * Does not enforce Stripe live/test pairing so CLI content imports can run when
+ * `.env.cli.production` still has placeholder sk_test_* keys.
+ */
 export function getSupabaseServiceRoleKey(): string {
-  applyEnvironmentGuards();
+  applySupabaseGuards();
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!key) {
     throw new Error("SUPABASE_SERVICE_ROLE_KEY is required for this operation.");

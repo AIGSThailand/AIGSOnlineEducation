@@ -792,6 +792,21 @@ Where practical, migration jobs should be repeatable/idempotent.
 
 Never assume a migration succeeded because the script completed.
 
+### LearnDash REST migration (hard-won constraints)
+
+1. Curriculum ordering must come from `GET /ldlms/v2/sfwd-courses/{id}/steps`; never rebuild hierarchy from separately listed lessons/topics by title.
+2. LearnDash REST access for migration is **read-only** (GET only); never POST/PUT/PATCH/DELETE against the legacy LMS.
+3. Do not pass `context=edit` on LearnDash **collection** list endpoints when filters matter (it can break filters and return the full bank — seen on questions and assumed risky elsewhere).
+4. On this WordPress site, `GET /ldlms/v2/sfwd-courses/{id}/users` is **unfiltered** (~all WP users). Prefer `GET /ldlms/v1/sfwd-courses/{id}/users` (user id list), then hydrate via `GET /wp/v2/users/{id}?context=edit`.
+5. User/enrollment Auth writes import **enrolled users only**, not the full WP directory.
+6. `wordpress_migration_map` source/target enums use `user` / `profile` / `enrollment` (not ad-hoc labels like `wp-user` or `profiles`).
+7. CLI secrets for staging/production must live in `.env.cli.staging` / `.env.cli.production` (selected via `--env`). Do **not** put CLI secrets in `.env.production` — Next.js loads that file on `next build`.
+8. LearnDash content migrate uses the Supabase admin client only; Stripe live/test guards must not block Supabase-only CLI jobs. Stripe pairing is enforced when Stripe secrets are accessed.
+9. Production Supabase writes require an explicit allow flag (`--allow-production-write` / `ALLOW_LEARNDASH_MIGRATE_PRODUCTION=true`).
+10. Course-progress **steps** responses may be a nested `[[step,…]]` array (X-WP-Total=1); always flatten before mapping.
+11. Treat a progress step as completed only when `step_status === "completed"` (ignore lone timestamps).
+12. When materializing group enrollments, never overwrite an existing enrollment whose `enrollment_source` is `stripe`, `migration`, `admin`, or `group`; only insert missing rows or upgrade weak `manual` rows.
+
 Reconcile:
 
 - total users
@@ -1130,6 +1145,7 @@ When an AI coding agent works on this repository, it must:
 16. Validate user-controlled input.
 17. Run/type-check/lint relevant code after changes where tooling permits.
 18. Report migrations, environment variable changes, and security implications in the completion summary.
+19. If you encounter and fix a project-specific issue during a task, add one concise prevention rule to this file before completing the task. Do not add duplicate, vague, or speculative rules. Briefly report rule changes (or “None”) at the end of the task.
 
 ---
 
@@ -1462,3 +1478,22 @@ The agent must:
 10. Flag destructive or irreversible operations before execution.
 
 If an operation could affect real users, enrollments, progress, certificates, or billing, the environment must be verified before execution.
+
+---
+
+## 42. Fix Once, Prevent Repeat
+
+When a real project-specific problem is found and fixed:
+
+1. Fix the **root cause**, not only the visible symptom.
+2. Check related code for the same failure pattern (same scripts, transforms, server actions, or env entry points).
+3. Prefer a code guard/test/assertion where practical, then document.
+4. Add **one** concise, actionable prevention rule to this file in the most relevant existing section (§17 LearnDash, §4–8 Supabase/RLS, §15/40 Stripe, §33–41 environments, etc.).
+5. Update an existing rule instead of adding a duplicate; search this file before writing a new bullet.
+6. Make the rule specific (name the API, table, command, file pattern, or workflow).
+7. Do **not** add speculative rules, one-off typos, formatting nits, or generic advice already covered elsewhere.
+8. Follow the new rule for the rest of the current task.
+
+Workflow: discover once → fix once → document once → prevent recurrence.
+
+At task completion, report rule changes briefly, or: `Rules learned: None.`
