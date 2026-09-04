@@ -91,7 +91,7 @@ Existing `lesson_progress` rows remain valid (still reference `lessons.id`).
 
 **Script:** `npm run migrate:learndash:quizzes` reads `learndash_data/*question-quiz*/`.
 
-**Known export limitation:** LearnDash `.ld` exports include question **text and type** but not MCQ answer options for most questions (~1,800+). Options live in ProQuiz DB tables (`wp_learndash_pro_quiz_answer`). A direct MySQL export or custom ProQuiz export is needed for full MCQ options.
+**Known export limitation:** LearnDash `.ld` exports include question **text and type** but not MCQ answer options for most questions (~1,800+). Options live in ProQuiz DB tables (`wp_learndash_pro_quiz_answer`). Prefer the REST migrator (`npm run migrate:learndash-course -- … --with-questions`), which loads `_answerData` from `GET /ldlms/v1/sfwd-questions/{id}`. A direct MySQL / ProQuiz export remains a fallback if REST is unavailable.
 
 ### Phase C — Users & access
 

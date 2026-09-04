@@ -42,8 +42,10 @@ export type PresignUploadRequest = {
 
 export type PresignUploadResponse = {
   uploadUrl: string;
+  /** Stable URL for DB / HTML — CDN when public, `/api/media/file?key=` when private. */
   publicUrl: string;
   key: string;
+  access: "public" | "private";
   headers: Record<string, string>;
   expiresIn: number;
 };

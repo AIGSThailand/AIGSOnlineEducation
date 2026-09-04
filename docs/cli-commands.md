@@ -308,6 +308,34 @@ npm run migrate:normalize-content
 
 Place LearnDash export data under `learndash_data/` before running. See [migration-mapping.md](./migration-mapping.md).
 
+### REST v2 inspection + single-course migrate (Phases 1–3)
+
+Requires `LEARNDASH_BASE_URL`, `LEARNDASH_USERNAME`, `LEARNDASH_APP_PASSWORD` (WordPress Application Password).  
+`--write` also needs `NEXT_PUBLIC_SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`. Production writes require `--allow-production-write` (or `ALLOW_LEARNDASH_MIGRATE_PRODUCTION=true`).
+
+```bash
+# Offline checks
+npm run test:learndash-parse
+npm run test:learndash-transform
+npm run test:learndash-questions
+
+# Inspect course structure (no Supabase writes)
+npm run inspect:learndash-course -- 26475
+
+# Propose AIGS curriculum (default = dry-run)
+npm run migrate:learndash-course -- 26475 --dry-run
+
+# Propose / migrate all published courses
+npm run migrate:learndash-courses -- --dry-run
+npm run migrate:learndash-courses -- --write --with-questions
+
+# Resume after a course id, or limit set
+npm run migrate:learndash-courses -- --write --with-questions --after 26475
+npm run migrate:learndash-courses -- --dry-run --only 26475,30660
+```
+
+See [features/migration/learndash/README.md](../features/migration/learndash/README.md).
+
 ---
 
 ## Project scripts — auth utility
