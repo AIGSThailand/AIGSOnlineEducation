@@ -353,7 +353,10 @@ export function CourseSettings({
       {canEditCommerce && (
         <SettingsSection title="Commerce" defaultOpen={false}>
           <p className="text-xs text-slate-500">
-            Admin only. Stripe IDs are not synced automatically when the course title changes.
+            Admin only. Stripe IDs are <span className="font-medium">not</span> autosaved — click{" "}
+            <span className="font-medium">Save Stripe mapping</span> below. Use{" "}
+            <span className="font-mono">price_…</span> / <span className="font-mono">prod_…</span>{" "}
+            from the same Stripe mode as this app (test keys → test Dashboard).
           </p>
           <Label htmlFor="stripe-product">Stripe product ID</Label>
           <Input

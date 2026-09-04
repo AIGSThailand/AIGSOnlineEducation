@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { wordpressContentToHtml } from "@/lib/utils/wordpress-content";
+import { enhanceHtmlVideoPlayback } from "@/lib/utils/video-embed";
 
 interface RichContentProps {
   html: string | null | undefined;
@@ -8,10 +9,10 @@ interface RichContentProps {
 }
 
 /**
- * Renders LearnDash / WordPress HTML content (paragraphs, lists, images).
+ * Renders LearnDash / WordPress HTML content (paragraphs, lists, images, video).
  */
 export function RichContent({ html, className, fallback }: RichContentProps) {
-  const clean = wordpressContentToHtml(html);
+  const clean = enhanceHtmlVideoPlayback(wordpressContentToHtml(html));
 
   if (!clean) {
     return fallback ? (

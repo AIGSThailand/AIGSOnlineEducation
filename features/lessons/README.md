@@ -23,6 +23,10 @@ Normal editor saves update `content` + `content_json` only. They never write `so
 
 Table `lesson_resources` with explicit `position` ordering.
 
+- **Author:** Course Builder → lesson → **Resources** tab (`LessonResourcesEditor`)
+- **Student:** shown below lesson content on `/courses/[courseId]/lessons/[lessonId]` (`LessonResourcesList`)
+- Each resource needs a **title** and usually a **URL** (Open link). Without a URL it appears as “No link”.
+
 ## Deferred
 
 - Runtime drip / completion engine

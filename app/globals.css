@@ -81,6 +81,15 @@
     @apply bg-slate-50 font-semibold text-slate-900;
   }
 
+  .rich-content video,
+  .rich-content .rich-content-video video {
+    @apply my-4 h-auto w-full max-w-full rounded-lg bg-black;
+  }
+
+  .rich-content iframe {
+    @apply my-4 aspect-video h-auto w-full max-w-full rounded-lg;
+  }
+
   /* TipTap editor surface */
   .tiptap-editor.ProseMirror p.is-editor-empty:first-child::before {
     @apply float-left h-0 pointer-events-none text-slate-400;
