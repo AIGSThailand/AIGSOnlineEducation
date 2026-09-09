@@ -1,6 +1,10 @@
-import { createAdminClient } from "@/lib/supabase/admin";
 import { syncStripeSubscriptionToDatabase } from "./sync";
 import { stripe } from "./server";
+import {
+  enrollStudentFromCheckoutSession,
+  enrollStudentFromGroupCheckoutSession,
+  resolveCheckoutEnrollmentTargets,
+} from "./enroll-from-checkout";
 import type Stripe from "stripe";
 
 /**
@@ -8,12 +12,11 @@ import type Stripe from "stripe";
  * Links purchased course/subscription and auto-enrolls student if applicable.
  */
 export async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
-  const adminClient = createAdminClient();
-  const customerId = typeof session.customer === "string" ? session.customer : session.customer?.id;
-  const userId = session.metadata?.supabase_user_id || session.client_reference_id;
-  const courseId = session.metadata?.course_id;
+  const { userId, courseId, groupId } = await resolveCheckoutEnrollmentTargets(session);
 
-  console.log(`[Stripe Webhook] Processing checkout.session.completed for user: ${userId}`);
+  console.log(
+    `[Stripe Webhook] checkout.session.completed session=${session.id} user=${userId ?? "null"} course=${courseId ?? "null"} group=${groupId ?? "null"} mode=${session.mode}`
+  );
 
   // If subscription mode, sync the full subscription
   if (session.mode === "subscription" && session.subscription) {
@@ -24,60 +27,39 @@ export async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Se
     await syncStripeSubscriptionToDatabase(subscription, userId || undefined);
   }
 
-  // If direct course purchase or enrollment attached
-  if (userId && courseId) {
-    const paymentIntentId =
-      typeof session.payment_intent === "string"
-        ? session.payment_intent
-        : session.payment_intent?.id || null;
-
-    const { data: courseAccess } = await adminClient
-      .from("courses")
-      .select("access_expiration_enabled, access_period_days")
-      .eq("id", courseId)
-      .maybeSingle<{
-        access_expiration_enabled: boolean;
-        access_period_days: number | null;
-      }>();
-
-    const enrolledAt = new Date();
-    let expiresAt: string | null = null;
-    if (
-      courseAccess?.access_expiration_enabled &&
-      courseAccess.access_period_days &&
-      courseAccess.access_period_days > 0
-    ) {
-      const end = new Date(enrolledAt.getTime());
-      end.setUTCDate(end.getUTCDate() + courseAccess.access_period_days);
-      expiresAt = end.toISOString();
+  if (groupId) {
+    const result = await enrollStudentFromGroupCheckoutSession(session, {
+      userId: userId ?? undefined,
+      groupId,
+    });
+    if (!result.ok) {
+      console.error(`[Stripe Webhook] Bundle enrollment failed for ${session.id}: ${result.error}`);
+    } else if (result.kind === "group") {
+      console.log(
+        `[Stripe Webhook] Student ${result.userId} enrolled into bundle ${result.groupId} (${result.enrolled}/${result.courseIds.length} courses)`
+      );
     }
+    return;
+  }
 
-    const { error: enrollError } = await (adminClient.from("enrollments") as any).upsert(
-      {
-        student_id: userId,
-        course_id: courseId,
-        status: "active",
-        enrollment_source: "stripe",
-        source_reference: session.id,
-        enrolled_at: enrolledAt.toISOString(),
-        expires_at: expiresAt,
-        stripe_subscription_id:
-          typeof session.subscription === "string"
-            ? session.subscription
-            : session.subscription?.id || null,
-        stripe_payment_intent_id: paymentIntentId,
-        stripe_checkout_session_id: session.id,
-      },
-      {
-        onConflict: "student_id,course_id",
-      }
+  if (!courseId) {
+    console.warn(
+      `[Stripe Webhook] Skipping enrollment — session ${session.id} has no metadata.course_id or group_id`
     );
+    return;
+  }
 
-    if (enrollError) {
-      console.error(`[Stripe Webhook] Enrollment error: ${enrollError.message}`);
-    } else {
-      console.log(`[Stripe Webhook] Student ${userId} enrolled into course ${courseId}`);
-    }
+  const result = await enrollStudentFromCheckoutSession(session, {
+    userId: userId ?? undefined,
+    courseId,
+  });
+
+  if (!result.ok) {
+    console.error(`[Stripe Webhook] Enrollment failed for ${session.id}: ${result.error}`);
+  } else if (result.kind === "course") {
+    console.log(
+      `[Stripe Webhook] Student ${result.userId} enrolled into course ${result.courseId} (created=${result.created})`
+    );
   }
 }
 

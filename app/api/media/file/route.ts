@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { authorizeMediaRead } from "@/features/media/access";
 import {
   createPresignedDownload,
@@ -6,6 +6,9 @@ import {
   isMediaUploadConfigured,
   parseMediaObjectKey,
 } from "@/lib/media/s3";
+
+/** Auth + query-key signing must run per request; never statically prerender. */
+export const dynamic = "force-dynamic";
 
 /**
  * Issue a short-lived S3 GET URL after authorization.
@@ -16,7 +19,7 @@ import {
  * Prefer 302 redirect so <img src="/api/media/file?key=..."> works in lesson HTML.
  * Pass `?redirect=0` to receive JSON `{ downloadUrl, expiresIn }` instead.
  */
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
     if (!isMediaUploadConfigured()) {
       return NextResponse.json(
@@ -33,9 +36,8 @@ export async function GET(request: Request) {
       );
     }
 
-    const { searchParams } = new URL(request.url);
-    const key = searchParams.get("key")?.trim() || "";
-    const redirect = searchParams.get("redirect") !== "0";
+    const key = request.nextUrl.searchParams.get("key")?.trim() || "";
+    const redirect = request.nextUrl.searchParams.get("redirect") !== "0";
 
     const parsed = parseMediaObjectKey(key);
     if (!parsed) {

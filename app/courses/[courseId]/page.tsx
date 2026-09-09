@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { canAccessCourse, getCurrentUser } from "@/lib/auth/permissions";
 import { canManageCourse } from "@/features/courses/permissions";
 import { getCourseSyllabus } from "@/features/courses/queries";
+import { fulfillCheckoutSessionForUser } from "@/lib/stripe/enroll-from-checkout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +21,8 @@ interface CourseDetailPageProps {
   };
   searchParams?: {
     preview?: string;
+    checkout?: string;
+    session_id?: string;
   };
 }
 
@@ -27,6 +30,26 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
   const { courseId } = params;
   const supabase = await createClient();
   const user = await getCurrentUser();
+
+  let checkoutMessage: { tone: "success" | "error"; text: string } | null = null;
+  if (user && searchParams?.session_id) {
+    const fulfilled = await fulfillCheckoutSessionForUser(searchParams.session_id, user.id);
+    if (fulfilled.ok) {
+      checkoutMessage = {
+        tone: "success",
+        text:
+          fulfilled.kind === "group"
+            ? `Payment confirmed — you are enrolled in ${fulfilled.enrolled} course(s) from this bundle.`
+            : "Payment confirmed — you are enrolled in this course.",
+      };
+    } else if (searchParams.checkout === "success") {
+      checkoutMessage = {
+        tone: "error",
+        text: `Payment received, but enrollment could not be confirmed yet (${fulfilled.error}). Refresh this page or contact support if access stays locked.`,
+      };
+      console.error("[Course checkout fulfill]", fulfilled.error);
+    }
+  }
 
   const { data: course } = await supabase
     .from("courses")
@@ -45,13 +68,16 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
   if (user) {
     const { data: enrollment } = await supabase
       .from("enrollments")
-      .select("status")
+      .select("status, expires_at")
       .eq("course_id", courseId)
       .eq("student_id", user.id)
       .eq("status", "active")
-      .maybeSingle<{ status: string }>();
+      .maybeSingle<{ status: string; expires_at: string | null }>();
 
-    isEnrolled = !!enrollment;
+    isEnrolled = !!(
+      enrollment &&
+      (!enrollment.expires_at || new Date(enrollment.expires_at).getTime() > Date.now())
+    );
   }
 
   const canManage = await canManageCourse(courseId);
@@ -69,6 +95,18 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
           ← All courses
         </Link>
       </nav>
+      {checkoutMessage ? (
+        <div
+          className={
+            checkoutMessage.tone === "success"
+              ? "mb-6 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900"
+              : "mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+          }
+          role="status"
+        >
+          {checkoutMessage.text}
+        </div>
+      ) : null}
       {isPreview && (
         <div
           className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"

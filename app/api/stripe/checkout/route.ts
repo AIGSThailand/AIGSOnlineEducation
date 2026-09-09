@@ -8,7 +8,7 @@ import { createCheckoutSessionSchema } from "@/lib/validations/subscription";
 
 /**
  * POST /api/stripe/checkout
- * Initiates a Stripe Checkout Session for one-time course purchases or subscriptions.
+ * Initiates a Stripe Checkout Session for one-time course/bundle purchases or subscriptions.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -34,6 +34,7 @@ export async function POST(req: NextRequest) {
     const {
       priceId: requestedPriceId,
       courseId,
+      groupId,
       courseTitle,
       amount,
       currency = "usd",
@@ -44,9 +45,24 @@ export async function POST(req: NextRequest) {
 
     const { NEXT_PUBLIC_APP_URL: appUrl } = getClientEnv();
 
-    // Prefer mapped course price when courseId is present (builder Commerce settings).
+    // Prefer mapped course/group price when id is present (builder Commerce settings).
     let priceId = requestedPriceId;
-    if (courseId && !priceId) {
+    let bundleTitle: string | undefined;
+
+    if (groupId && !priceId) {
+      const { data: group } = await supabase
+        .from("groups")
+        .select("stripe_price_id, name, status")
+        .eq("id", groupId)
+        .maybeSingle<{ stripe_price_id: string | null; name: string; status: string }>();
+      if (!group || group.status !== "active") {
+        return NextResponse.json({ error: "Bundle not found or not active." }, { status: 404 });
+      }
+      if (group.stripe_price_id) {
+        priceId = group.stripe_price_id;
+      }
+      bundleTitle = group.name;
+    } else if (courseId && !priceId) {
       const { data: course } = await supabase
         .from("courses")
         .select("stripe_price_id, title")
@@ -64,22 +80,21 @@ export async function POST(req: NextRequest) {
     const metadata: Record<string, string> = {
       supabase_user_id: user.id,
     };
-    if (courseId) {
-      metadata.course_id = courseId;
-    }
+    if (courseId) metadata.course_id = courseId;
+    if (groupId) metadata.group_id = groupId;
 
     // 3. Build line items
     let line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
     if (priceId) {
       line_items = [{ price: priceId, quantity: 1 }];
-    } else if (amount && courseTitle) {
+    } else if (amount && (courseTitle || bundleTitle)) {
       line_items = [
         {
           price_data: {
             currency,
-            unit_amount: Math.round(amount * 100), // convert dollars to cents if passed as decimal
+            unit_amount: Math.round(amount * 100),
             product_data: {
-              name: courseTitle,
+              name: courseTitle || bundleTitle || "Course purchase",
             },
           },
           quantity: 1,
@@ -88,23 +103,36 @@ export async function POST(req: NextRequest) {
     } else {
       return NextResponse.json(
         {
-          error:
-            "No Stripe price is mapped for this course. An admin must set stripe_price_id under Course settings → Commerce.",
+          error: groupId
+            ? "No Stripe price is mapped for this bundle. An admin must set stripe_price_id under Groups → Commerce."
+            : "No Stripe price is mapped for this course. An admin must set stripe_price_id under Course settings → Commerce.",
         },
         { status: 400 }
       );
     }
 
     // 4. Create Stripe Checkout Session (One-time payment by default)
+    const defaultSuccessUrl = groupId
+      ? `${appUrl}/bundles/${groupId}?checkout=success&session_id={CHECKOUT_SESSION_ID}`
+      : courseId
+        ? `${appUrl}/courses/${courseId}?checkout=success&session_id={CHECKOUT_SESSION_ID}`
+        : `${appUrl}/student/dashboard?checkout=success&session_id={CHECKOUT_SESSION_ID}`;
+
     const sessionConfig: Stripe.Checkout.SessionCreateParams = {
       customer: customerId,
-      mode: mode, // "payment" for one-time
+      client_reference_id: user.id,
+      mode: mode,
       payment_method_types: ["card"],
       line_items,
       metadata,
-      success_url:
-        successUrl || `${appUrl}/student/dashboard?session_id={CHECKOUT_SESSION_ID}&success=true`,
-      cancel_url: cancelUrl || (courseId ? `${appUrl}/courses/${courseId}` : `${appUrl}/courses`),
+      success_url: successUrl || defaultSuccessUrl,
+      cancel_url:
+        cancelUrl ||
+        (groupId
+          ? `${appUrl}/bundles/${groupId}`
+          : courseId
+            ? `${appUrl}/courses/${courseId}`
+            : `${appUrl}/courses`),
     };
 
     if (mode === "subscription") {

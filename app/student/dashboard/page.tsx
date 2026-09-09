@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth/permissions";
+import { fulfillCheckoutSessionForUser } from "@/lib/stripe/enroll-from-checkout";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { CourseCard } from "@/components/courses/course-card";
@@ -8,9 +9,24 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import type { CourseWithInstructors } from "@/types/lms.types";
 
-export default async function StudentDashboardPage() {
+interface StudentDashboardPageProps {
+  searchParams?: {
+    session_id?: string;
+    success?: string;
+    checkout?: string;
+  };
+}
+
+export default async function StudentDashboardPage({ searchParams }: StudentDashboardPageProps) {
   const user = await getCurrentUser();
   const supabase = await createClient();
+
+  if (user && searchParams?.session_id) {
+    const fulfilled = await fulfillCheckoutSessionForUser(searchParams.session_id, user.id);
+    if (!fulfilled.ok) {
+      console.error("[Student dashboard checkout fulfill]", fulfilled.error);
+    }
+  }
 
   // Fetch active enrollments with course details
   const { data: enrollments } = await supabase
