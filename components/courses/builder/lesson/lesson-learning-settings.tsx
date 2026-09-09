@@ -45,7 +45,7 @@ export function LessonLearningSettings({
     <div className="space-y-6">
       <section className="space-y-3">
         <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-          Publishing
+          Lesson settings
         </h3>
         <div>
           <Label htmlFor="lesson-status">Status</Label>

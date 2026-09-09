@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { optionalMediaUrlSchema } from "@/lib/validations/media-url";
 
 const slugField = z
   .string()
@@ -20,8 +21,8 @@ export const updateCourseSchema = z.object({
   slug: slugField.optional(),
   description: z.string().optional(),
   excerpt: z.string().trim().max(500).optional().or(z.literal("")),
-  thumbnailUrl: z.string().url().optional().or(z.literal("")),
-  promotionalVideoUrl: z.string().url().optional().or(z.literal("")),
+  thumbnailUrl: optionalMediaUrlSchema,
+  promotionalVideoUrl: optionalMediaUrlSchema,
   progressionType: z.enum(["linear", "free_form"]).optional(),
   accessType: z.enum(["open", "enrollment_required", "paid", "private"]).optional(),
   instructorIds: z.array(z.string().uuid()).optional(),
@@ -53,7 +54,7 @@ export const lessonSchema = z.object({
   slug: slugField,
   content: z.string().optional(),
   excerpt: z.string().trim().max(500).optional().or(z.literal("")),
-  videoUrl: z.string().url().optional().or(z.literal("")),
+  videoUrl: optionalMediaUrlSchema,
   status: z.enum(["draft", "published", "archived"]).optional(),
 });
 

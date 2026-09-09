@@ -330,12 +330,13 @@ export function CourseSettings({
             />
             <Input
               id="thumbnail-url"
-              type="url"
+              type="text"
+              inputMode="url"
               value={form.thumbnailUrl}
               onChange={(e) => patchForm({ thumbnailUrl: e.target.value })}
-              placeholder="https://… or upload above"
+              placeholder="/api/media/file?key=… or https://…"
             />
-            {form.thumbnailUrl && (
+            {form.thumbnailUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={form.thumbnailUrl}
@@ -345,7 +346,13 @@ export function CourseSettings({
                   (e.target as HTMLImageElement).style.display = "none";
                 }}
               />
-            )}
+            ) : null}
+            {form.thumbnailUrl.startsWith("http://") ? (
+              <p className="mt-1 text-xs text-amber-700">
+                This thumbnail uses insecure HTTP and will be blocked on HTTPS sites. Upload a new
+                image or use an https:// /api/media/file link.
+              </p>
+            ) : null}
           </div>
           <div>
             <Label htmlFor="promo-video-url">Promotional video URL</Label>
