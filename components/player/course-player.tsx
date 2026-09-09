@@ -6,6 +6,7 @@ import { List, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { PlayerSidebar } from "./player-sidebar";
 import { PlayerNav } from "./player-nav";
+import { PlayerCompleteButton } from "./player-complete-button";
 import { adjacentSteps } from "@/features/player/build-player";
 import type { CoursePlayerData, PlayerStep } from "@/features/player/types";
 
@@ -34,6 +35,8 @@ export function CoursePlayer({
   const isCompleted = completedSet.has(current.key);
   const nextLocked = next ? lockedSet.has(next.key) : false;
 
+  const closeMenu = () => setMenuOpen(false);
+
   const sidebar = (
     <PlayerSidebar
       courseId={player.courseId}
@@ -42,100 +45,116 @@ export function CoursePlayer({
       currentKey={current.key}
       completedKeys={completedSet}
       lockedKeys={lockedSet}
+      onNavigate={closeMenu}
     />
   );
 
   return (
-    <div className="flex h-[calc(100vh-65px)] overflow-hidden">
-      <aside className="hidden h-full w-80 flex-shrink-0 lg:flex">{sidebar}</aside>
+    <div className="public-site fixed inset-0 z-50 flex bg-[var(--surface)] text-[var(--text-primary)]">
+      <aside className="hidden h-full w-[19rem] shrink-0 lg:flex">{sidebar}</aside>
 
-      {menuOpen && (
+      {menuOpen ? (
         <div className="fixed inset-0 z-40 lg:hidden">
           <button
             type="button"
-            className="absolute inset-0 bg-slate-900/40"
+            className="absolute inset-0 bg-[var(--brand-dark)]/40"
             aria-label="Close syllabus"
-            onClick={() => setMenuOpen(false)}
+            onClick={closeMenu}
           />
-          <div className="relative z-50 h-full w-80 max-w-[85vw] shadow-xl">{sidebar}</div>
+          <div className="relative z-50 h-full w-[19rem] max-w-[88vw] shadow-xl">{sidebar}</div>
         </div>
-      )}
+      ) : null}
 
-      <div className="flex min-w-0 flex-1 flex-col overflow-hidden bg-white">
-        <div className="border-b border-slate-200">
-          <div className="flex items-center justify-between gap-3 px-4 py-2 text-xs text-slate-600">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        {/* Top progress + Mark Complete (LearnDash-style) */}
+        <header className="border-b border-[var(--border)] bg-[var(--surface)]">
+          <div className="flex items-center gap-3 px-3 py-2.5 sm:px-5">
             <button
               type="button"
-              className="inline-flex items-center rounded-md p-1.5 hover:bg-slate-100 lg:hidden"
+              className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-md border border-[var(--border)] lg:hidden"
               onClick={() => setMenuOpen(true)}
               aria-label="Open syllabus"
             >
-              <List className="h-5 w-5" />
+              <List className="h-5 w-5" aria-hidden />
             </button>
-            <p className="font-semibold text-slate-800">
-              {percent}% complete
-              <span className="ml-2 font-normal text-slate-500">
-                {completedCount}/{total} steps
-              </span>
-            </p>
-            <Link
-              href={`/courses/${player.courseId}`}
-              className="hidden text-xs font-medium text-brand-600 hover:text-brand-700 sm:inline"
-            >
-              Back to course
-            </Link>
+
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)]">
+                {percent}% complete
+                <span className="ml-2 font-medium normal-case tracking-normal">
+                  {completedCount}/{total} steps
+                </span>
+              </p>
+              <div
+                className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[var(--surface-muted)]"
+                role="progressbar"
+                aria-valuenow={percent}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label="Course progress"
+              >
+                <div
+                  className="h-full rounded-full bg-[var(--brand-primary)] transition-[width] duration-300"
+                  style={{ width: `${percent}%` }}
+                />
+              </div>
+            </div>
+
+            {canToggleComplete ? (
+              <PlayerCompleteButton
+                courseId={player.courseId}
+                current={current}
+                completed={isCompleted}
+              />
+            ) : null}
+
             {menuOpen ? (
-              <button type="button" className="lg:hidden" onClick={() => setMenuOpen(false)}>
-                <X className="h-5 w-5" />
+              <button
+                type="button"
+                className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-md border border-[var(--border)] lg:hidden"
+                onClick={closeMenu}
+                aria-label="Close syllabus"
+              >
+                <X className="h-5 w-5" aria-hidden />
               </button>
-            ) : (
-              <span className="w-6 lg:hidden" />
-            )}
+            ) : null}
           </div>
-          <div className="h-1 bg-slate-100">
-            <div
-              className="h-1 bg-emerald-500 transition-[width]"
-              style={{ width: `${percent}%` }}
-            />
-          </div>
-        </div>
+        </header>
 
         <div className="flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-3xl space-y-6 px-4 py-8 sm:px-8">
+          <div className="mx-auto max-w-4xl space-y-6 px-4 py-6 sm:px-8 sm:py-8">
             <div>
-              <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">
-                <Link href={`/courses/${player.courseId}`} className="hover:text-brand-600">
+              <div className="mb-3 flex flex-wrap items-center gap-2 text-sm text-[var(--text-secondary)]">
+                <Link
+                  href={`/courses/${player.courseId}`}
+                  className="hover:text-[var(--brand-primary)]"
+                >
                   {player.courseTitle}
                 </Link>
-                <span aria-hidden="true">›</span>
-                <span className="text-slate-700">{current.title}</span>
-                {isCompleted && (
-                  <Badge variant="success" className="ml-1 normal-case">
-                    Complete
-                  </Badge>
-                )}
+                <span aria-hidden="true">/</span>
+                <span className="text-[var(--text-primary)]">{current.title}</span>
+                <Badge
+                  variant={isCompleted ? "success" : "default"}
+                  className="ml-1 uppercase tracking-wide"
+                >
+                  {isCompleted ? "Complete" : "In progress"}
+                </Badge>
               </div>
-              <h1 className="text-2xl font-bold tracking-tight text-slate-900">{current.title}</h1>
+              <h1 className="font-display text-2xl font-semibold tracking-tight text-[var(--text-primary)] sm:text-3xl">
+                {current.title}
+              </h1>
             </div>
 
             {children}
 
-            <div className="border-t border-slate-100 pt-6">
-              <PlayerNav
-                courseId={player.courseId}
-                current={current}
-                prev={prev}
-                next={next}
-                completed={isCompleted}
-                nextLocked={nextLocked}
-                canToggleComplete={canToggleComplete}
-              />
-              <p className="mt-4 text-center">
+            <div className="border-t border-[var(--border)] pt-6">
+              <PlayerNav prev={prev} next={next} nextLocked={nextLocked} />
+              <p className="mt-5 text-center">
                 <Link
                   href={`/courses/${player.courseId}`}
-                  className="text-xs font-medium text-slate-500 hover:text-brand-600"
+                  className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--brand-primary)]"
                 >
-                  Back to course
+                  Back to course overview
                 </Link>
               </p>
             </div>

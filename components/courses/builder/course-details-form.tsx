@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { RichTextEditor } from "@/components/courses/builder/rich-text-editor";
 import { updateCourseAction } from "@/features/courses/actions";
 import type { CourseBuilderCourse, SaveStatus } from "@/features/courses/types";
 
@@ -108,23 +109,26 @@ export function CourseDetailsForm({
               onSaveStatusChange("unsaved");
             }}
           />
+          <p className="mt-1 text-xs text-slate-500">
+            Plain text summary for cards and catalog listings.
+          </p>
         </div>
         <div>
           <Label htmlFor="course-description">Full description</Label>
-          <Textarea
-            id="course-description"
+          <p className="mb-2 text-xs text-slate-500">
+            Rich text for the public course page. Migrated LearnDash HTML can be edited visually or
+            via HTML source.
+          </p>
+          <RichTextEditor
             value={description}
-            rows={10}
-            onChange={(e) => {
-              setDescription(e.target.value);
+            onChange={({ html }) => {
+              setDescription(html);
               onSaveStatusChange("unsaved");
             }}
-            placeholder="HTML or plain text. Rich editor can be added later."
+            placeholder="Describe this course…"
+            courseId={course.id}
+            allowHtmlSource
           />
-          <p className="mt-1 text-xs text-slate-500">
-            Supports HTML for migrated LearnDash content. Content is stored as-is and sanitized on
-            display.
-          </p>
         </div>
       </div>
 

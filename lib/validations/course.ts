@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { optionalMediaUrlSchema } from "@/lib/validations/media-url";
 
 export const courseSchema = z.object({
   title: z.string().trim().min(3, { message: "Title must be at least 3 characters." }),
@@ -11,7 +12,7 @@ export const courseSchema = z.object({
     }),
   description: z.string().optional(),
   status: z.enum(["draft", "published", "archived"]).default("draft"),
-  thumbnailUrl: z.string().url().optional().or(z.literal("")),
+  thumbnailUrl: optionalMediaUrlSchema,
 });
 
 export const lessonSchema = z.object({
@@ -26,7 +27,7 @@ export const lessonSchema = z.object({
       message: "Slug must contain only lowercase letters, numbers, and hyphens.",
     }),
   content: z.string().optional(),
-  videoUrl: z.string().url().optional().or(z.literal("")),
+  videoUrl: optionalMediaUrlSchema,
   sortOrder: z.number().int().nonnegative().default(0),
 });
 

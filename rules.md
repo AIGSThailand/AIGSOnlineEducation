@@ -496,6 +496,8 @@ Avoid hardcoding arbitrary colors throughout components.
 
 **Public site:** use semantic tokens from `app/globals.css` (`--brand-primary`, `--surface`, `--text-primary`, `--accent-gold`, etc.) via `components/public/*`. Do not scatter raw AIGS hex values in public components; keep the maroon scale on `--aigs-*` and map semantics there.
 
+**Private media URLs:** Zod must accept `/api/media/file?key=…` (relative proxy paths), not only absolute `http(s)` URLs — use `lib/validations/media-url.ts` for thumbnail / lesson media fields.
+
 ### Spacing
 
 Prefer Tailwind's standard spacing scale.

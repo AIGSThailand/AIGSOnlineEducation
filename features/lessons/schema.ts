@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { mediaUrlSchema } from "@/lib/validations/media-url";
 
 const slugField = z
   .string()
@@ -42,13 +43,7 @@ export const lessonResourceTypeSchema = z.enum([
   "other",
 ]);
 
-const optionalUrl = z
-  .string()
-  .trim()
-  .url("Must be a valid URL.")
-  .optional()
-  .or(z.literal(""))
-  .or(z.null());
+const optionalUrl = mediaUrlSchema.optional().or(z.literal("")).or(z.null());
 
 export const updateLessonContentSchema = z.object({
   courseId: z.string().uuid(),
