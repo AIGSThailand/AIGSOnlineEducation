@@ -1,6 +1,7 @@
 import type { LearnDashEntityId } from "@/lib/learndash/types/common";
 import type { LearnDashStepNode } from "@/lib/learndash/types/course-step";
 import type { LearnDashCourse, LearnDashLesson, LearnDashQuiz, LearnDashTopic } from "@/lib/learndash/types/entities";
+import type { LearnDashSectionHeading } from "@/lib/learndash/types/section";
 
 export type InspectionWarningCode =
   | "EMPTY_COURSE"
@@ -10,7 +11,8 @@ export type InspectionWarningCode =
   | "ORPHAN_QUIZ"
   | "UNEXPECTED_DEPTH"
   | "DUPLICATE_STEP_ID"
-  | "PARSE_WARNING";
+  | "PARSE_WARNING"
+  | "NO_SECTION_HEADINGS";
 
 export type InspectionWarning = {
   code: InspectionWarningCode;
@@ -24,6 +26,8 @@ export type LearnDashCourseInspection = {
   course: LearnDashCourse;
   rawSteps: unknown;
   hierarchy: LearnDashStepNode[];
+  /** Builder section headings from `course_sections` meta (may be empty). */
+  sectionHeadings: LearnDashSectionHeading[];
   entities: {
     lessons: LearnDashLesson[];
     topics: LearnDashTopic[];
@@ -33,6 +37,7 @@ export type LearnDashCourseInspection = {
     lessons: number;
     topics: number;
     quizzes: number;
+    sectionHeadings: number;
     unknownSteps: number;
     missingLessons: number;
     missingTopics: number;

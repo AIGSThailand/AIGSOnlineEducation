@@ -8,6 +8,8 @@ import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { updateCourseAction, updateStripeMappingAction } from "@/features/courses/actions";
+import { updateCourseAccessExpirationAction } from "@/features/enrollments/actions";
+import { ExtendAccessPanel } from "@/components/courses/builder/extend-access-panel";
 import { MediaUploader } from "@/components/media/media-uploader";
 import type {
   CourseBuilderCourse,
@@ -35,6 +37,8 @@ type SettingsForm = {
   promotionalVideoUrl: string;
   progressionType: CourseProgressionType;
   accessType: CourseAccessType;
+  accessExpirationEnabled: boolean;
+  accessPeriodDays: string;
   instructorIds: string[];
 };
 
@@ -95,18 +99,34 @@ export function CourseSettings({
       instructorIds: canManageInstructors ? current.instructorIds : undefined,
     });
 
+    if (!result.success) {
+      setIsSaving(false);
+      setError(result.error);
+      onSaveStatusChange("error");
+      return result;
+    }
+
+    const daysRaw = current.accessPeriodDays.trim();
+    const days = daysRaw ? Number(daysRaw) : null;
+    const accessResult = await updateCourseAccessExpirationAction({
+      courseId: course.id,
+      accessExpirationEnabled: current.accessExpirationEnabled,
+      accessPeriodDays: current.accessExpirationEnabled ? days : null,
+    });
+
     setIsSaving(false);
 
-    if (result.success) {
+    if (accessResult.success) {
       setDirty(false);
       dirtyRef.current = false;
       onSaveStatusChange("saved");
       router.refresh();
-    } else {
-      setError(result.error);
-      onSaveStatusChange("error");
+      return accessResult;
     }
-    return result;
+
+    setError(accessResult.error);
+    onSaveStatusChange("error");
+    return accessResult;
   }, [canManageInstructors, course.id, onSaveStatusChange, router]);
 
   const scheduleAutosave = useCallback(() => {
@@ -246,6 +266,39 @@ export function CourseSettings({
             Paid access is selected, but no Stripe price ID is set yet. Configure Commerce below.
           </p>
         )}
+
+        <div className="mt-3 space-y-2 border-t border-slate-100 pt-3">
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-800">
+            <input
+              type="checkbox"
+              className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+              checked={form.accessExpirationEnabled}
+              onChange={(e) => patchForm({ accessExpirationEnabled: e.target.checked })}
+            />
+            Course access expiration
+          </label>
+          <p className="text-xs text-slate-500">
+            Like LearnDash: when enabled, new enrollments expire after the access period (days).
+          </p>
+          {form.accessExpirationEnabled && (
+            <div>
+              <Label htmlFor="access-period-days">Access period (days)</Label>
+              <Input
+                id="access-period-days"
+                type="number"
+                min={1}
+                max={3650}
+                value={form.accessPeriodDays}
+                onChange={(e) => patchForm({ accessPeriodDays: e.target.value })}
+                placeholder="120"
+              />
+            </div>
+          )}
+        </div>
+      </SettingsSection>
+
+      <SettingsSection title="Extend Access" defaultOpen>
+        <ExtendAccessPanel courseId={course.id} />
       </SettingsSection>
 
       <SettingsSection title="Progression" defaultOpen>
@@ -429,6 +482,9 @@ function formFromCourse(course: CourseBuilderCourse): SettingsForm {
     promotionalVideoUrl: course.promotionalVideoUrl || "",
     progressionType: course.progressionType,
     accessType: course.accessType || "enrollment_required",
+    accessExpirationEnabled: course.accessExpirationEnabled ?? false,
+    accessPeriodDays:
+      course.accessPeriodDays != null ? String(course.accessPeriodDays) : "120",
     instructorIds: [...course.instructorIds],
   };
 }

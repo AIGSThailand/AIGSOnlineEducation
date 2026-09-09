@@ -515,6 +515,8 @@ export async function getCourseBuilderData(
     stripeProductId: course.stripe_product_id,
     stripePriceId: course.stripe_price_id,
     wordpressCourseId: course.wordpress_course_id,
+    accessExpirationEnabled: course.access_expiration_enabled ?? false,
+    accessPeriodDays: course.access_period_days ?? null,
     createdAt: course.created_at,
     updatedAt: course.updated_at,
     instructorIds: (instructorRows || []).map((r) => r.instructor_id),

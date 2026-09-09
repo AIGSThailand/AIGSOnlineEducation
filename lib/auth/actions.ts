@@ -75,7 +75,8 @@ export async function registerAction(formData: FormData): Promise<AuthActionResu
     lastName: formData.get("lastName"),
     email: formData.get("email"),
     password: formData.get("password"),
-    role: formData.get("role") || "student",
+    // Public registration always creates a student account.
+    role: "student",
   };
 
   const validated = registerSchema.safeParse(rawData);
@@ -103,24 +104,90 @@ export async function registerAction(formData: FormData): Promise<AuthActionResu
   });
 
   if (error) {
+    const msg = error.message.toLowerCase();
+    if (
+      msg.includes("already registered") ||
+      msg.includes("already been registered") ||
+      msg.includes("user already exists") ||
+      error.code === "user_already_exists"
+    ) {
+      return {
+        success: false,
+        error: "An account with this email already exists. Please sign in instead.",
+        redirectUrl: `/login?email=${encodeURIComponent(validated.data.email)}&already=1`,
+      };
+    }
+    if (msg.includes("rate limit") || msg.includes("email rate")) {
+      return {
+        success: false,
+        error:
+          "Too many signup emails were sent. Please wait a few minutes, or ask an admin to create/confirm your account.",
+      };
+    }
+    if (
+      error.code === "email_address_invalid" ||
+      (msg.includes("email address") && msg.includes("invalid"))
+    ) {
+      return {
+        success: false,
+        error:
+          "Supabase Auth rejected this email. With the default mailer, use an email on your Supabase org team, a normal provider address (e.g. Gmail), or turn Confirm email off / add custom SMTP. Test domains and some addresses are blocked.",
+      };
+    }
+    if (
+      error.code === "email_address_not_authorized" ||
+      msg.includes("not authorized")
+    ) {
+      return {
+        success: false,
+        error:
+          "This email cannot receive Supabase auth mail on the default SMTP. Add custom SMTP, or use an email that belongs to your Supabase organization.",
+      };
+    }
     return {
       success: false,
       error: error.message,
     };
   }
 
-  // If email confirmation is enabled on Supabase, user session may not be active yet
-  if (data.user && !data.session) {
+  // Supabase may return a user with empty identities when the email already exists
+  // (anti-enumeration) while Confirm email is enabled — treat as duplicate.
+  const identities = data.user?.identities;
+  if (data.user && Array.isArray(identities) && identities.length === 0) {
     return {
-      success: true,
-      message: "Registration successful! Please check your email for the confirmation link.",
+      success: false,
+      error: "An account with this email already exists. Please sign in instead.",
+      redirectUrl: `/login?email=${encodeURIComponent(validated.data.email)}&already=1`,
     };
   }
 
-  const redirectPath = getRoleDashboardPath(validated.data.role as UserRole);
+  // Email confirmation required — no session yet. Send user to login with guidance.
+  if (data.user && !data.session) {
+    return {
+      success: true,
+      message:
+        "Account created. Check your email to confirm, then sign in. If you already confirmed, you can sign in now.",
+      redirectUrl: `/login?email=${encodeURIComponent(validated.data.email)}&registered=1`,
+    };
+  }
+
+  // Immediate session (confirm-email off) — go to role dashboard from profile when possible.
+  if (data.session && data.user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", data.user.id)
+      .maybeSingle<{ role: UserRole }>();
+
+    return {
+      success: true,
+      redirectUrl: getRoleDashboardPath(profile?.role ?? (validated.data.role as UserRole)),
+    };
+  }
+
   return {
-    success: true,
-    redirectUrl: redirectPath,
+    success: false,
+    error: "Registration did not complete. Please try again or sign in if you already have an account.",
   };
 }
 
@@ -204,3 +271,4 @@ export async function logoutAction() {
   await supabase.auth.signOut();
   redirect("/login");
 }
+

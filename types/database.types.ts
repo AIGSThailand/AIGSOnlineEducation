@@ -75,6 +75,8 @@ export interface Database {
           stripe_product_id: string | null;
           stripe_price_id: string | null;
           wordpress_course_id: number | null;
+          access_expiration_enabled: boolean;
+          access_period_days: number | null;
           created_at: string;
           updated_at: string;
         };
@@ -92,6 +94,8 @@ export interface Database {
           stripe_product_id?: string | null;
           stripe_price_id?: string | null;
           wordpress_course_id?: number | null;
+          access_expiration_enabled?: boolean;
+          access_period_days?: number | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -109,6 +113,8 @@ export interface Database {
           stripe_product_id?: string | null;
           stripe_price_id?: string | null;
           wordpress_course_id?: number | null;
+          access_expiration_enabled?: boolean;
+          access_period_days?: number | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -755,6 +761,7 @@ export interface Database {
           source_reference: string | null;
           enrolled_at: string;
           completed_at: string | null;
+          expires_at: string | null;
           stripe_subscription_id: string | null;
           stripe_payment_intent_id: string | null;
           stripe_checkout_session_id: string | null;
@@ -771,6 +778,7 @@ export interface Database {
           source_reference?: string | null;
           enrolled_at?: string;
           completed_at?: string | null;
+          expires_at?: string | null;
           stripe_subscription_id?: string | null;
           stripe_payment_intent_id?: string | null;
           stripe_checkout_session_id?: string | null;
@@ -787,6 +795,7 @@ export interface Database {
           source_reference?: string | null;
           enrolled_at?: string;
           completed_at?: string | null;
+          expires_at?: string | null;
           stripe_subscription_id?: string | null;
           stripe_payment_intent_id?: string | null;
           stripe_checkout_session_id?: string | null;

@@ -2,6 +2,7 @@ export { getLearnDashConfig, isLearnDashConfigured } from "./config";
 export { learndashFetch, fetchAllPages, mapWithConcurrency } from "./client";
 export { LearnDashError } from "./errors";
 export { getLearnDashCourse, getLearnDashCourseSteps, listLearnDashCourses } from "./api/courses";
+export { getLearnDashCourseSections } from "./api/sections";
 export {
   getLearnDashLesson,
   getLearnDashTopic,
@@ -50,3 +51,10 @@ export {
 export type { LearnDashGroupListItem } from "./api/groups";
 export type { LearnDashGroup } from "./types/group";
 export { parseLearnDashCourseSteps, collectStepIds } from "./parse-steps";
+export {
+  parseLearnDashCourseSections,
+  extractSectionsFromEntity,
+  mapLessonIndexesToSectionIndexes,
+  resolveSectionIndexByLessonIndex,
+} from "./parse-sections";
+export type { LearnDashSectionHeading } from "./types/section";

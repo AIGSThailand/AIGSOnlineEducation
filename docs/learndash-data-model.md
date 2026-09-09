@@ -19,6 +19,8 @@ Course structure is stored in post meta:
 - `course_sections` — JSON array of section headings (`type: section-heading`)
 - `ld_course_steps` — nested tree: lessons → topics → quizzes
 
+The REST migrator loads `course_sections` (LD/WP edit context or `/ldlms/v1/sections/{id}`) and assigns lessons to headings using absolute builder `order` (or explicit `steps` when present). The `/steps` tree alone does **not** include section headings.
+
 Example from exported data:
 
 ```json

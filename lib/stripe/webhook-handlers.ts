@@ -31,6 +31,27 @@ export async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Se
         ? session.payment_intent
         : session.payment_intent?.id || null;
 
+    const { data: courseAccess } = await adminClient
+      .from("courses")
+      .select("access_expiration_enabled, access_period_days")
+      .eq("id", courseId)
+      .maybeSingle<{
+        access_expiration_enabled: boolean;
+        access_period_days: number | null;
+      }>();
+
+    const enrolledAt = new Date();
+    let expiresAt: string | null = null;
+    if (
+      courseAccess?.access_expiration_enabled &&
+      courseAccess.access_period_days &&
+      courseAccess.access_period_days > 0
+    ) {
+      const end = new Date(enrolledAt.getTime());
+      end.setUTCDate(end.getUTCDate() + courseAccess.access_period_days);
+      expiresAt = end.toISOString();
+    }
+
     const { error: enrollError } = await (adminClient.from("enrollments") as any).upsert(
       {
         student_id: userId,
@@ -38,7 +59,8 @@ export async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Se
         status: "active",
         enrollment_source: "stripe",
         source_reference: session.id,
-        enrolled_at: new Date().toISOString(),
+        enrolled_at: enrolledAt.toISOString(),
+        expires_at: expiresAt,
         stripe_subscription_id:
           typeof session.subscription === "string"
             ? session.subscription

@@ -1,5 +1,7 @@
 import { getRenderedText } from "@/lib/learndash/types/common";
 import { slugifyTitle } from "@/features/courses/builder/ordering";
+import { mapLessonIndexesToSectionIndexes } from "@/lib/learndash/parse-sections";
+import type { LearnDashSectionHeading } from "@/lib/learndash/types/section";
 import { detectMappingPolicy, isQuizShellLesson } from "./mapping-policy";
 import { transformLearnDashCourse } from "./transform-course";
 import { decodeHtmlEntities, mapWpStatusToContentStatus } from "./html";
@@ -30,6 +32,63 @@ function excerptOf(entity: LearnDashLesson | LearnDashTopic | undefined): string
   return html || null;
 }
 
+function emptySectionsFromHeadings(headings: LearnDashSectionHeading[]): ProposedSection[] {
+  return headings.map((h, position) => ({
+    title: h.title,
+    position,
+    source: {
+      type: "section-heading" as const,
+      id: h.wordpressSectionId,
+    },
+    items: [] as ProposedCurriculumItem[],
+  }));
+}
+
+function bucketItemsIntoSections(
+  headings: LearnDashSectionHeading[],
+  lessonOwners: number[],
+  lessonItems: ProposedCurriculumItem[][],
+  trailingExams: ProposedCurriculumItem[],
+  notes: string[]
+): ProposedSection[] {
+  if (headings.length === 0) {
+    const items = lessonItems.flat();
+    for (const exam of trailingExams) items.push(exam);
+    return [
+      {
+        title: "Course Content",
+        position: 0,
+        source: { type: "synthetic", id: null },
+        items: items.map((item, position) => ({ ...item, position })),
+      },
+    ];
+  }
+
+  const sections = emptySectionsFromHeadings(headings);
+  for (let i = 0; i < lessonItems.length; i++) {
+    const sectionIdx = Math.min(Math.max(0, lessonOwners[i] ?? 0), sections.length - 1);
+    sections[sectionIdx].items.push(...lessonItems[i]);
+  }
+
+  if (trailingExams.length > 0) {
+    const last = sections[sections.length - 1];
+    last.items.push(...trailingExams);
+    notes.push(
+      `Placed ${trailingExams.length} course-level exam(s) in last section "${last.title}".`
+    );
+  }
+
+  // Drop empty sections only if every section would be empty (keep structure otherwise)
+  const nonEmpty = sections.filter((s) => s.items.length > 0);
+  const kept = nonEmpty.length > 0 ? nonEmpty : sections;
+
+  return kept.map((section, position) => ({
+    ...section,
+    position,
+    items: section.items.map((item, itemPos) => ({ ...item, position: itemPos })),
+  }));
+}
+
 /**
  * Pure curriculum transform from Phase 1 inspection → proposed AIGS structure.
  */
@@ -40,6 +99,7 @@ export function transformLearnDashCurriculum(
   const policy = policyOverride ?? detectMappingPolicy(inspection);
   const course = transformLearnDashCourse(inspection);
   const notes: string[] = [];
+  const headings = inspection.sectionHeadings ?? [];
 
   const lessonById = new Map(inspection.entities.lessons.map((l) => [l.id, l]));
   const topicById = new Map(inspection.entities.topics.map((t) => [t.id, t]));
@@ -51,32 +111,45 @@ export function transformLearnDashCurriculum(
     notes.push(
       "Policy flat-lessons: LD Lesson → AIGS lesson; nested quizzes → quiz items; no topics in source."
     );
-    const items: ProposedCurriculumItem[] = [];
-    let position = 0;
+    if (headings.length > 0) {
+      notes.push(
+        `Using ${headings.length} LearnDash section heading(s): ${headings.map((h) => h.title).join(", ")}.`
+      );
+    } else {
+      notes.push("No course_sections headings — using synthetic section \"Course Content\".");
+    }
 
-    const pushQuiz = (
+    const lessonRoots = inspection.hierarchy.filter((r) => r.type === "lesson");
+    const lessonWpIds = lessonRoots.map((r) => r.id);
+    const lessonOwners = mapLessonIndexesToSectionIndexes(lessonRoots.length, headings, lessonWpIds);
+
+    const lessonItemGroups: ProposedCurriculumItem[][] = [];
+    const trailingExams: ProposedCurriculumItem[] = [];
+    let positionCounter = 0;
+
+    const makeQuizItem = (
       quizId: number,
       parentLessonSourceId: number | undefined,
       asExam: boolean
-    ) => {
+    ): ProposedCurriculumItem => {
       const quiz = quizById.get(quizId);
       const title = titleOf(quiz, `Quiz ${quizId}`);
-      items.push({
+      return {
         type: asExam ? "exam" : "quiz",
         title,
         slug: `${slugifyTitle(title) || "quiz"}-${quizId}`,
-        position: position++,
+        position: positionCounter++,
         contentHtml: null,
         excerpt: null,
         status: mapWpStatusToContentStatus(quiz?.status),
         source: { type: "sfwd-quiz", id: quizId },
         parentLessonSourceId,
-      });
+      };
     };
 
     for (const root of inspection.hierarchy) {
       if (root.type === "quiz") {
-        pushQuiz(root.id, undefined, true);
+        trailingExams.push(makeQuizItem(root.id, undefined, true));
         notes.push(`Course-level quiz ${root.id} mapped as exam.`);
         continue;
       }
@@ -86,6 +159,7 @@ export function transformLearnDashCurriculum(
         continue;
       }
 
+      const group: ProposedCurriculumItem[] = [];
       const lesson = lessonById.get(root.id);
       const lessonTitle = titleOf(lesson, `Lesson ${root.id}`);
       const topics = root.children.filter((c) => c.type === "topic");
@@ -94,16 +168,17 @@ export function transformLearnDashCurriculum(
       if (isQuizShellLesson(lessonTitle, topics.length > 0, quizzes.length)) {
         collapsedQuizShells += 1;
         for (const q of quizzes) {
-          pushQuiz(q.id, root.id, false);
+          group.push(makeQuizItem(q.id, root.id, false));
         }
+        lessonItemGroups.push(group);
         continue;
       }
 
-      items.push({
+      group.push({
         type: "lesson",
         title: lessonTitle,
         slug: `${(lesson?.slug || slugifyTitle(lessonTitle) || "lesson").replace(/\/$/, "")}-${root.id}`,
-        position: position++,
+        position: positionCounter++,
         contentHtml: contentOf(lesson),
         excerpt: excerptOf(lesson),
         status: mapWpStatusToContentStatus(lesson?.status),
@@ -111,7 +186,7 @@ export function transformLearnDashCurriculum(
       });
 
       for (const q of quizzes) {
-        pushQuiz(q.id, root.id, false);
+        group.push(makeQuizItem(q.id, root.id, false));
       }
 
       for (const t of topics) {
@@ -119,34 +194,64 @@ export function transformLearnDashCurriculum(
           `Unexpected topic ${t.id} under flat-lessons policy — ignored (use topics-as-lessons).`
         );
       }
+
+      lessonItemGroups.push(group);
     }
 
-    const sections: ProposedSection[] = [
-      {
-        title: "Course Content",
-        position: 0,
-        source: { type: "synthetic", id: null },
-        items,
-      },
-    ];
+    const sections = bucketItemsIntoSections(
+      headings,
+      lessonOwners,
+      lessonItemGroups,
+      trailingExams,
+      notes
+    );
 
     return summarize(policy, course, sections, collapsedQuizShells, notes);
   }
 
   // topics-as-lessons
   notes.push(
-    "Policy topics-as-lessons: LD Lesson → AIGS section; LD Topic → AIGS lesson; quizzes nest in section."
+    "Policy topics-as-lessons: LD Lesson → content group; LD Topic → AIGS lesson; quizzes nest in section."
   );
-  const sections: ProposedSection[] = [];
-  let sectionPos = 0;
+
+  const lessonRoots = inspection.hierarchy.filter((r) => r.type === "lesson");
+  const useHeadings = headings.length > 0;
+
+  if (useHeadings) {
+    notes.push(
+      `Using ${headings.length} LearnDash section heading(s) as AIGS sections (LD lessons grouped under headings).`
+    );
+  } else {
+    notes.push("No course_sections headings — each LD lesson becomes an AIGS section.");
+  }
+
+  const lessonOwners = useHeadings
+    ? mapLessonIndexesToSectionIndexes(
+        lessonRoots.length,
+        headings,
+        lessonRoots.map((r) => r.id)
+      )
+    : lessonRoots.map((_, i) => i);
+
+  type GroupAcc = { title: string; source: ProposedSection["source"]; items: ProposedCurriculumItem[] };
+  const groups: GroupAcc[] = useHeadings
+    ? headings.map((h) => ({
+        title: h.title,
+        source: { type: "section-heading" as const, id: h.wordpressSectionId },
+        items: [],
+      }))
+    : [];
+
+  let lessonRootIdx = 0;
+  const orphanExamSections: ProposedSection[] = [];
 
   for (const root of inspection.hierarchy) {
     if (root.type === "quiz") {
       const quiz = quizById.get(root.id);
       const title = titleOf(quiz, `Quiz ${root.id}`);
-      sections.push({
+      orphanExamSections.push({
         title: "Examinations",
-        position: sectionPos++,
+        position: 0,
         source: { type: "synthetic", id: null },
         items: [
           {
@@ -233,12 +338,37 @@ export function transformLearnDashCurriculum(
       });
     }
 
-    sections.push({
-      title: sectionTitle,
-      position: sectionPos++,
-      source: { type: "sfwd-lessons", id: root.id },
-      items,
-    });
+    if (useHeadings) {
+      const sectionIdx = Math.min(
+        Math.max(0, lessonOwners[lessonRootIdx] ?? 0),
+        groups.length - 1
+      );
+      groups[sectionIdx].items.push(...items);
+    } else {
+      groups.push({
+        title: sectionTitle,
+        source: { type: "sfwd-lessons", id: root.id },
+        items,
+      });
+    }
+    lessonRootIdx += 1;
+  }
+
+  let sections: ProposedSection[] = groups
+    .filter((g) => g.items.length > 0 || !useHeadings)
+    .map((g, position) => ({
+      title: g.title,
+      position,
+      source: g.source,
+      items: g.items.map((item, itemPos) => ({ ...item, position: itemPos })),
+    }));
+
+  for (const examSec of orphanExamSections) {
+    sections.push({ ...examSec, position: sections.length });
+  }
+
+  if (useHeadings && sections.length === 0) {
+    sections = bucketItemsIntoSections(headings, [], [], [], notes);
   }
 
   return summarize(policy, course, sections, collapsedQuizShells, notes);

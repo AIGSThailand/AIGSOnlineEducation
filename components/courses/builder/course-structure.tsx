@@ -150,26 +150,28 @@ export function CourseStructure({
     }
     if (!overSection || activeSection === overSection) return;
 
-    setContainers((prev) => {
-      const activeItems = [...(prev.itemsBySection[activeSection] || [])];
-      const overItems = [...(prev.itemsBySection[overSection] || [])];
-      const activeIndex = activeItems.indexOf(activeId as never);
-      if (activeIndex === -1) return prev;
+    const prev = containersRef.current;
+    const activeItems = [...(prev.itemsBySection[activeSection] || [])];
+    const overItems = [...(prev.itemsBySection[overSection] || [])];
+    const activeIndex = activeItems.indexOf(activeId as never);
+    if (activeIndex === -1) return;
 
-      activeItems.splice(activeIndex, 1);
-      const overIndex = overItems.indexOf(overId as never);
-      if (overIndex >= 0) overItems.splice(overIndex, 0, activeId as never);
-      else overItems.push(activeId as never);
+    activeItems.splice(activeIndex, 1);
+    const overIndex = overItems.indexOf(overId as never);
+    if (overIndex >= 0) overItems.splice(overIndex, 0, activeId as never);
+    else overItems.push(activeId as never);
 
-      return {
-        ...prev,
-        itemsBySection: {
-          ...prev.itemsBySection,
-          [activeSection]: activeItems,
-          [overSection]: overItems,
-        },
-      };
-    });
+    const next: CurriculumContainers = {
+      ...prev,
+      itemsBySection: {
+        ...prev.itemsBySection,
+        [activeSection]: activeItems,
+        [overSection]: overItems,
+      },
+    };
+    setContainers(next);
+    // Keep rendered rows in sync with container membership during cross-section drag
+    setLocalStructure(reorderStructureFromContainers(structure, next));
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -204,32 +206,60 @@ export function CourseStructure({
 
     if (activeParsed?.type !== "item") return;
 
+    // Cross-section moves are applied in onDragOver; by dragEnd the item already
+    // lives in the destination section inside containersRef.
+    const current = containersRef.current;
+    let nextContainers = current;
+
     const activeSection = findSectionForItem(activeId);
     if (!activeSection) return;
 
     let overSection = findSectionForItem(overId);
     if (!overSection && overParsed?.type === "section") overSection = overParsed.id;
-    if (!overSection) return;
 
-    const current = containersRef.current;
-    let nextContainers = current;
-
-    if (activeSection === overSection) {
+    // If dragOver never fired (same-section reorder only), apply arrayMove now.
+    // If already moved across sections, refine order within the destination when
+    // dropping on another item.
+    if (overSection && activeSection === overSection) {
       const items = [...(current.itemsBySection[activeSection] || [])];
       const oldIndex = items.indexOf(activeId as never);
-      const newIndex = items.indexOf(overId as never);
-      if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) return;
+      const newIndex =
+        overParsed?.type === "section" ? oldIndex : items.indexOf(overId as never);
 
-      nextContainers = {
-        ...current,
-        itemsBySection: {
-          ...current.itemsBySection,
-          [activeSection]: arrayMove(items, oldIndex, newIndex),
-        },
-      };
-      setContainers(nextContainers);
+      if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
+        nextContainers = {
+          ...current,
+          itemsBySection: {
+            ...current.itemsBySection,
+            [activeSection]: arrayMove(items, oldIndex, newIndex),
+          },
+        };
+        setContainers(nextContainers);
+      }
+    } else if (overSection && activeSection !== overSection) {
+      // Fallback if onDragOver did not run (e.g. fast drop onto empty/collapsed section)
+      const activeItems = [...(current.itemsBySection[activeSection] || [])];
+      const overItems = [...(current.itemsBySection[overSection] || [])];
+      const activeIndex = activeItems.indexOf(activeId as never);
+      if (activeIndex !== -1) {
+        activeItems.splice(activeIndex, 1);
+        const overIndex = overItems.indexOf(overId as never);
+        if (overIndex >= 0) overItems.splice(overIndex, 0, activeId as never);
+        else overItems.push(activeId as never);
+
+        nextContainers = {
+          ...current,
+          itemsBySection: {
+            ...current.itemsBySection,
+            [activeSection]: activeItems,
+            [overSection]: overItems,
+          },
+        };
+        setContainers(nextContainers);
+      }
     }
 
+    // Always persist final container state (including cross-section moves from dragOver)
     setLocalStructure(reorderStructureFromContainers(structure, nextContainers));
     onReorderCurriculum?.(containersToOrderPayload(structure, nextContainers));
   };

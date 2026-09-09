@@ -14,11 +14,20 @@ export function LoginForm() {
   const searchParams = useSearchParams();
   const redirectParam = searchParams.get("redirect");
   const errorParam = searchParams.get("error");
+  const registeredParam = searchParams.get("registered");
+  const alreadyParam = searchParams.get("already");
+  const emailParam = searchParams.get("email") || "";
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(
     errorParam === "unauthorized" ? "You do not have permission to access that area." : null
   );
+  const infoMessage =
+    alreadyParam === "1"
+      ? "An account with that email already exists. Please sign in."
+      : registeredParam === "1"
+        ? "Account created. Sign in with your email and password. If email confirmation is required, confirm first."
+        : null;
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -41,6 +50,12 @@ export function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {infoMessage && (
+        <Alert variant="info" title={alreadyParam === "1" ? "Account exists" : "Welcome"}>
+          {infoMessage}
+        </Alert>
+      )}
+
       {errorMessage && (
         <Alert variant="error" title="Sign In Failed">
           {errorMessage}
@@ -57,6 +72,7 @@ export function LoginForm() {
           type="email"
           placeholder="name@example.com"
           autoComplete="email"
+          defaultValue={emailParam}
           required
         />
       </div>

@@ -84,13 +84,17 @@ export async function canAccessCourse(courseId: string): Promise<boolean> {
 
   const { data: enrollment } = await supabase
     .from("enrollments")
-    .select("status")
+    .select("status, expires_at")
     .eq("course_id", courseId)
     .eq("student_id", user.id)
     .eq("status", "active")
-    .maybeSingle<{ status: string }>();
+    .maybeSingle<{ status: string; expires_at: string | null }>();
 
-  if (enrollment) return true;
+  if (enrollment) {
+    if (!enrollment.expires_at || new Date(enrollment.expires_at) > new Date()) {
+      return true;
+    }
+  }
 
   // Group-based access (LearnDash groups → group_courses + group_users)
   const { data: groupCourses } = await supabase

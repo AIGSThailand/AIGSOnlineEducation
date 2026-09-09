@@ -335,7 +335,8 @@ export async function migrateLearnDashCourse(
 
   for (const section of proposed.sections) {
     const wordpressSectionId =
-      section.source.type === "sfwd-lessons" && section.source.id != null
+      (section.source.type === "sfwd-lessons" || section.source.type === "section-heading") &&
+      section.source.id != null
         ? section.source.id
         : null;
 

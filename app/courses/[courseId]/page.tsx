@@ -63,7 +63,12 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
   const accessAsStaff = hasContentAccess && !isEnrolled && (role === "admin" || canManage);
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-10">
+    <div className="mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-14">
+      <nav aria-label="Breadcrumb" className="mb-8 text-sm">
+        <Link href="/courses" className="text-slate-500 hover:text-brand-700">
+          ← All courses
+        </Link>
+      </nav>
       {isPreview && (
         <div
           className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
@@ -83,7 +88,7 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
               {isEnrolled && <Badge variant="default">Active Enrollment</Badge>}
               {accessAsStaff && <Badge variant="warning">Staff access</Badge>}
             </div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
+            <h1 className="text-4xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-5xl">
               {course.title}
             </h1>
             <RichContent
@@ -94,7 +99,7 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
           </div>
 
           <div className="space-y-4">
-            <h2 className="text-xl font-bold text-slate-900">Curriculum Syllabus</h2>
+            <h2 className="text-xl font-bold text-slate-900">Course curriculum</h2>
             {modules.length > 0 ? (
               <div className="space-y-3">
                 {modules.map((module, mIdx) => (
@@ -109,7 +114,7 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                         module.lessons.map((lesson) => (
                           <div
                             key={lesson.id}
-                            className="flex items-center justify-between py-1.5 text-sm text-slate-700"
+                            className="flex items-center justify-between gap-4 border-t border-slate-100 py-3 text-sm text-slate-700"
                           >
                             <div className="flex items-center space-x-2">
                               <PlayCircle className="h-4 w-4 text-slate-400" />
@@ -139,7 +144,7 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
         </div>
 
         <div>
-          <Card className="sticky top-24 p-6">
+          <Card className="sticky top-8 rounded-2xl p-6 shadow-sm">
             {course.thumbnail_url && (
               <div className="mb-4 aspect-video overflow-hidden rounded-md bg-slate-100">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -198,9 +203,7 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                     />
                   ) : (
                     <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-                      This course is not available for purchase yet. An admin must map a Stripe
-                      price under Course settings → Commerce and click{" "}
-                      <span className="font-medium">Save Stripe mapping</span>.
+                      Enrollment is not open for this course yet. Please check back soon.
                     </p>
                   )
                 ) : (

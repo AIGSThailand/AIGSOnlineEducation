@@ -20,6 +20,7 @@ export default async function StudentDashboardPage() {
       id,
       status,
       enrolled_at,
+      expires_at,
       course:courses(
         id,
         title,
@@ -36,22 +37,26 @@ export default async function StudentDashboardPage() {
     .eq("student_id", user?.id || "")
     .eq("status", "active");
 
+  const now = Date.now();
+  type EnrollmentRow = {
+    id: string;
+    status: string;
+    enrolled_at: string;
+    expires_at: string | null;
+    course: CourseWithInstructors | CourseWithInstructors[] | null;
+  };
+  const rawList = (enrollments as unknown as EnrollmentRow[] | null) || [];
+  const activeEnrollments = rawList.filter(
+    (e) => !e.expires_at || new Date(e.expires_at).getTime() > now
+  );
+
   const { count: completedLessonsCount } = await supabase
     .from("lesson_progress")
     .select("*", { count: "exact", head: true })
     .eq("student_id", user?.id || "")
     .eq("completed", true);
 
-  interface EnrollmentWithCourse {
-    id: string;
-    status: string;
-    enrolled_at: string;
-    course: CourseWithInstructors | CourseWithInstructors[] | null;
-  }
-
-  const enrollmentList = (enrollments as unknown as EnrollmentWithCourse[] | null) || [];
-
-  const activeCourses: CourseWithInstructors[] = enrollmentList
+  const activeCourses: CourseWithInstructors[] = activeEnrollments
     .map((e) => (Array.isArray(e.course) ? e.course[0] : e.course))
     .filter((c): c is CourseWithInstructors => !!c);
 

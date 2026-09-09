@@ -154,11 +154,22 @@ Presign authorization: logged-in user who `canManageCourse(courseId)`.
 
 ## LearnDash migration
 
-Importer still stores WordPress media URLs. Later:
+Importer still stores WordPress media URLs. Planned phases:
 
-1. Sync `wp-content/uploads` → S3 under `courses/{id}/…`
-2. Rewrite HTML `src` to `/api/media/file?key=…` (private) or CDN (public)
-3. Keep old WP host only as temporary fallback
+1. **Inventory (Phase 1)** — read-only scan of course/lesson URLs → JSON  
+   `npm run inventory:media -- --env local`  
+   Output default: `tmp/media-inventory-YYYY-MM-DD.json`
+2. **Upload (Phase 2)** — download from a source host → private S3 (no DB rewrite)  
+   `npm run migrate:media-s3 -- --host edu.aigsthailand.com --dry-run --limit 20`  
+   `npm run migrate:media-s3 -- --host edu.aigsthailand.com --write --limit 20`  
+   Skips WP `-WxH` resized files when a full sibling exists; **one object per course**.
+3. **Rewrite (Phase 3)** — replace host URLs in Postgres with `/api/media/file?key=…`  
+   `npm run rewrite:media-urls -- --env local --dry-run`  
+   `npm run rewrite:media-urls -- --env local --write`  
+   Leaves `source_content_html` unchanged; maps resized images to the full-size object.
+4. Keep old WP host only as temporary fallback for unmapped URLs
+
+Phases 1–2 do **not** rewrite the database. Phase 3 does (with `--write`).
 
 ---
 

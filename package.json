@@ -29,6 +29,13 @@
     "test:learndash-transform": "tsx scripts/test-learndash-transform.ts",
     "test:learndash-questions": "tsx scripts/test-learndash-questions.ts",
     "migrate:normalize-content": "node scripts/normalize-wordpress-content.mjs",
+    "inventory:media": "tsx scripts/inventory-media.ts",
+    "migrate:media-s3": "tsx scripts/migrate-media-to-s3.ts",
+    "migrate:media-s3:retry": "tsx scripts/retry-media-migrate-failures.ts",
+    "rewrite:media-urls": "tsx scripts/rewrite-media-urls.ts",
+    "test:media-inventory": "tsx scripts/test-media-inventory-extract.ts",
+    "test:media-migrate-plan": "tsx scripts/test-media-migrate-plan.ts",
+    "test:media-rewrite": "tsx scripts/test-media-rewrite.ts",
     "auth:verify-email": "node scripts/verify-user-email.mjs"
   },
   "dependencies": {
