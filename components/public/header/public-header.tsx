@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useState } from "react";
-import { Gem, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { BrandLogo } from "@/components/public/brand-logo";
 import { PublicLinkButton } from "@/components/public/public-button";
 
 const NAV = [
@@ -58,20 +59,8 @@ export function PublicHeader({
         Skip to content
       </a>
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-3.5 sm:px-8">
-        <Link
-          href="/"
-          aria-label="AIGS Online Education home"
-          className="flex items-center gap-2.5 text-[var(--text-primary)]"
-        >
-          <span className="flex h-9 w-9 items-center justify-center rounded-md bg-[var(--brand-primary)] text-white">
-            <Gem className="h-5 w-5" aria-hidden />
-          </span>
-          <span className="leading-tight">
-            <span className="block text-lg font-bold tracking-[0.14em]">AIGS</span>
-            <span className="block text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--text-secondary)]">
-              Online Education
-            </span>
-          </span>
+        <Link href="/" aria-label="AIGS Online Education home" className="shrink-0">
+          <BrandLogo priority />
         </Link>
 
         <nav aria-label="Main" className="hidden items-center gap-1 md:flex">

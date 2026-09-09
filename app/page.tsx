@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { getCurrentUser } from "@/lib/auth/permissions";
 import { getRoleDashboardPath } from "@/lib/auth/redirects";
 import { createClient } from "@/lib/supabase/server";
@@ -39,23 +40,28 @@ export default async function HomePage() {
 
   return (
     <PublicLayout dashboardHref={dashboardHref}>
-      {/* Hero shell — Phase 1 structure; richer imagery/sections in Phase 2 */}
-      <section className="relative overflow-hidden border-b border-[var(--border)] bg-[var(--surface-muted)]">
+      <section className="relative isolate min-h-[70vh] overflow-hidden border-b border-[var(--border)]">
+        <Image
+          src="/images/hero/placeholder.png"
+          alt=""
+          fill
+          priority
+          className="object-cover"
+          sizes="100vw"
+        />
         <div
-          className="pointer-events-none absolute inset-0 opacity-[0.14]"
-          style={{
-            backgroundImage:
-              "radial-gradient(ellipse at 20% 20%, var(--brand-primary) 0%, transparent 55%), radial-gradient(ellipse at 80% 0%, var(--accent-gold) 0%, transparent 45%)",
-          }}
+          className="absolute inset-0 bg-gradient-to-r from-[var(--brand-dark)]/90 via-[var(--brand-dark)]/75 to-[var(--brand-dark)]/40"
           aria-hidden
         />
-        <div className="public-container relative grid items-center gap-10 py-16 sm:py-20 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16 lg:py-24">
-          <div>
-            <p className="public-eyebrow">AIGS Online Education</p>
-            <h1 className="mt-4 max-w-xl font-display text-4xl font-semibold leading-[1.12] tracking-tight text-[var(--text-primary)] sm:text-5xl lg:text-6xl">
+        <div className="public-container relative flex min-h-[70vh] items-center py-16 sm:py-20 lg:py-24">
+          <div className="max-w-xl text-white">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--accent-gold)]">
+              AIGS Online Education
+            </p>
+            <h1 className="mt-4 font-display text-4xl font-semibold leading-[1.12] tracking-tight sm:text-5xl lg:text-6xl">
               Learn gemology from industry experts
             </h1>
-            <p className="mt-6 max-w-xl text-lg leading-8 text-[var(--text-secondary)]">
+            <p className="mt-6 text-lg leading-8 text-white/85">
               Professional online courses in gemstone identification, grading, pricing, and
               gemological practice — built on more than 40 years of AIGS expertise.
             </p>
@@ -63,21 +69,14 @@ export default async function HomePage() {
               <PublicLinkButton href="/courses">
                 Explore courses <ArrowRight className="h-4 w-4" aria-hidden />
               </PublicLinkButton>
-              <PublicLinkButton href="/#about-aigs" variant="secondary">
+              <PublicLinkButton
+                href="/#about-aigs"
+                variant="secondary"
+                className="border-white/30 bg-white/10 text-white hover:bg-white/20"
+              >
                 About AIGS
               </PublicLinkButton>
             </div>
-          </div>
-          <div className="rounded-lg border border-[var(--border)] bg-[var(--brand-dark)] p-8 text-white sm:p-10">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--accent-gold)]">
-              Why AIGS
-            </p>
-            <ul className="mt-6 space-y-4 text-sm leading-6 text-white/85 sm:text-base">
-              <li>40+ years of gemological authority</li>
-              <li>Structured professional curricula</li>
-              <li>Certificates for eligible programs</li>
-              <li>Learn online at your own pace</li>
-            </ul>
           </div>
         </div>
       </section>
@@ -124,11 +123,32 @@ export default async function HomePage() {
         ) : null}
       </section>
 
-      {/* Placeholder shells for Phase 2 sections */}
-      <section
-        id="about-aigs"
-        className="border-y border-[var(--border)] bg-[var(--surface-muted)]"
-      >
+      <section className="border-y border-[var(--border)] bg-[var(--surface)]">
+        <div className="public-container public-section grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+          <div className="relative mx-auto aspect-[4/5] w-full max-w-md overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] shadow-sm">
+            <Image
+              src="/images/certificates/placeholder.png"
+              alt="AIGS certificate of completion placeholder"
+              fill
+              className="object-contain p-4"
+              sizes="(max-width: 1024px) 100vw, 28rem"
+            />
+          </div>
+          <div>
+            <SectionHeader
+              eyebrow="Certificates"
+              title="Earn an AIGS certificate"
+              description="Complete eligible programs and receive a certificate issued by the Asian Institute of Gemological Sciences."
+              className="mb-6 sm:mb-8"
+            />
+            <PublicLinkButton href="/courses" variant="secondary">
+              View certificate programs
+            </PublicLinkButton>
+          </div>
+        </div>
+      </section>
+
+      <section id="about-aigs" className="bg-[var(--surface-muted)]">
         <div className="public-container public-section max-w-4xl">
           <SectionHeader
             eyebrow="About AIGS"

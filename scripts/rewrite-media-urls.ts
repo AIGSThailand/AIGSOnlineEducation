@@ -34,6 +34,9 @@ function parseArgs(argv: string[]) {
   const outIdx = args.indexOf("--out");
   return {
     dryRun: !write,
+    allowProductionWrite:
+      args.includes("--allow-production-write") ||
+      process.env.ALLOW_MEDIA_REWRITE_PRODUCTION === "true",
     courseId: courseIdx >= 0 ? args[courseIdx + 1] : undefined,
     outPath:
       outIdx >= 0 && args[outIdx + 1]
@@ -98,6 +101,19 @@ async function main(): Promise<void> {
   } catch (err) {
     console.error(err instanceof Error ? err.message : err);
     process.exit(1);
+  }
+
+  if (!opts.dryRun && envName === "production" && !opts.allowProductionWrite) {
+    console.error(
+      "Refusing production DB write. Re-run with --allow-production-write after a successful dry-run."
+    );
+    process.exit(1);
+  }
+
+  if (!opts.dryRun && envName === "production") {
+    console.warn(
+      "[WARN] Writing media URL rewrites to PRODUCTION. Ensure Phase 2 S3 objects exist and course IDs match."
+    );
   }
 
   const uploaded = loadUploadedResults();

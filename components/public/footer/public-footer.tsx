@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Gem } from "lucide-react";
+import { BrandLogo } from "@/components/public/brand-logo";
 
 const EXPLORE = [
   { href: "/courses", label: "Courses" },
@@ -18,12 +18,7 @@ export function PublicFooter() {
     <footer className="border-t border-[var(--border)] bg-[var(--brand-dark)] text-white">
       <div className="mx-auto grid max-w-7xl gap-10 px-5 py-12 sm:px-8 sm:py-16 md:grid-cols-2 lg:grid-cols-4">
         <div className="lg:col-span-1">
-          <div className="flex items-center gap-2.5">
-            <span className="flex h-9 w-9 items-center justify-center rounded-md bg-[var(--brand-primary)]">
-              <Gem className="h-5 w-5" aria-hidden />
-            </span>
-            <span className="text-lg font-bold tracking-[0.14em]">AIGS</span>
-          </div>
+          <BrandLogo variant="white" />
           <p className="mt-4 max-w-xs text-sm leading-6 text-white/75">
             Asian Institute of Gemological Sciences — professional gemology education for an
             international audience.
