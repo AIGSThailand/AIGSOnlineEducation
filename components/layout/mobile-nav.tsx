@@ -16,6 +16,7 @@ import {
   BarChart3,
   Award,
   HelpCircle,
+  Layers,
 } from "lucide-react";
 
 interface MobileNavProps {
@@ -32,6 +33,7 @@ export function MobileNav({ role }: MobileNavProps) {
         { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
         { label: "Users & Roles", href: "/admin/users", icon: Users },
         { label: "Courses", href: "/admin/courses", icon: BookOpen },
+        { label: "Groups & Bundles", href: "/admin/groups", icon: Layers },
         { label: "Enrollments", href: "/admin/enrollments", icon: GraduationCap },
         { label: "Reports", href: "/admin/reports", icon: BarChart3 },
       ],

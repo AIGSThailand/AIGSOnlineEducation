@@ -14,6 +14,7 @@ import {
   Award,
   HelpCircle,
   Settings,
+  Layers,
 } from "lucide-react";
 
 interface NavItem {
@@ -27,6 +28,7 @@ const roleNavItems: Record<UserRole, NavItem[]> = {
     { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
     { label: "Users & Roles", href: "/admin/users", icon: Users },
     { label: "Courses Management", href: "/admin/courses", icon: BookOpen },
+    { label: "Groups & Bundles", href: "/admin/groups", icon: Layers },
     { label: "Enrollments", href: "/admin/enrollments", icon: GraduationCap },
     { label: "System Reports", href: "/admin/reports", icon: BarChart3 },
   ],

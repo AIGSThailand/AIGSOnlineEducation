@@ -564,6 +564,8 @@ export interface Database {
           slug: string;
           description: string | null;
           status: GroupStatus;
+          stripe_product_id: string | null;
+          stripe_price_id: string | null;
           wordpress_group_id: number | null;
           created_at: string;
           updated_at: string;
@@ -574,6 +576,8 @@ export interface Database {
           slug: string;
           description?: string | null;
           status?: GroupStatus;
+          stripe_product_id?: string | null;
+          stripe_price_id?: string | null;
           wordpress_group_id?: number | null;
           created_at?: string;
           updated_at?: string;
@@ -584,6 +588,8 @@ export interface Database {
           slug?: string;
           description?: string | null;
           status?: GroupStatus;
+          stripe_product_id?: string | null;
+          stripe_price_id?: string | null;
           wordpress_group_id?: number | null;
           created_at?: string;
           updated_at?: string;
