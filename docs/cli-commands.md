@@ -310,6 +310,25 @@ npm run migrate:learndash:quizzes
 # Normalize WordPress HTML in lesson content
 npm run migrate:normalize-content -- --dry-run
 npm run migrate:normalize-content
+
+# Media URL inventory (Phase 1 — read-only JSON; no S3 / DB writes)
+npm run inventory:media
+npm run inventory:media -- --env local --out tmp/media-inventory.json
+npm run inventory:media -- --course <course-uuid>
+npm run inventory:media -- --include-quizzes
+npm run test:media-inventory
+
+# Media → S3 (Phase 2 — download/upload only; no DB rewrite)
+npm run migrate:media-s3 -- --host edu.aigsthailand.com --dry-run --limit 20
+npm run migrate:media-s3 -- --host edu.aigsthailand.com --write --limit 20
+npm run migrate:media-s3 -- --host edu.aigsthailand.com --write
+npm run migrate:media-s3:retry -- --env local
+npm run test:media-migrate-plan
+
+# Media URL rewrite (Phase 3 — DB update to /api/media/file?key=…)
+npm run rewrite:media-urls -- --env local --dry-run
+npm run rewrite:media-urls -- --env local --write
+npm run test:media-rewrite
 ```
 
 Place LearnDash export data under `learndash_data/` before running. See [migration-mapping.md](./migration-mapping.md).

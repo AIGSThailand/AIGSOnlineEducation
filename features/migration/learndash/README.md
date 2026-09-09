@@ -36,12 +36,16 @@ Live LearnDash LMS REST API v2/v1 client + course/question migration into Supaba
 | `scripts/inspect-learndash-users.ts` | Users/enrollments inspect CLI |
 | `scripts/migrate-learndash-users.ts` | Users/enrollments migrate CLI |
 
+**Section headings source:** LearnDash returns builder headings on `GET /ldlms/v2/sfwd-courses/{id}/steps` → `sections[]` (`post_title`, `order`, member lesson `steps`). They are **not** on the course entity in REST for this site.
+
 ## Mapping policy (curriculum)
 
 | Policy | When | Mapping |
 |--------|------|---------|
 | `flat-lessons` (auto if topics=0) | Course 26475 shape | LD Lesson → AIGS lesson; quizzes → quiz steps |
-| `topics-as-lessons` (auto if topics>0) | Classic LD tree | LD Lesson → section; LD Topic → lesson |
+| `topics-as-lessons` (auto if topics>0) | Classic LD tree | LD Lesson → section (or group under headings); LD Topic → lesson |
+
+**Section headings:** LearnDash builder headings (`course_sections` meta, e.g. 第一课) are fetched via REST and become AIGS `course_sections`. Without headings, `flat-lessons` falls back to one synthetic **"Course Content"** section.
 
 ## Questions (Phase 3)
 

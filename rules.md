@@ -494,6 +494,8 @@ Use CSS variables/design tokens for:
 
 Avoid hardcoding arbitrary colors throughout components.
 
+**Public site:** use semantic tokens from `app/globals.css` (`--brand-primary`, `--surface`, `--text-primary`, `--accent-gold`, etc.) via `components/public/*`. Do not scatter raw AIGS hex values in public components; keep the maroon scale on `--aigs-*` and map semantics there.
+
 ### Spacing
 
 Prefer Tailwind's standard spacing scale.

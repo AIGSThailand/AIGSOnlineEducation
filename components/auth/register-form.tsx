@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { registerAction } from "@/lib/auth/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,24 +21,46 @@ export function RegisterForm() {
     setErrorMessage(null);
     setSuccessMessage(null);
 
-    const formData = new FormData(event.currentTarget);
-    const result = await registerAction(formData);
+    try {
+      const formData = new FormData(event.currentTarget);
+      const result = await registerAction(formData);
 
-    if (!result.success) {
-      setErrorMessage(result.error);
+      if (!result.success) {
+        setErrorMessage(result.error);
+        setIsLoading(false);
+        // Existing account → send to login after a short moment so the message is readable
+        if (result.redirectUrl?.includes("/login")) {
+          window.setTimeout(() => {
+            router.push(result.redirectUrl!);
+            router.refresh();
+          }, 1200);
+        }
+        return;
+      }
+
+      if (result.message) {
+        setSuccessMessage(result.message);
+        setIsLoading(false);
+        if (result.redirectUrl) {
+          window.setTimeout(() => {
+            router.push(result.redirectUrl!);
+            router.refresh();
+          }, 1500);
+        }
+        return;
+      }
+
+      if (result.redirectUrl) {
+        router.push(result.redirectUrl);
+        router.refresh();
+        return;
+      }
+
+      setErrorMessage("Registration completed, but no redirect was provided. Please sign in.");
       setIsLoading(false);
-      return;
-    }
-
-    if (result.message) {
-      setSuccessMessage(result.message);
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : "Registration failed. Please try again.");
       setIsLoading(false);
-      return;
-    }
-
-    if (result.redirectUrl) {
-      router.push(result.redirectUrl);
-      router.refresh();
     }
   }
 
@@ -45,13 +68,16 @@ export function RegisterForm() {
     <form onSubmit={handleSubmit} className="space-y-4">
       {errorMessage && (
         <Alert variant="error" title="Registration Error">
-          {errorMessage}
+          {errorMessage}{" "}
+          <Link href="/login" className="font-semibold underline">
+            Sign in
+          </Link>
         </Alert>
       )}
 
       {successMessage && (
         <Alert variant="success" title="Account Created">
-          {successMessage}
+          {successMessage} Redirecting to sign in…
         </Alert>
       )}
 
@@ -98,24 +124,10 @@ export function RegisterForm() {
         />
       </div>
 
-      <div>
-        <Label htmlFor="role" required>
-          I am registering as:
-        </Label>
-        <select
-          id="role"
-          name="role"
-          className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-          defaultValue="student"
-        >
-          <option value="student">Student / Learner</option>
-          <option value="instructor">Instructor / Educator</option>
-        </select>
-      </div>
-
-      <Button type="submit" className="w-full" isLoading={isLoading}>
+<Button type="submit" className="w-full" isLoading={isLoading}>
         Create Account
       </Button>
     </form>
   );
 }
+

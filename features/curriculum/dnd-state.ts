@@ -30,6 +30,24 @@ export interface CurriculumContainers {
   itemsBySection: Record<string, CurriculumDragId[]>;
 }
 
+function itemsOfSection(section: CourseStructureModuleItem): CurriculumItem[] {
+  if (section.items.length > 0) return section.items;
+  return section.lessons.map((l) => ({ ...l, kind: "lesson" as const }));
+}
+
+/** Index every curriculum item across all sections (needed for cross-section moves). */
+export function indexStructureItems(
+  structure: CourseStructureModuleItem[]
+): Map<string, CurriculumItem> {
+  const itemByKey = new Map<string, CurriculumItem>();
+  for (const section of structure) {
+    for (const item of itemsOfSection(section)) {
+      itemByKey.set(`${item.kind}:${item.id}`, item);
+    }
+  }
+  return itemByKey;
+}
+
 export function structureToContainers(
   structure: CourseStructureModuleItem[]
 ): CurriculumContainers {
@@ -37,12 +55,7 @@ export function structureToContainers(
   const itemsBySection: Record<string, CurriculumDragId[]> = {};
 
   for (const section of structure) {
-    const items: CurriculumItem[] =
-      section.items.length > 0
-        ? section.items
-        : section.lessons.map((l) => ({ ...l, kind: "lesson" as const }));
-
-    itemsBySection[section.id] = items.map((item) => itemDragId(item));
+    itemsBySection[section.id] = itemsOfSection(section).map((item) => itemDragId(item));
   }
 
   return { sectionOrder, itemsBySection };
@@ -52,12 +65,11 @@ export function containersToOrderPayload(
   structure: CourseStructureModuleItem[],
   containers: CurriculumContainers
 ) {
-  const sectionById = new Map(structure.map((s) => [s.id, s]));
+  const itemByKey = indexStructureItems(structure);
 
   return {
     sectionIds: containers.sectionOrder,
     sections: containers.sectionOrder.map((sectionId) => {
-      const section = sectionById.get(sectionId);
       const dragIds = containers.itemsBySection[sectionId] ?? [];
 
       const items = dragIds
@@ -66,7 +78,7 @@ export function containersToOrderPayload(
           if (!parsed || parsed.type !== "item") return null;
 
           const kind = parsed.kind as CurriculumItem["kind"];
-          const existing = section?.items.find((i) => i.id === parsed.id && i.kind === kind);
+          const existing = itemByKey.get(`${kind}:${parsed.id}`);
           if (!existing) return null;
 
           return {
@@ -96,24 +108,34 @@ export function reorderStructureFromContainers(
   containers: CurriculumContainers
 ): CourseStructureModuleItem[] {
   const sectionById = new Map(structure.map((s) => [s.id, s]));
+  const itemByKey = indexStructureItems(structure);
 
   return containers.sectionOrder
     .map((sectionId) => {
       const section = sectionById.get(sectionId);
       if (!section) return null;
 
-      const allItems: CurriculumItem[] =
-        section.items.length > 0
-          ? [...section.items]
-          : section.lessons.map((l) => ({ ...l, kind: "lesson" as const }));
-
-      const itemByKey = new Map(allItems.map((i) => [`${i.kind}:${i.id}`, i]));
       const dragIds = containers.itemsBySection[sectionId] ?? [];
       const items = dragIds
-        .map((dragId) => {
+        .map((dragId, position) => {
           const parsed = parseDragId(dragId);
           if (!parsed || parsed.type !== "item") return null;
-          return itemByKey.get(`${parsed.kind}:${parsed.id}`) ?? null;
+          const found = itemByKey.get(`${parsed.kind}:${parsed.id}`);
+          if (!found) return null;
+
+          if (found.kind === "lesson") {
+            return {
+              ...found,
+              position,
+              sectionId,
+            };
+          }
+
+          return {
+            ...found,
+            position,
+            sectionId,
+          };
         })
         .filter(Boolean) as CurriculumItem[];
 
@@ -124,10 +146,10 @@ export function reorderStructureFromContainers(
       return {
         ...section,
         items,
-        lessons: lessons.map((lesson) => ({
+        lessons: lessons.map((lesson, index) => ({
           ...lesson,
-          moduleId: sectionId,
-          sortOrder: lesson.position,
+          sectionId,
+          position: index,
         })),
       };
     })

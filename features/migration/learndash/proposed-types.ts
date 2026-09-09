@@ -4,7 +4,13 @@ import type { LearnDashEntityId } from "@/lib/learndash/types/common";
 export type ProposedItemType = "lesson" | "quiz" | "exam";
 
 export type ProposedSourceRef = {
-  type: "sfwd-lessons" | "sfwd-topic" | "sfwd-quiz" | "sfwd-courses" | "synthetic";
+  type:
+    | "sfwd-lessons"
+    | "sfwd-topic"
+    | "sfwd-quiz"
+    | "sfwd-courses"
+    | "section-heading"
+    | "synthetic";
   id: LearnDashEntityId | null;
 };
 

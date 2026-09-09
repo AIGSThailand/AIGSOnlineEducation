@@ -1,12 +1,14 @@
 import { getLearnDashConfig } from "@/lib/learndash/config";
 import { mapWithConcurrency } from "@/lib/learndash/client";
 import { getLearnDashCourse, getLearnDashCourseSteps } from "@/lib/learndash/api/courses";
+import { getLearnDashCourseSections } from "@/lib/learndash/api/sections";
 import {
   getLearnDashLessonSafe,
   getLearnDashQuizSafe,
   getLearnDashTopicSafe,
 } from "@/lib/learndash/api/content";
 import { collectStepIds, parseLearnDashCourseSteps } from "@/lib/learndash/parse-steps";
+import { extractSectionsFromEntity } from "@/lib/learndash/parse-sections";
 import { getRenderedText } from "@/lib/learndash/types/common";
 import type { LearnDashEntityId } from "@/lib/learndash/types/common";
 import type { LearnDashStepNode } from "@/lib/learndash/types/course-step";
@@ -100,6 +102,11 @@ export async function inspectLearnDashCourse(
   const config = getLearnDashConfig();
   const course = await getLearnDashCourse(courseId);
   const rawSteps = await getLearnDashCourseSteps(courseId);
+  // Sections are on the steps payload for this LearnDash site (`steps.sections`).
+  let sectionHeadings = extractSectionsFromEntity(rawSteps);
+  if (sectionHeadings.length === 0) {
+    sectionHeadings = await getLearnDashCourseSections(courseId);
+  }
   const { roots, warnings: parseWarnings } = parseLearnDashCourseSteps(rawSteps);
   const collected = collectStepIds(roots);
 
@@ -110,6 +117,14 @@ export async function inspectLearnDashCourse(
     })),
     ...analyzeStructure(roots),
   ];
+
+  if (sectionHeadings.length === 0 && roots.some((r) => r.type === "lesson")) {
+    warnings.push({
+      code: "NO_SECTION_HEADINGS",
+      message:
+        "No LearnDash course_sections headings found via REST — curriculum will use a synthetic single section unless headings are available.",
+    });
+  }
 
   for (const u of collected.unknown) {
     warnings.push({
@@ -173,6 +188,7 @@ export async function inspectLearnDashCourse(
     course,
     rawSteps,
     hierarchy: roots,
+    sectionHeadings,
     entities: {
       lessons: resolvedLessons,
       topics: resolvedTopics,
@@ -182,6 +198,7 @@ export async function inspectLearnDashCourse(
       lessons: resolvedLessons.length,
       topics: resolvedTopics.length,
       quizzes: resolvedQuizzes.length,
+      sectionHeadings: sectionHeadings.length,
       unknownSteps: collected.unknown.length,
       missingLessons,
       missingTopics,
@@ -207,6 +224,14 @@ export function formatCourseStructureReport(inspection: LearnDashCourseInspectio
     "LEARN DASH STRUCTURE (from /steps)",
     "",
   ];
+
+  if (inspection.sectionHeadings.length > 0) {
+    lines.push("SECTION HEADINGS (from course_sections)");
+    for (const s of inspection.sectionHeadings) {
+      lines.push(`  [order ${s.order}] ${s.title}`);
+    }
+    lines.push("");
+  }
 
   const labelFor = (node: LearnDashStepNode): string => {
     if (node.type === "lesson") {
@@ -242,6 +267,7 @@ export function formatCourseStructureReport(inspection: LearnDashCourseInspectio
   lines.push(`  Lessons: ${inspection.counts.lessons}`);
   lines.push(`  Topics:  ${inspection.counts.topics}`);
   lines.push(`  Quizzes: ${inspection.counts.quizzes}`);
+  lines.push(`  Section headings: ${inspection.counts.sectionHeadings}`);
   lines.push(`  Unknown steps: ${inspection.counts.unknownSteps}`);
   lines.push(
     `  Missing refs: lessons=${inspection.counts.missingLessons}, topics=${inspection.counts.missingTopics}, quizzes=${inspection.counts.missingQuizzes}`

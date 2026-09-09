@@ -41,3 +41,6 @@ supabase/.branches/
 learndash_data/
 *.ld
 
+# Local CLI inventories / scratch (media scan, etc.)
+/tmp/
+

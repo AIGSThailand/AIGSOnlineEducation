@@ -79,6 +79,8 @@ export interface CourseBuilderCourse {
   stripeProductId: string | null;
   stripePriceId: string | null;
   wordpressCourseId: number | null;
+  accessExpirationEnabled: boolean;
+  accessPeriodDays: number | null;
   createdAt: string;
   updatedAt: string;
   instructorIds: string[];

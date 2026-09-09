@@ -1,5 +1,16 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { LoginForm } from "@/components/auth/login-form";
+
+function LoginFormFallback() {
+  return (
+    <div className="space-y-4" aria-hidden>
+      <div className="h-10 animate-pulse rounded-md bg-slate-100" />
+      <div className="h-10 animate-pulse rounded-md bg-slate-100" />
+      <div className="h-10 animate-pulse rounded-md bg-slate-100" />
+    </div>
+  );
+}
 
 export default function LoginPage() {
   return (
@@ -13,7 +24,9 @@ export default function LoginPage() {
         </p>
       </div>
 
-      <LoginForm />
+      <Suspense fallback={<LoginFormFallback />}>
+        <LoginForm />
+      </Suspense>
 
       <div className="mt-6 text-center text-sm text-slate-600">
         Don&apos;t have an account?{" "}
