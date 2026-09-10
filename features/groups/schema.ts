@@ -12,7 +12,7 @@ export const createGroupSchema = z.object({
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug must be lowercase letters, numbers, and hyphens.")
     .optional()
     .or(z.literal("")),
-  description: z.string().max(10000).optional().or(z.literal("")),
+  description: z.string().max(100000).optional().or(z.literal("")),
   status: groupStatusSchema.optional(),
 });
 
@@ -26,7 +26,7 @@ export const updateGroupSchema = z.object({
     .max(200)
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
     .optional(),
-  description: z.string().max(10000).optional().nullable(),
+  description: z.string().max(100000).optional().nullable(),
   status: groupStatusSchema.optional(),
   stripeProductId: z.string().trim().max(200).optional().or(z.literal("")),
   stripePriceId: z.string().trim().max(200).optional().or(z.literal("")),
