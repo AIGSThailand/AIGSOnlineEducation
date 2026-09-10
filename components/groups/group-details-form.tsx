@@ -4,9 +4,9 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { RichTextEditor } from "@/components/courses/builder/rich-text-editor";
 import { createGroupAction, updateGroupAction } from "@/features/groups/actions";
 import type { GroupDetail } from "@/features/groups/types";
 
@@ -81,11 +81,14 @@ export function GroupDetailsForm({ mode }: { mode: Mode }) {
       </div>
       <div>
         <Label htmlFor="group-description">Description</Label>
-        <Textarea
-          id="group-description"
+        <p className="mb-2 text-xs text-slate-500">
+          Rich text for the public bundle page. Edit visually or via HTML source.
+        </p>
+        <RichTextEditor
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          rows={4}
+          onChange={({ html }) => setDescription(html)}
+          placeholder="Describe this group or bundle…"
+          allowHtmlSource
         />
       </div>
       <div>

@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getPublicGroupBundle } from "@/features/groups/queries";
 import { fulfillCheckoutSessionForUser } from "@/lib/stripe/enroll-from-checkout";
 import { BuyBundleButton } from "@/components/stripe/buy-bundle-button";
+import { RichContent } from "@/components/courses/rich-content";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -82,13 +83,11 @@ export default async function PublicBundlePage({ params, searchParams }: PagePro
             <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
               {group.name}
             </h1>
-            {group.description ? (
-              <p className="mt-4 whitespace-pre-wrap text-base text-slate-600">{group.description}</p>
-            ) : (
-              <p className="mt-4 text-base text-slate-500">
-                Purchase once to unlock every course in this bundle.
-              </p>
-            )}
+            <RichContent
+              html={group.description}
+              className="mt-4 text-base"
+              fallback="Purchase once to unlock every course in this bundle."
+            />
           </div>
 
           <div>
