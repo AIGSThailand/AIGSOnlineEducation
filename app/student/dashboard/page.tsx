@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth/permissions";
 import { fulfillCheckoutSessionForUser } from "@/lib/stripe/enroll-from-checkout";
+import { listActiveAnnouncements } from "@/features/announcements/queries";
+import { AnnouncementsFeed } from "@/components/announcements/announcements-feed";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { CourseCard } from "@/components/courses/course-card";
@@ -76,6 +78,8 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
     .map((e) => (Array.isArray(e.course) ? e.course[0] : e.course))
     .filter((c): c is CourseWithInstructors => !!c);
 
+  const announcements = await listActiveAnnouncements(5);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -89,6 +93,12 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
           <Button variant="outline">Browse Catalog</Button>
         </Link>
       </div>
+
+      <AnnouncementsFeed
+        items={announcements}
+        listHref="/student/announcements"
+        detailBaseHref="/student/announcements"
+      />
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard

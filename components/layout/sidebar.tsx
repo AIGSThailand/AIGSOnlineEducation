@@ -15,6 +15,8 @@ import {
   HelpCircle,
   Settings,
   Layers,
+  Megaphone,
+  LifeBuoy,
 } from "lucide-react";
 
 interface NavItem {
@@ -30,7 +32,10 @@ const roleNavItems: Record<UserRole, NavItem[]> = {
     { label: "Courses Management", href: "/admin/courses", icon: BookOpen },
     { label: "Groups & Bundles", href: "/admin/groups", icon: Layers },
     { label: "Enrollments", href: "/admin/enrollments", icon: GraduationCap },
+    { label: "Announcements", href: "/admin/announcements", icon: Megaphone },
+    { label: "Support", href: "/admin/support", icon: LifeBuoy },
     { label: "System Reports", href: "/admin/reports", icon: BarChart3 },
+    { label: "Settings", href: "/admin/settings", icon: Settings },
   ],
   instructor: [
     { label: "Dashboard", href: "/instructor/dashboard", icon: LayoutDashboard },
@@ -38,6 +43,9 @@ const roleNavItems: Record<UserRole, NavItem[]> = {
     { label: "Enrolled Students", href: "/instructor/students", icon: Users },
     { label: "Assignments", href: "/instructor/assignments", icon: FileCheck },
     { label: "Quizzes", href: "/instructor/quizzes", icon: HelpCircle },
+    { label: "Announcements", href: "/student/announcements", icon: Megaphone },
+    { label: "Support", href: "/student/support", icon: LifeBuoy },
+    { label: "Settings", href: "/student/settings", icon: Settings },
   ],
   student: [
     { label: "Dashboard", href: "/student/dashboard", icon: LayoutDashboard },
@@ -46,6 +54,9 @@ const roleNavItems: Record<UserRole, NavItem[]> = {
     { label: "Assignments", href: "/student/assignments", icon: FileCheck },
     { label: "Grades & Progress", href: "/student/grades", icon: BarChart3 },
     { label: "Certificates", href: "/student/certificates", icon: Award },
+    { label: "Announcements", href: "/student/announcements", icon: Megaphone },
+    { label: "Support", href: "/student/support", icon: LifeBuoy },
+    { label: "Settings", href: "/student/settings", icon: Settings },
   ],
 };
 

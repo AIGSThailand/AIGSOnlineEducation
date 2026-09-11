@@ -1,5 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth/permissions";
+import { listActiveAnnouncements } from "@/features/announcements/queries";
+import { AnnouncementsFeed } from "@/components/announcements/announcements-feed";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { BookOpen, Users, CheckCircle, FileText } from "lucide-react";
@@ -9,6 +11,7 @@ import { Button } from "@/components/ui/button";
 export default async function InstructorDashboardPage() {
   const user = await getCurrentUser();
   const supabase = await createClient();
+  const announcements = await listActiveAnnouncements(5);
 
   interface AssignedItem {
     course_id: string;
@@ -57,6 +60,12 @@ export default async function InstructorDashboardPage() {
           <Button>My Courses</Button>
         </Link>
       </div>
+
+      <AnnouncementsFeed
+        items={announcements}
+        listHref="/student/announcements"
+        detailBaseHref="/student/announcements"
+      />
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
