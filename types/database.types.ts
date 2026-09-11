@@ -9,6 +9,10 @@ export type CourseStepType = "lesson" | "topic" | "quiz";
 export type EnrollmentStatus = "active" | "completed" | "cancelled" | "expired";
 export type EnrollmentSource = "manual" | "stripe" | "migration" | "group" | "admin";
 export type GroupStatus = "active" | "archived";
+export type AnnouncementStatus = "draft" | "published" | "archived";
+export type AnnouncementAudience = "all" | "students" | "instructors" | "admins";
+export type SupportTicketStatus = "open" | "pending" | "resolved" | "closed";
+export type SupportTicketPriority = "low" | "normal" | "high";
 export type CertificateRuleSourceType = "course" | "quiz" | "group";
 export type QuestionType =
   "single_choice" | "multiple_choice" | "true_false" | "fill_blank" | "essay" | "assessment";
@@ -595,6 +599,145 @@ export interface Database {
           updated_at?: string;
         };
       };
+      admin_audit_events: {
+        Row: {
+          id: string;
+          actor_id: string | null;
+          action: string;
+          target_user_id: string | null;
+          metadata: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          actor_id?: string | null;
+          action: string;
+          target_user_id?: string | null;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          actor_id?: string | null;
+          action?: string;
+          target_user_id?: string | null;
+          metadata?: Json;
+          created_at?: string;
+        };
+      };
+      platform_settings: {
+        Row: {
+          key: string;
+          value: Json;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          key: string;
+          value?: Json;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          key?: string;
+          value?: Json;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+      };
+      announcements: {
+        Row: {
+          id: string;
+          title: string;
+          body_html: string;
+          status: AnnouncementStatus;
+          audience: AnnouncementAudience;
+          starts_at: string | null;
+          ends_at: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          body_html?: string;
+          status?: AnnouncementStatus;
+          audience?: AnnouncementAudience;
+          starts_at?: string | null;
+          ends_at?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          body_html?: string;
+          status?: AnnouncementStatus;
+          audience?: AnnouncementAudience;
+          starts_at?: string | null;
+          ends_at?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      support_tickets: {
+        Row: {
+          id: string;
+          user_id: string;
+          subject: string;
+          status: SupportTicketStatus;
+          priority: SupportTicketPriority;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          subject: string;
+          status?: SupportTicketStatus;
+          priority?: SupportTicketPriority;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          subject?: string;
+          status?: SupportTicketStatus;
+          priority?: SupportTicketPriority;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      support_messages: {
+        Row: {
+          id: string;
+          ticket_id: string;
+          author_id: string;
+          body: string;
+          is_staff: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          ticket_id: string;
+          author_id: string;
+          body: string;
+          is_staff?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          ticket_id?: string;
+          author_id?: string;
+          body?: string;
+          is_staff?: boolean;
+          created_at?: string;
+        };
+      };
       group_users: {
         Row: {
           group_id: string;
@@ -947,6 +1090,15 @@ export interface Database {
     };
     Views: Record<string, never>;
     Functions: {
+      admin_list_user_auth_events: {
+        Args: { p_user_id: string; p_limit: number };
+        Returns: {
+          id: string;
+          created_at: string;
+          action: string;
+          ip_address: string | null;
+        };
+      };
       current_user_role: {
         Args: Record<PropertyKey, never>;
         Returns: UserRole;
@@ -991,6 +1143,10 @@ export interface Database {
         Args: { p_step_id: string };
         Returns: string;
       };
+      can_view_announcement: {
+        Args: { p_audience: AnnouncementAudience };
+        Returns: boolean;
+      };
     };
     Enums: {
       user_role: UserRole;
@@ -1001,6 +1157,10 @@ export interface Database {
       course_step_type: CourseStepType;
       certificate_rule_source_type: CertificateRuleSourceType;
       group_status: GroupStatus;
+      announcement_status: AnnouncementStatus;
+      announcement_audience: AnnouncementAudience;
+      support_ticket_status: SupportTicketStatus;
+      support_ticket_priority: SupportTicketPriority;
     };
   };
 }
