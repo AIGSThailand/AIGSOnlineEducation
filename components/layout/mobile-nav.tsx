@@ -40,6 +40,7 @@ export function MobileNav({ role }: MobileNavProps) {
         { label: "Enrollments", href: "/admin/enrollments", icon: GraduationCap },
         { label: "Announcements", href: "/admin/announcements", icon: Megaphone },
         { label: "Support", href: "/admin/support", icon: LifeBuoy },
+        { label: "Certificates", href: "/admin/certificates", icon: Award },
         { label: "Reports", href: "/admin/reports", icon: BarChart3 },
         { label: "Settings", href: "/admin/settings", icon: Settings },
       ],

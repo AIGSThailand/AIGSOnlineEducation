@@ -28,7 +28,10 @@ export function ForgotPasswordForm() {
       return;
     }
 
-    setSuccessMessage(result.message || "Password reset link sent to your email.");
+    setSuccessMessage(
+      (result.message || "Password reset link sent to your email.") +
+        " Open the link in this same browser to continue."
+    );
   }
 
   return (

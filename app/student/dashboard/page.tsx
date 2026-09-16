@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth/permissions";
 import { fulfillCheckoutSessionForUser } from "@/lib/stripe/enroll-from-checkout";
 import { listActiveAnnouncements } from "@/features/announcements/queries";
+import { countMyEarnedCertificates } from "@/features/certificates/queries";
 import { AnnouncementsFeed } from "@/components/announcements/announcements-feed";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -79,6 +80,7 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
     .filter((c): c is CourseWithInstructors => !!c);
 
   const announcements = await listActiveAnnouncements(5);
+  const certificateCount = user?.id ? await countMyEarnedCertificates(user.id) : 0;
 
   return (
     <div className="space-y-6">
@@ -114,7 +116,12 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
           icon={CheckCircle}
         />
         <StatCard title="Time Spent" value="—" description="Weekly study time" icon={Clock} />
-        <StatCard title="Certificates" value="0" description="Earned credentials" icon={Award} />
+        <StatCard
+          title="Certificates"
+          value={certificateCount}
+          description="Earned credentials"
+          icon={Award}
+        />
       </div>
 
       <div>

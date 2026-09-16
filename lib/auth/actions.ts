@@ -211,7 +211,7 @@ export async function forgotPasswordAction(formData: FormData): Promise<AuthActi
   const { NEXT_PUBLIC_APP_URL: origin } = getClientEnv();
 
   const { error } = await supabase.auth.resetPasswordForEmail(validated.data.email, {
-    redirectTo: `${origin}/reset-password`,
+    redirectTo: `${origin}/api/auth/callback?next=${encodeURIComponent("/reset-password")}`,
   });
 
   if (error) {

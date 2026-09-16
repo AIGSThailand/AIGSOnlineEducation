@@ -86,6 +86,27 @@ export async function toggleStepCompleteAction(
     }
   }
 
+  // Auto-issue certificates when the course is fully complete.
+  if (completed) {
+    try {
+      const completedKeys = new Set(player.completedKeys);
+      completedKeys.add(step.key);
+      const allDone =
+        player.flatSteps.length > 0 &&
+        player.flatSteps.every((s) => completedKeys.has(s.key));
+      if (allDone) {
+        const { issueCourseCertificatesForStudent } = await import(
+          "@/features/certificates/issue"
+        );
+        await issueCourseCertificatesForStudent(user.id, courseId);
+        revalidatePath("/student/certificates");
+        revalidatePath("/student/dashboard");
+      }
+    } catch (err) {
+      console.error("[toggleStepCompleteAction] certificate issue", err);
+    }
+  }
+
   revalidatePath(`/courses/${courseId}`, "layout");
   return { success: true, data: { completed } };
 }

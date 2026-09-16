@@ -86,7 +86,19 @@ export async function updateAccountProfileAction(input: unknown): Promise<Action
 
   if (error) return { success: false, error: error.message };
 
+  // Keep certificate PDFs/HTML in sync with the new legal name.
+  try {
+    const { regenerateCertificatesForStudent } = await import(
+      "@/features/certificates/issue"
+    );
+    await regenerateCertificatesForStudent(user.id);
+  } catch (err) {
+    console.error("[updateAccountProfileAction] certificate regen", err);
+  }
+
   revalidatePath("/student/settings");
   revalidatePath("/student/dashboard");
+  revalidatePath("/student/certificates");
+  revalidatePath("/admin/certificates");
   return { success: true };
 }

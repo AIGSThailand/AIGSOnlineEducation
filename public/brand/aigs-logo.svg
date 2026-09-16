@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 48" fill="none" role="img" aria-labelledby="aigsLogoTitle">
+  <title id="aigsLogoTitle">AIGS</title>
+  <rect width="48" height="48" rx="6" fill="#A01F23"/>
+  <path d="M24 10 L34 36 H29.2 L27.1 30.2 H20.9 L18.8 36 H14 L24 10 Z M22.2 26.4 H25.8 L24 21.2 L22.2 26.4 Z" fill="#FFFCFA"/>
+  <text x="58" y="22" fill="#1C1917" font-family="Georgia, 'Times New Roman', serif" font-size="18" font-weight="700" letter-spacing="0.14em">AIGS</text>
+  <text x="58" y="38" fill="#57534E" font-family="system-ui, sans-serif" font-size="8" font-weight="600" letter-spacing="0.18em">ONLINE EDUCATION</text>
+</svg>
