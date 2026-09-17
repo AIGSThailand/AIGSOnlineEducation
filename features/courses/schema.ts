@@ -21,6 +21,7 @@ export const updateCourseSchema = z.object({
   slug: slugField.optional(),
   description: z.string().optional(),
   excerpt: z.string().trim().max(500).optional().or(z.literal("")),
+  certificateTitle: z.string().trim().max(300).optional().or(z.literal("")),
   thumbnailUrl: optionalMediaUrlSchema,
   promotionalVideoUrl: optionalMediaUrlSchema,
   progressionType: z.enum(["linear", "free_form"]).optional(),

@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { canManageCourse } from "@/features/courses/permissions";
 import { getCurrentUser } from "@/lib/auth/permissions";
-import { createPresignedUpload, isMediaUploadConfigured } from "@/lib/media/s3";
+import {
+  createPresignedGroupUpload,
+  createPresignedUpload,
+  isMediaUploadConfigured,
+} from "@/lib/media/s3";
 import { presignUploadSchema } from "@/features/media/schema";
 
 export async function POST(request: Request) {
@@ -34,7 +38,30 @@ export async function POST(request: Request) {
       );
     }
 
-    const { courseId, kind, fileName, contentType } = parsed.data;
+    const { courseId, groupId, kind, fileName, contentType } = parsed.data;
+
+    if (groupId) {
+      if (user.profile?.role !== "admin") {
+        return NextResponse.json(
+          { success: false, error: "You cannot upload media for this bundle." },
+          { status: 403 }
+        );
+      }
+
+      const result = await createPresignedGroupUpload({
+        groupId,
+        fileName,
+        contentType,
+      });
+      return NextResponse.json({ success: true, data: result });
+    }
+
+    if (!courseId) {
+      return NextResponse.json(
+        { success: false, error: "Provide either courseId or groupId." },
+        { status: 400 }
+      );
+    }
 
     if (!(await canManageCourse(courseId))) {
       return NextResponse.json(

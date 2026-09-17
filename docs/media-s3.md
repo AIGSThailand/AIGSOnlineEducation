@@ -77,6 +77,7 @@ courses/{courseId}/thumbnail/{uuid}-{filename}
 courses/{courseId}/lesson-image/{uuid}-{filename}
 courses/{courseId}/promo/{uuid}-{filename}
 courses/{courseId}/attachment/{uuid}-{filename}
+groups/{groupId}/thumbnail/{uuid}-{filename}
 ```
 
 Keys are validated strictly before signing; path traversal is rejected.
@@ -89,7 +90,22 @@ Keys are validated strictly before signing; path traversal is rejected.
 
 1. Block public access on the bucket (Block Public Access ON)
 2. No public `GetObject` bucket policy
-3. IAM for the app: `s3:PutObject`, `s3:GetObject` on `courses/*`
+3. IAM for the app: `s3:PutObject`, `s3:GetObject` on `courses/*` **and** `groups/*` (bundle thumbnails)
+
+Example identity policy resource ARNs (replace bucket name):
+
+```json
+{
+  "Effect": "Allow",
+  "Action": ["s3:PutObject", "s3:GetObject", "s3:AbortMultipartUpload"],
+  "Resource": [
+    "arn:aws:s3:::YOUR_BUCKET/courses/*",
+    "arn:aws:s3:::YOUR_BUCKET/groups/*",
+    "arn:aws:s3:::YOUR_BUCKET/certificates/*"
+  ]
+}
+```
+
 4. CORS allow `PUT` (and optionally `GET`/`HEAD`) from your app origins
 5. Set `AWS_S3_MEDIA_ACCESS=private`
 

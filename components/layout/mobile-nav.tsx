@@ -40,6 +40,7 @@ export function MobileNav({ role }: MobileNavProps) {
         { label: "Enrollments", href: "/admin/enrollments", icon: GraduationCap },
         { label: "Announcements", href: "/admin/announcements", icon: Megaphone },
         { label: "Support", href: "/admin/support", icon: LifeBuoy },
+        { label: "Certificates", href: "/admin/certificates", icon: Award },
         { label: "Reports", href: "/admin/reports", icon: BarChart3 },
         { label: "Settings", href: "/admin/settings", icon: Settings },
       ],
@@ -77,7 +78,7 @@ export function MobileNav({ role }: MobileNavProps) {
       </button>
 
       {isOpen && (
-        <div className="fixed inset-x-0 top-16 z-50 border-b border-slate-200 bg-white p-4 shadow-lg dark:border-slate-800 dark:bg-slate-900">
+        <div className="fixed inset-x-0 top-16 z-50 max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain border-b border-slate-200 bg-white p-4 shadow-lg dark:border-slate-800 dark:bg-slate-900">
           <nav className="space-y-1">
             {navItems.map((item) => {
               const isActive = pathname === item.href;

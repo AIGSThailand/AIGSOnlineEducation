@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen } from "lucide-react";
-import { wordpressContentToPlainText } from "@/lib/utils/wordpress-content";
+import { ArrowRight, BookOpen, Layers } from "lucide-react";
+import { wordpressContentToPlainText, decodeHtmlEntities } from "@/lib/utils/wordpress-content";
 import { cn } from "@/lib/utils";
 
 export type PublicCourseCardData = {
@@ -12,9 +12,24 @@ export type PublicCourseCardData = {
   access_type?: string | null;
 };
 
+export type PublicBundleCardData = {
+  id: string;
+  name: string;
+  description?: string | null;
+  thumbnailUrl?: string | null;
+  courseCount: number;
+  stripePriceId?: string | null;
+};
+
 type PublicCourseCardProps = {
   course: PublicCourseCardData;
   enrolled?: boolean;
+  className?: string;
+};
+
+type PublicBundleCardProps = {
+  bundle: PublicBundleCardData;
+  owned?: boolean;
   className?: string;
 };
 
@@ -34,8 +49,9 @@ function accessLabel(accessType: string | null | undefined): string | null {
 }
 
 export function PublicCourseCard({ course, enrolled = false, className }: PublicCourseCardProps) {
+  const title = decodeHtmlEntities(course.title);
   const summary =
-    (course.excerpt && course.excerpt.trim()) ||
+    (course.excerpt && decodeHtmlEntities(course.excerpt.trim())) ||
     wordpressContentToPlainText(course.description) ||
     "Explore the curriculum and discover what you will learn in this course.";
   const badge = enrolled ? "Enrolled" : accessLabel(course.access_type);
@@ -70,7 +86,7 @@ export function PublicCourseCard({ course, enrolled = false, className }: Public
       </div>
       <div className="flex flex-1 flex-col p-5 sm:p-6">
         <h3 className="text-lg font-semibold leading-snug tracking-tight text-[var(--text-primary)] sm:text-xl">
-          {course.title}
+          {title}
         </h3>
         <p className="mt-3 line-clamp-3 flex-1 text-sm leading-6 text-[var(--text-secondary)]">
           {summary}
@@ -81,7 +97,65 @@ export function PublicCourseCard({ course, enrolled = false, className }: Public
         >
           <span>
             {enrolled ? "Continue learning" : "View course"}
-            <span className="sr-only">: {course.title}</span>
+            <span className="sr-only">: {title}</span>
+          </span>
+          <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
+        </Link>
+      </div>
+    </article>
+  );
+}
+
+export function PublicBundleCard({ bundle, owned = false, className }: PublicBundleCardProps) {
+  const name = decodeHtmlEntities(bundle.name);
+  const summary =
+    wordpressContentToPlainText(bundle.description) ||
+    `Unlock ${bundle.courseCount} course${bundle.courseCount === 1 ? "" : "s"} with one purchase.`;
+  const badge = owned ? "Owned" : "Bundle";
+
+  return (
+    <article
+      className={cn(
+        "group flex h-full flex-col overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface)] transition-shadow hover:shadow-md",
+        className
+      )}
+    >
+      <div className="relative aspect-[16/10] overflow-hidden bg-[var(--brand-chrome)]">
+        {bundle.thumbnailUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={bundle.thumbnailUrl}
+            alt=""
+            loading="lazy"
+            className="h-full w-full object-cover motion-safe:transition-transform motion-safe:duration-500 motion-safe:group-hover:scale-[1.03]"
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center">
+            <Layers className="h-12 w-12 text-white/70" strokeWidth={1.25} aria-hidden />
+          </div>
+        )}
+        <span className="absolute left-3 top-3 rounded-md bg-[var(--surface)] px-2.5 py-1 text-xs font-semibold text-[var(--brand-chrome)] shadow-sm">
+          {badge}
+        </span>
+      </div>
+      <div className="flex flex-1 flex-col p-5 sm:p-6">
+        <h3 className="text-lg font-semibold leading-snug tracking-tight text-[var(--text-primary)] sm:text-xl">
+          {name}
+        </h3>
+        <p className="mt-2 text-xs font-medium text-[var(--text-secondary)]">
+          {bundle.courseCount} {bundle.courseCount === 1 ? "course" : "courses"} included
+          {!owned && bundle.stripePriceId ? " · Available to purchase" : null}
+        </p>
+        <p className="mt-3 line-clamp-3 flex-1 text-sm leading-6 text-[var(--text-secondary)]">
+          {summary}
+        </p>
+        <Link
+          href={`/bundles/${bundle.id}`}
+          className="mt-5 flex min-h-11 items-center justify-between gap-3 border-t border-[var(--border)] pt-4 text-sm font-semibold text-[var(--brand-primary)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand-primary)]"
+        >
+          <span>
+            {owned ? "Open bundle" : "View bundle"}
+            <span className="sr-only">: {name}</span>
           </span>
           <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
         </Link>

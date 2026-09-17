@@ -461,6 +461,12 @@ Avoid repeating authorization logic across pages.
 
 ## 10. UI Design System
 
+- Free lesson previews are scoped by course and lesson; never grant full-course access or progress writes for preview viewers. Media signing must recheck current preview eligibility and the exact embedded asset reference on every request. Apply `20260917010000_course_lesson_previews.sql` to the app's verified target environment and check RPC availability before enabling the preview settings UI.
+
+- Public course syllabi must use the metadata-only `get_public_course_lessons` projection rather than exposing lesson rows; course-description images are marketing assets, and legacy protected images require an exact published-description image reference before anonymous access.
+
+- Keep `DashboardShell` constrained to `h-dvh` with `min-h-0` flex children; scroll the main content and sidebar navigation independently, and keep the header and sidebar footer outside those scroll regions with `shrink-0`.
+
 Use:
 
 - Tailwind CSS for styling/layout

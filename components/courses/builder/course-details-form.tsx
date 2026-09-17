@@ -27,6 +27,7 @@ export function CourseDetailsForm({
   const [slug, setSlug] = useState(course.slug);
   const [description, setDescription] = useState(course.description || "");
   const [excerpt, setExcerpt] = useState(course.excerpt || "");
+  const [certificateTitle, setCertificateTitle] = useState(course.certificateTitle || "");
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -34,6 +35,7 @@ export function CourseDetailsForm({
     setSlug(course.slug);
     setDescription(course.description || "");
     setExcerpt(course.excerpt || "");
+    setCertificateTitle(course.certificateTitle || "");
   }, [course]);
 
   const handleSave = () => {
@@ -46,6 +48,7 @@ export function CourseDetailsForm({
         slug,
         description,
         excerpt,
+        certificateTitle,
       });
       if (result.success) {
         onSaveStatusChange("saved");
@@ -86,6 +89,22 @@ export function CourseDetailsForm({
               onSaveStatusChange("unsaved");
             }}
           />
+        </div>
+        <div>
+          <Label htmlFor="course-certificate-title">Certificate title</Label>
+          <Input
+            id="course-certificate-title"
+            value={certificateTitle}
+            onChange={(e) => {
+              setCertificateTitle(e.target.value);
+              onSaveStatusChange("unsaved");
+            }}
+            placeholder="Leave blank to use the course title"
+          />
+          <p className="mt-1 text-xs text-slate-500">
+            Shown on certificates when the course-title overlay is enabled. Catalog and course pages
+            still use Title above.
+          </p>
         </div>
         <div>
           <Label htmlFor="course-slug">Slug</Label>

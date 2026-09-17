@@ -16,6 +16,7 @@ import {
   type LessonLearningFields,
 } from "./lesson/lesson-learning-settings";
 import { LessonMigrationInfo } from "./lesson/lesson-migration-info";
+import { LessonPreviewSetting } from "./lesson/lesson-preview-setting";
 import {
   getLessonForEdit,
   updateLessonContentAction,
@@ -24,6 +25,7 @@ import {
 import { uploadCourseMedia } from "@/features/media/upload-client";
 import type { SaveStatus } from "@/features/courses/types";
 import { cn } from "@/lib/utils";
+import { saveLatest } from "@/lib/utils/save-latest";
 
 const AUTOSAVE_MS = 1000;
 
@@ -106,6 +108,10 @@ export function LessonEditor({
   const [dirty, setDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [featuredBusy, setFeaturedBusy] = useState(false);
+  const [draftKey, setDraftKey] = useState<string | null>(null);
+  const [recovery, setRecovery] = useState<LessonForm | null>(null);
+  const savingRef = useRef(false);
+  const previousSaveSignal = useRef(saveSignal);
 
   const formRef = useRef(form);
   const dirtyRef = useRef(false);
@@ -175,31 +181,37 @@ export function LessonEditor({
 
   const persist = useCallback(
     async (opts?: { refresh?: boolean }) => {
+      if (savingRef.current) return { success: false as const, error: "Save already in progress." };
       const current = formRef.current;
       if (!current.title.trim() || !current.slug.trim()) {
+        setError("Title and slug are required.");
+        onSaveStatusChange("error");
         return { success: false as const, error: "Title and slug are required." };
       }
-
+      savingRef.current = true;
       setIsSaving(true);
       onSaveStatusChange("saving");
       setError(null);
 
-      const result = await updateLessonContentAction(buildPayload());
-
-      setIsSaving(false);
-
-      if (result.success) {
-        setDirty(false);
-        dirtyRef.current = false;
-        onSaveStatusChange("saved");
-        if (opts?.refresh) router.refresh();
-      } else {
-        setError(result.error);
-        onSaveStatusChange("error");
-      }
-      return result;
+      try {
+        // Serialize writes; edits made during a request must be saved before showing Saved.
+        {
+          const result = await saveLatest(() => JSON.stringify(formRef.current), () => updateLessonContentAction(buildPayload()));
+          if (!result.success) { setError(result.error); onSaveStatusChange("error"); return result; }
+          setDirty(false); dirtyRef.current = false;
+          if (draftKey) { try { sessionStorage.removeItem(draftKey); } catch { /* Storage may be disabled. */ } }
+          setRecovery(null);
+          onSaveStatusChange("saved");
+          if (opts?.refresh) router.refresh();
+          return result;
+        }
+      } catch {
+        const message = "Save failed. Your edits are still here; use Save to retry.";
+        setError(message); onSaveStatusChange("error");
+        return { success: false as const, error: message };
+      } finally { savingRef.current = false; setIsSaving(false); }
     },
-    [buildPayload, onSaveStatusChange, router]
+    [buildPayload, onSaveStatusChange, router, draftKey]
   );
 
   const scheduleAutosave = useCallback(() => {
@@ -276,6 +288,17 @@ export function LessonEditor({
         };
         setForm(next);
         formRef.current = next;
+        const key = `aigs:lesson-draft:${result.data.editorId}:${courseId}:${lessonId}`;
+        setDraftKey(key);
+        try {
+          const raw = sessionStorage.getItem(key);
+          if (raw) {
+            const draft = JSON.parse(raw) as LessonForm;
+            const matches = (sample: object, saved: object) => saved && Object.keys(sample).every((field) =>
+              typeof (sample as Record<string, unknown>)[field] === typeof (saved as Record<string, unknown>)[field]);
+            if (draft && matches(next, draft) && matches(next.media, draft.media) && matches(next.learning, draft.learning) && JSON.stringify(draft) !== JSON.stringify(next)) setRecovery(draft);
+          }
+        } catch { /* Ignore unavailable storage or invalid local drafts. */ }
         setResources(result.data.resources);
         setMeta({
           hasProgress: result.data.hasProgress,
@@ -316,6 +339,8 @@ export function LessonEditor({
   }, [courseId, lessonId, onSaveStatusChange, reload]);
 
   useEffect(() => {
+    if (previousSaveSignal.current === saveSignal) return;
+    previousSaveSignal.current = saveSignal;
     if (!saveSignal || saveSignal <= 0) return;
     if (saveTimer.current) clearTimeout(saveTimer.current);
     startTransition(() => {
@@ -345,6 +370,7 @@ export function LessonEditor({
 
   const settingsPanel = (
     <div className="space-y-8">
+      <LessonPreviewSetting key={`${courseId}:${lessonId}`} courseId={courseId} lessonId={lessonId} />
       <LessonLearningSettings
         value={form.learning}
         onChange={(patch) =>
@@ -371,6 +397,19 @@ export function LessonEditor({
     </div>
   );
 
+  useEffect(() => {
+    if (!dirty || !draftKey) return;
+    try { sessionStorage.setItem(draftKey, JSON.stringify(form)); } catch { /* The in-memory editor still supports retry. */ }
+  }, [dirty, draftKey, form]);
+
+  useEffect(() => {
+    const warn = (event: BeforeUnloadEvent) => {
+      if (dirtyRef.current || savingRef.current) { event.preventDefault(); event.returnValue = ""; }
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, []);
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -390,6 +429,11 @@ export function LessonEditor({
 
   return (
     <div className="space-y-4">
+      {recovery && <div className="space-y-2 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm">
+        <p>Unsaved edits from this browser tab are available. Restoring will replace the current editor contents; review them before saving.</p>
+        <Button type="button" size="sm" disabled={isSaving} onClick={() => { setForm(recovery); formRef.current = recovery; setRecovery(null); setDirty(true); dirtyRef.current = true; onSaveStatusChange("unsaved"); }}>Restore edits</Button>
+        <Button type="button" size="sm" variant="outline" disabled={isSaving} onClick={() => { setRecovery(null); if (draftKey) { try { sessionStorage.removeItem(draftKey); } catch { /* Ignore unavailable storage. */ } } }}>Discard recovery</Button>
+      </div>}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Lesson</p>

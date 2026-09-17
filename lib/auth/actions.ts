@@ -4,6 +4,11 @@ import { createClient } from "@/lib/supabase/server";
 import { getClientEnv } from "@/lib/env/client";
 import { getRoleDashboardPath } from "./redirects";
 import {
+  assertForgotPasswordRateLimit,
+  assertLoginRateLimit,
+  assertRegisterRateLimit,
+} from "./rate-limit";
+import {
   loginSchema,
   registerSchema,
   forgotPasswordSchema,
@@ -28,6 +33,11 @@ export async function loginAction(formData: FormData): Promise<AuthActionResult>
       success: false,
       error: validated.error.errors[0]?.message || "Invalid credentials provided.",
     };
+  }
+
+  const limited = await assertLoginRateLimit(validated.data.email);
+  if (!limited.ok) {
+    return { success: false, error: limited.error };
   }
 
   const supabase = await createClient();
@@ -85,6 +95,11 @@ export async function registerAction(formData: FormData): Promise<AuthActionResu
       success: false,
       error: validated.error.errors[0]?.message || "Invalid registration data.",
     };
+  }
+
+  const limited = await assertRegisterRateLimit();
+  if (!limited.ok) {
+    return { success: false, error: limited.error };
   }
 
   const supabase = await createClient();
@@ -207,11 +222,16 @@ export async function forgotPasswordAction(formData: FormData): Promise<AuthActi
     };
   }
 
+  const limited = await assertForgotPasswordRateLimit(validated.data.email);
+  if (!limited.ok) {
+    return { success: false, error: limited.error };
+  }
+
   const supabase = await createClient();
   const { NEXT_PUBLIC_APP_URL: origin } = getClientEnv();
 
   const { error } = await supabase.auth.resetPasswordForEmail(validated.data.email, {
-    redirectTo: `${origin}/reset-password`,
+    redirectTo: `${origin}/api/auth/callback?next=${encodeURIComponent("/reset-password")}`,
   });
 
   if (error) {
@@ -271,4 +291,3 @@ export async function logoutAction() {
   await supabase.auth.signOut();
   redirect("/login");
 }
-

@@ -17,6 +17,9 @@ const variants = {
     "border border-[var(--border-strong)] bg-[var(--surface)] px-5 py-2.5 text-[var(--text-primary)] hover:bg-[var(--surface-muted)]",
   tertiary:
     "px-1 py-2 text-[var(--brand-primary)] underline-offset-4 hover:underline",
+  /** On `--brand-chrome` (header): white fill so CTA stays visible on red. */
+  onChrome:
+    "border border-white/25 bg-white px-5 py-2.5 text-[var(--brand-chrome)] hover:bg-white/90",
 } as const;
 
 export type PublicButtonVariant = keyof typeof variants;

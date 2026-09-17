@@ -12,6 +12,7 @@ import { TableRow } from "@tiptap/extension-table-row";
 import { TableCell } from "@tiptap/extension-table-cell";
 import { TableHeader } from "@tiptap/extension-table-header";
 import {
+  AlignLeft,
   Bold,
   Italic,
   Underline as UnderlineIcon,
@@ -31,6 +32,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { stripWordPressBlockComments } from "@/lib/utils/wordpress-content";
+import { formatHtmlSource } from "@/lib/utils/format-html-source";
 
 export type RichTextChange = {
   html: string;
@@ -141,8 +143,19 @@ export function RichTextEditor({
   const enterSourceMode = () => {
     if (!editor) return;
     const html = editor.getHTML();
-    setSourceHtml(html === "<p></p>" ? "" : html);
+    const raw = html === "<p></p>" ? "" : html;
+    const formatted = formatHtmlSource(raw);
+    setSourceHtml(formatted);
     setSourceMode(true);
+  };
+
+  const formatSource = () => {
+    const formatted = formatHtmlSource(sourceHtml);
+    setSourceHtml(formatted);
+    onChange({
+      html: formatted,
+      json: editor?.getJSON() || emptyDoc(),
+    });
   };
 
   const exitSourceMode = () => {
@@ -170,6 +183,8 @@ export function RichTextEditor({
           allowHtmlSource={allowHtmlSource}
           courseId={courseId}
           onToggleSource={() => (sourceMode ? exitSourceMode() : enterSourceMode())}
+          onFormatSource={formatSource}
+          formatDisabled={disabled || !sourceHtml.trim()}
         />
       )}
 
@@ -202,6 +217,8 @@ function Toolbar({
   allowHtmlSource,
   courseId,
   onToggleSource,
+  onFormatSource,
+  formatDisabled,
 }: {
   editor: Editor;
   disabled?: boolean;
@@ -209,6 +226,8 @@ function Toolbar({
   allowHtmlSource: boolean;
   courseId?: string;
   onToggleSource: () => void;
+  onFormatSource: () => void;
+  formatDisabled?: boolean;
 }) {
   const imageInputRef = React.useRef<HTMLInputElement>(null);
   const [imageUploading, setImageUploading] = React.useState(false);
@@ -409,6 +428,15 @@ function Toolbar({
             >
               <Code2 className="h-3.5 w-3.5" />
             </ToolBtn>
+            {sourceMode ? (
+              <ToolBtn
+                label="Format HTML"
+                disabled={formatDisabled}
+                onClick={onFormatSource}
+              >
+                <AlignLeft className="h-3.5 w-3.5" />
+              </ToolBtn>
+            ) : null}
           </>
         )}
       </div>

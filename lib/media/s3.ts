@@ -22,14 +22,32 @@ export type S3MediaConfig = {
   signedGetExpiresSeconds: number;
 };
 
-export type ParsedMediaObjectKey = {
-  courseId: string;
-  kind: MediaAssetKind;
-  fileName: string;
-};
+export type ParsedMediaObjectKey =
+  | {
+      scope: "course";
+      courseId: string;
+      kind: MediaAssetKind;
+      fileName: string;
+    }
+  | {
+      scope: "group";
+      groupId: string;
+      kind: "thumbnail";
+      fileName: string;
+    };
 
 const OBJECT_KEY_RE =
   /^courses\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/(thumbnail|lesson-image|promo|attachment)\/([a-z0-9._-]+)$/i;
+
+const GROUP_OBJECT_KEY_RE =
+  /^groups\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/(thumbnail)\/([a-z0-9._-]+)$/i;
+
+const CERTIFICATE_OBJECT_KEY_RE =
+  /^certificates\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/([a-z0-9._-]+)$/i;
+
+/** Template backgrounds live under certificates/templates/… (same IAM prefix as PDFs). */
+const CERTIFICATE_BACKGROUND_KEY_RE =
+  /^certificates\/templates\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/([a-z0-9._-]+)$/i;
 
 let cachedClient: S3Client | null = null;
 let cachedConfig: S3MediaConfig | null = null;
@@ -117,6 +135,14 @@ export function buildObjectKey(input: {
   return `courses/${input.courseId}/${input.kind}/${randomUUID()}-${safe}`;
 }
 
+export function buildGroupObjectKey(input: {
+  groupId: string;
+  fileName: string;
+}): string {
+  const safe = sanitizeFileName(input.fileName) || "file";
+  return `groups/${input.groupId}/thumbnail/${randomUUID()}-${safe}`;
+}
+
 /** Stable URL stored in Postgres / TipTap HTML (never a long-lived signed URL). */
 export function stableMediaUrlForKey(config: S3MediaConfig, key: string): string {
   if (config.accessMode === "private") {
@@ -134,20 +160,32 @@ export function publicUrlForKey(config: S3MediaConfig, key: string): string {
 
 /**
  * Parse and validate an object key produced by this app.
- * Rejects path traversal and keys outside the courses/ prefix.
+ * Rejects path traversal and keys outside courses/ or groups/ prefixes.
  */
 export function parseMediaObjectKey(key: string): ParsedMediaObjectKey | null {
   const normalized = key.trim().replace(/^\/+/, "");
   if (!normalized || normalized.includes("..") || normalized.includes("\\")) {
     return null;
   }
-  const match = OBJECT_KEY_RE.exec(normalized);
-  if (!match) return null;
-  return {
-    courseId: match[1],
-    kind: match[2] as MediaAssetKind,
-    fileName: match[3],
-  };
+  const courseMatch = OBJECT_KEY_RE.exec(normalized);
+  if (courseMatch) {
+    return {
+      scope: "course",
+      courseId: courseMatch[1],
+      kind: courseMatch[2] as MediaAssetKind,
+      fileName: courseMatch[3],
+    };
+  }
+  const groupMatch = GROUP_OBJECT_KEY_RE.exec(normalized);
+  if (groupMatch) {
+    return {
+      scope: "group",
+      groupId: groupMatch[1],
+      kind: "thumbnail",
+      fileName: groupMatch[3],
+    };
+  }
+  return null;
 }
 
 export async function createPresignedUpload(input: {
@@ -191,6 +229,45 @@ export async function createPresignedUpload(input: {
   };
 }
 
+export async function createPresignedGroupUpload(input: {
+  groupId: string;
+  fileName: string;
+  contentType: string;
+}): Promise<{
+  uploadUrl: string;
+  publicUrl: string;
+  key: string;
+  access: MediaAccessMode;
+  headers: Record<string, string>;
+  expiresIn: number;
+}> {
+  const config = getS3MediaConfig();
+  if (!config) {
+    throw new Error("AWS S3 media upload is not configured.");
+  }
+
+  const key = buildGroupObjectKey({ groupId: input.groupId, fileName: input.fileName });
+  const client = getS3Client(config);
+  const command = new PutObjectCommand({
+    Bucket: config.bucket,
+    Key: key,
+    ContentType: input.contentType,
+  });
+
+  const uploadUrl = await getSignedUrl(client, command, {
+    expiresIn: config.presignExpiresSeconds,
+  });
+
+  return {
+    uploadUrl,
+    publicUrl: stableMediaUrlForKey(config, key),
+    key,
+    access: config.accessMode,
+    headers: { "Content-Type": input.contentType },
+    expiresIn: config.presignExpiresSeconds,
+  };
+}
+
 /** Short-lived S3 GetObject URL for private (or any) objects. */
 export async function createPresignedDownload(key: string): Promise<{
   downloadUrl: string;
@@ -205,6 +282,174 @@ export async function createPresignedDownload(key: string): Promise<{
   const parsed = parseMediaObjectKey(key);
   if (!parsed) {
     throw new Error("Invalid media object key.");
+  }
+
+  return createPresignedGetForKey(key);
+}
+
+export function parseCertificateObjectKey(
+  key: string
+): { earnedId: string; fileName: string } | null {
+  const normalized = key.trim().replace(/^\/+/, "");
+  if (!normalized || normalized.includes("..") || normalized.includes("\\")) {
+    return null;
+  }
+  // Exclude template-background keys (also under certificates/).
+  if (normalized.startsWith("certificates/templates/")) return null;
+  const match = CERTIFICATE_OBJECT_KEY_RE.exec(normalized);
+  if (!match) return null;
+  return { earnedId: match[1], fileName: match[2] };
+}
+
+export function parseCertificateBackgroundKey(
+  key: string
+): { templateId: string; fileName: string } | null {
+  const normalized = key.trim().replace(/^\/+/, "");
+  if (!normalized || normalized.includes("..") || normalized.includes("\\")) {
+    return null;
+  }
+  const match = CERTIFICATE_BACKGROUND_KEY_RE.exec(normalized);
+  if (!match) return null;
+  return { templateId: match[1], fileName: match[2] };
+}
+
+export function buildCertificateObjectKey(earnedId: string, fileName = "certificate.pdf"): string {
+  const safe = sanitizeFileName(fileName) || "certificate.pdf";
+  return `certificates/${earnedId}/${randomUUID()}-${safe}`;
+}
+
+export function buildCertificateBackgroundKey(templateId: string, fileName: string): string {
+  const safe = sanitizeFileName(fileName) || "background.jpg";
+  return `certificates/templates/${templateId}/${randomUUID()}-${safe}`;
+}
+
+export function stableCertificateBackgroundUrl(config: S3MediaConfig, key: string): string {
+  if (config.accessMode === "private") {
+    return `/api/certificates/background/file?key=${encodeURIComponent(key)}`;
+  }
+  if (!config.publicBaseUrl) {
+    throw new Error("Public media base URL is not configured.");
+  }
+  return `${config.publicBaseUrl}/${key}`;
+}
+
+export async function createPresignedCertificateBackgroundUpload(input: {
+  templateId: string;
+  fileName: string;
+  contentType: string;
+}): Promise<{
+  uploadUrl: string;
+  publicUrl: string;
+  key: string;
+  headers: Record<string, string>;
+  expiresIn: number;
+}> {
+  const config = getS3MediaConfig();
+  if (!config) {
+    throw new Error("AWS S3 media upload is not configured.");
+  }
+
+  const key = buildCertificateBackgroundKey(input.templateId, input.fileName);
+  const client = getS3Client(config);
+  const command = new PutObjectCommand({
+    Bucket: config.bucket,
+    Key: key,
+    ContentType: input.contentType,
+  });
+
+  const uploadUrl = await getSignedUrl(client, command, {
+    expiresIn: config.presignExpiresSeconds,
+  });
+
+  return {
+    uploadUrl,
+    publicUrl: stableCertificateBackgroundUrl(config, key),
+    key,
+    headers: { "Content-Type": input.contentType },
+    expiresIn: config.presignExpiresSeconds,
+  };
+}
+
+/** Server-side download of a template background for PDF embedding. */
+export async function getCertificateBackgroundObjectBuffer(
+  key: string
+): Promise<Buffer | null> {
+  const config = getS3MediaConfig();
+  if (!config) return null;
+  if (!parseCertificateBackgroundKey(key)) {
+    throw new Error("Invalid certificate background key.");
+  }
+
+  const client = getS3Client(config);
+  const result = await client.send(
+    new GetObjectCommand({
+      Bucket: config.bucket,
+      Key: key,
+    })
+  );
+  const bytes = await result.Body?.transformToByteArray();
+  if (!bytes) return null;
+  return Buffer.from(bytes);
+}
+
+/** Upload a buffer (e.g. certificate PDF) and return the stable URL to store in DB. */
+export async function putObjectBuffer(input: {
+  key: string;
+  body: Buffer;
+  contentType: string;
+  /** Override stable URL (defaults to course-media URL shape). */
+  stableUrl?: string;
+}): Promise<{ key: string; publicUrl: string } | null> {
+  const config = getS3MediaConfig();
+  if (!config) return null;
+
+  const client = getS3Client(config);
+  await client.send(
+    new PutObjectCommand({
+      Bucket: config.bucket,
+      Key: input.key,
+      Body: input.body,
+      ContentType: input.contentType,
+    })
+  );
+
+  return {
+    key: input.key,
+    publicUrl: input.stableUrl ?? stableMediaUrlForKey(config, input.key),
+  };
+}
+
+/** Upload a certificate PDF and return a durable download URL for `pdf_url`. */
+export async function putCertificatePdfBuffer(input: {
+  earnedId: string;
+  body: Buffer;
+}): Promise<{ key: string; publicUrl: string } | null> {
+  const config = getS3MediaConfig();
+  if (!config) return null;
+
+  const key = buildCertificateObjectKey(input.earnedId);
+  const stableUrl =
+    config.accessMode === "private"
+      ? `/api/certificates/file?key=${encodeURIComponent(key)}`
+      : `${config.publicBaseUrl}/${key}`;
+
+  return putObjectBuffer({
+    key,
+    body: input.body,
+    contentType: "application/pdf",
+    stableUrl,
+  });
+}
+
+/** Presigned GET for any validated app-managed object key (course media or certificates). */
+export async function createPresignedGetForKey(key: string): Promise<{
+  downloadUrl: string;
+  expiresIn: number;
+  key: string;
+}> {
+  const config = getS3MediaConfig();
+  if (!config) {
+    throw new Error("AWS S3 media is not configured.");
   }
 
   const client = getS3Client(config);

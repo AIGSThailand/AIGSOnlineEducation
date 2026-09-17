@@ -67,8 +67,11 @@ export function AccountSettingsForm({
             <Input id="account-last" value={last} onChange={(e) => setLast(e.target.value)} />
           </div>
         </div>
+        <p className="text-xs text-slate-500">
+          Saving updates your certificate preview and regenerates PDF downloads with the new name.
+        </p>
         {error && <p className="text-sm text-red-600">{error}</p>}
-        {saved && <p className="text-sm text-green-600">Profile saved.</p>}
+        {saved && <p className="text-sm text-green-600">Profile saved. Certificates updated.</p>}
         <Button type="submit" disabled={isPending}>
           {isPending ? "Saving…" : "Save profile"}
         </Button>

@@ -10,13 +10,30 @@ export const mediaAssetKindSchema = z.enum([
 
 export const presignUploadSchema = z
   .object({
-    courseId: z.string().uuid(),
+    courseId: z.string().uuid().optional(),
+    groupId: z.string().uuid().optional(),
     kind: mediaAssetKindSchema,
     fileName: z.string().trim().min(1).max(200),
     contentType: z.string().trim().min(3).max(120),
     fileSize: z.number().int().positive(),
   })
   .superRefine((data, ctx) => {
+    const hasCourse = !!data.courseId;
+    const hasGroup = !!data.groupId;
+    if (hasCourse === hasGroup) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Provide either courseId or groupId.",
+        path: ["courseId"],
+      });
+    }
+    if (hasGroup && data.kind !== "thumbnail") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Bundle uploads only support thumbnail images.",
+        path: ["kind"],
+      });
+    }
     const limits = MEDIA_KIND_LIMITS[data.kind as MediaAssetKind];
     if (!limits.accept.includes(data.contentType)) {
       ctx.addIssue({

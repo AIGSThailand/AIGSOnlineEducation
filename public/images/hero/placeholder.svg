@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" fill="none" role="img" aria-labelledby="heroPhTitle">
+  <title id="heroPhTitle">Gemstone atmosphere placeholder</title>
+  <defs>
+    <radialGradient id="g1" cx="30%" cy="40%" r="55%">
+      <stop offset="0%" stop-color="#A01F23"/>
+      <stop offset="55%" stop-color="#4A1214"/>
+      <stop offset="100%" stop-color="#1C0A0B"/>
+    </radialGradient>
+    <radialGradient id="g2" cx="78%" cy="28%" r="40%">
+      <stop offset="0%" stop-color="#B8956C" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#B8956C" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="facet" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFFCFA" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#FFFCFA" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#g1)"/>
+  <rect width="1600" height="1000" fill="url(#g2)"/>
+  <path d="M820 180 L1180 420 L980 780 L620 720 L520 400 Z" fill="url(#facet)" stroke="#FFFCFA" stroke-opacity="0.2" stroke-width="2"/>
+  <path d="M420 260 L640 320 L600 560 L360 520 Z" fill="#FFFCFA" fill-opacity="0.06" stroke="#FFFCFA" stroke-opacity="0.15"/>
+  <text x="80" y="940" fill="#FFFCFA" fill-opacity="0.35" font-family="system-ui, sans-serif" font-size="28" letter-spacing="0.2em">PLACEHOLDER · REPLACE WITH GEMSTONE PHOTO</text>
+</svg>

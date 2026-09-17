@@ -90,12 +90,14 @@ export function BuilderHeader({
             </span>
           )}
 
-          <Link href={`/courses/${course.id}/preview`} target="_blank" rel="noopener noreferrer">
-            <Button type="button" variant="outline" size="sm">
-              <Eye className="mr-1.5 h-4 w-4" />
-              Preview
-            </Button>
-          </Link>
+          <details className="relative">
+            <summary className="flex cursor-pointer items-center rounded-md border px-3 py-2 text-sm"><Eye className="mr-1.5 h-4 w-4" />Preview as…</summary>
+            <div className="absolute right-0 z-40 mt-2 w-56 space-y-2 rounded-md border bg-white p-3 shadow-lg">
+              <Link className="block text-sm underline" href={`/courses/${course.id}/preview`} target="_blank" rel="noopener noreferrer">Staff draft preview</Link>
+              <Link className="block text-sm underline" href={`/courses/${course.id}/preview?audience=visitor`} target="_blank" rel="noopener noreferrer">Visitor / before enrollment</Link>
+              <p className="text-xs text-slate-500">Preview uses saved content. Student progress should be verified with a test student account.</p>
+            </div>
+          </details>
 
           {onSave && (
             <Button type="button" variant="secondary" size="sm" onClick={onSave}>
@@ -105,7 +107,7 @@ export function BuilderHeader({
           )}
 
           {course.status === "draft" && canPublish && (
-            <Button type="button" size="sm" onClick={onPublish}>
+            <Button type="button" size="sm" onClick={onPublish} disabled={["saving", "unsaved", "error"].includes(saveStatus)}>
               Publish
             </Button>
           )}

@@ -4,11 +4,16 @@ import { useEffect, useId, useRef, useState } from "react";
 import { Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MEDIA_KIND_LIMITS, type MediaAssetKind } from "@/features/media/types";
-import { isMediaUploadAvailable, uploadCourseMedia } from "@/features/media/upload-client";
+import {
+  isMediaUploadAvailable,
+  uploadCourseMedia,
+  uploadGroupMedia,
+} from "@/features/media/upload-client";
 import { cn } from "@/lib/utils";
 
 interface MediaUploaderProps {
-  courseId: string;
+  courseId?: string;
+  groupId?: string;
   kind: MediaAssetKind;
   onUploaded: (publicUrl: string) => void;
   label?: string;
@@ -18,6 +23,7 @@ interface MediaUploaderProps {
 
 export function MediaUploader({
   courseId,
+  groupId,
   kind,
   onUploaded,
   label,
@@ -73,10 +79,16 @@ export function MediaUploader({
             );
             return;
           }
+          if (!courseId && !groupId) {
+            setError("Missing course or bundle id for upload.");
+            return;
+          }
 
           setUploading(true);
           try {
-            const { publicUrl } = await uploadCourseMedia({ courseId, kind, file });
+            const { publicUrl } = groupId
+              ? await uploadGroupMedia({ groupId, file })
+              : await uploadCourseMedia({ courseId: courseId!, kind, file });
             onUploaded(publicUrl);
           } catch (err) {
             setError(err instanceof Error ? err.message : "Upload failed.");

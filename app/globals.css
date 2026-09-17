@@ -28,6 +28,8 @@
     --brand-primary-hover: var(--aigs-700);
     --brand-primary-muted: var(--aigs-100);
     --brand-dark: var(--aigs-900);
+    /* Public header/footer chrome (not used for hero overlays — those keep --brand-dark) */
+    --brand-chrome: #980e10;
     --surface: #fffcf9;
     --surface-muted: #f5f1ec;
     --border: #e8e2da;

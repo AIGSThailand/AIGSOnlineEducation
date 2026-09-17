@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { optionalMediaUrlSchema } from "@/lib/validations/media-url";
 
 export const groupStatusSchema = z.enum(["active", "archived"]);
 
@@ -28,6 +29,7 @@ export const updateGroupSchema = z.object({
     .optional(),
   description: z.string().max(100000).optional().nullable(),
   status: groupStatusSchema.optional(),
+  thumbnailUrl: optionalMediaUrlSchema,
   stripeProductId: z.string().trim().max(200).optional().or(z.literal("")),
   stripePriceId: z.string().trim().max(200).optional().or(z.literal("")),
 });
