@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe/server";
 import { getStripeWebhookSecret } from "@/lib/env/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import {
   handleCheckoutSessionCompleted,
   handleSubscriptionCreated,
@@ -15,8 +16,37 @@ import type Stripe from "stripe";
 export const dynamic = "force-dynamic";
 
 /**
+ * Claim a Stripe event for processing. Returns false if already claimed (duplicate delivery).
+ */
+async function claimStripeEvent(event: Stripe.Event): Promise<boolean> {
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("processed_stripe_events")
+    .insert({
+      event_id: event.id,
+      event_type: event.type,
+    } as never)
+    .select("event_id")
+    .maybeSingle<{ event_id: string }>();
+
+  if (error) {
+    // Unique violation → already processed / in flight
+    if (error.code === "23505") return false;
+    throw error;
+  }
+
+  return Boolean(data?.event_id);
+}
+
+async function releaseStripeEventClaim(eventId: string): Promise<void> {
+  const admin = createAdminClient();
+  await admin.from("processed_stripe_events").delete().eq("event_id", eventId);
+}
+
+/**
  * Stripe Webhook Route Handler
  * Verifies webhook signatures using the raw request body and dispatches events.
+ * Idempotent via processed_stripe_events (claim-before-handle; release on failure).
  */
 export async function POST(req: Request) {
   const body = await req.text();
@@ -45,7 +75,13 @@ export async function POST(req: Request) {
     );
   }
 
+  let claimed = false;
   try {
+    claimed = await claimStripeEvent(event);
+    if (!claimed) {
+      return NextResponse.json({ received: true, duplicate: true });
+    }
+
     switch (event.type) {
       case "checkout.session.completed":
         await handleCheckoutSessionCompleted(event.data.object as Stripe.Checkout.Session);
@@ -72,12 +108,18 @@ export async function POST(req: Request) {
         break;
 
       default:
-        // Unhandled event type logged safely
         console.log(`[Stripe Webhook] Unhandled event type received: ${event.type}`);
     }
 
     return NextResponse.json({ received: true });
   } catch (err) {
+    if (claimed) {
+      try {
+        await releaseStripeEventClaim(event.id);
+      } catch (releaseErr) {
+        console.error("[Stripe Webhook] Failed to release event claim:", releaseErr);
+      }
+    }
     const errorMessage = err instanceof Error ? err.message : "Webhook handler processing error";
     console.error(`[Stripe Webhook Handler Error]: ${errorMessage}`);
     return NextResponse.json({ error: `Webhook handler failed: ${errorMessage}` }, { status: 500 });

@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { putCertificatePdfBuffer } from "@/lib/media/s3";
 import { generateCertificatePdf } from "./pdf";
 import { asTemplateData } from "./template-data";
+import { resolveCertificateCourseTitle } from "./format-course-title";
 import type { Json } from "@/types/database.types";
 
 function verificationCode(): string {
@@ -35,7 +36,7 @@ export async function regenerateCertificatePdf(
       student_id,
       certificate_template_id,
       template:certificate_templates(title, template_data),
-      course:courses(title),
+      course:courses(title, certificate_title),
       student:profiles!earned_certificates_student_id_fkey(email, first_name, last_name)
     `
     )
@@ -51,7 +52,10 @@ export async function regenerateCertificatePdf(
         | { title: string; template_data: Json }
         | { title: string; template_data: Json }[]
         | null;
-      course: { title: string } | { title: string }[] | null;
+      course:
+        | { title: string; certificate_title: string | null }
+        | { title: string; certificate_title: string | null }[]
+        | null;
       student:
         | { email: string; first_name: string | null; last_name: string | null }
         | { email: string; first_name: string | null; last_name: string | null }[]
@@ -71,7 +75,7 @@ export async function regenerateCertificatePdf(
       templateTitle: template?.title || "Certificate",
       templateData: asTemplateData(template?.template_data),
       studentName: displayName(student?.first_name, student?.last_name, student?.email || ""),
-      courseTitle: course?.title || "Course",
+      courseTitle: resolveCertificateCourseTitle(course),
       earnedAt: earned.earned_at,
       verificationCode: earned.verification_code,
     });

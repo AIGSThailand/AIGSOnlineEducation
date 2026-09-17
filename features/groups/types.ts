@@ -4,6 +4,7 @@ export type GroupListItem = {
   slug: string;
   description: string | null;
   status: "active" | "archived";
+  thumbnailUrl: string | null;
   stripeProductId: string | null;
   stripePriceId: string | null;
   courseCount: number;
@@ -32,9 +33,21 @@ export type GroupDetail = {
   slug: string;
   description: string | null;
   status: "active" | "archived";
+  thumbnailUrl: string | null;
   stripeProductId: string | null;
   stripePriceId: string | null;
   wordpressGroupId: number | null;
   courses: GroupCourseOption[];
   members: GroupMemberRow[];
+};
+
+/** Public catalog card for an active group/bundle. */
+export type PublicBundleCatalogItem = {
+  id: string;
+  name: string;
+  description: string | null;
+  thumbnailUrl: string | null;
+  courseCount: number;
+  stripePriceId: string | null;
+  updatedAt: string;
 };

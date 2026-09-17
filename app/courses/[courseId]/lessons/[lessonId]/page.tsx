@@ -1,6 +1,9 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { requireAuth, canAccessCourse } from "@/lib/auth/permissions";
+import { getCurrentUser, canAccessCourse } from "@/lib/auth/permissions";
+import { getPublicLessonPreview } from "@/features/lessons/preview";
+import { LessonPreview } from "@/components/player/lesson-preview";
+import Link from "next/link";
 import { canManageCourse } from "@/features/courses/permissions";
 import { getCoursePlayerData } from "@/features/player/queries";
 import { findStepByContent, lockedStepKeys } from "@/features/player/build-player";
@@ -14,18 +17,22 @@ import type { Database } from "@/types/database.types";
 type LessonRow = Database["public"]["Tables"]["lessons"]["Row"];
 
 interface LessonPageProps {
+  searchParams?: { audience?: string };
   params: {
     courseId: string;
     lessonId: string;
   };
 }
 
-export default async function LessonPage({ params }: LessonPageProps) {
+export default async function LessonPage({ params, searchParams }: LessonPageProps) {
   const { courseId, lessonId } = params;
-  const user = await requireAuth();
+  const user = await getCurrentUser();
+  const visitorReview = searchParams?.audience === "visitor" && await canManageCourse(courseId);
 
   const hasAccess = await canAccessCourse(courseId);
-  if (!hasAccess) {
+  if (!hasAccess || !user || visitorReview) {
+    const preview = await getPublicLessonPreview(courseId, lessonId);
+    if (preview) return <LessonPreview courseId={courseId} preview={preview} visitorReview={visitorReview} />;
     return (
       <div className="mx-auto max-w-md py-20 text-center">
         <Card className="p-8">
@@ -33,6 +40,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
           <p className="mt-2 text-sm text-slate-600">
             You must be enrolled in this course with an active subscription to access its lessons.
           </p>
+          <Link href={`/courses/${courseId}`} className="mt-4 inline-block font-semibold text-brand-700">View course and enrollment options</Link>
         </Card>
       </div>
     );

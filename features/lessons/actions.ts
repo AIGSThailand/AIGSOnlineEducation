@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { canManageCourse } from "@/features/courses/permissions";
+import { getCurrentUser } from "@/lib/auth/permissions";
 import { lessonSlugExists } from "@/features/courses/queries";
 import type { ActionResult } from "@/features/courses/types";
 import {
@@ -27,6 +28,7 @@ export type LessonResourceForEdit = {
 };
 
 export type LessonForEdit = {
+  editorId: string;
   id: string;
   moduleId: string | null;
   title: string;
@@ -105,6 +107,23 @@ async function assertLessonOnCourse(
   return Boolean(step?.id);
 }
 
+/** Ensure module/section UUID belongs to this course (or is cleared). */
+async function assertModuleOnCourse(
+  supabase: Db,
+  courseId: string,
+  moduleId: string | null
+): Promise<boolean> {
+  if (moduleId === null) return true;
+
+  const { data } = await supabase
+    .from("modules")
+    .select("id")
+    .eq("id", moduleId)
+    .eq("course_id", courseId)
+    .maybeSingle<{ id: string }>();
+  return Boolean(data?.id);
+}
+
 export async function getLessonForEdit(
   courseId: string,
   lessonId: string
@@ -114,6 +133,8 @@ export async function getLessonForEdit(
   }
 
   const supabase = await createClient();
+  const editor = await getCurrentUser();
+  if (!editor) return { success: false, error: "Unauthorized." };
   if (!(await assertLessonOnCourse(supabase, courseId, lessonId))) {
     return { success: false, error: "Lesson not found on this course." };
   }
@@ -160,6 +181,7 @@ export async function getLessonForEdit(
     success: true,
     data: {
       id: row.id as string,
+      editorId: editor.id,
       moduleId: (row.module_id as string | null) ?? null,
       title: row.title as string,
       slug: row.slug as string,
@@ -224,6 +246,12 @@ export async function updateLessonContentAction(input: unknown): Promise<ActionR
     return { success: false, error: "Lesson not found on this course." };
   }
 
+  if (data.moduleId !== undefined) {
+    if (!(await assertModuleOnCourse(supabase, data.courseId, data.moduleId))) {
+      return { success: false, error: "Invalid section for this course." };
+    }
+  }
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -231,7 +259,7 @@ export async function updateLessonContentAction(input: unknown): Promise<ActionR
   const patch: Record<string, unknown> = {
     title: data.title,
     slug: data.slug,
-    excerpt: emptyToNull(data.excerpt) ,
+    excerpt: emptyToNull(data.excerpt),
     content: data.contentHtml ?? null,
     content_json: (data.contentJson as Record<string, unknown> | null) ?? null,
     featured_image_url: emptyToNull(data.featuredImageUrl ?? null),

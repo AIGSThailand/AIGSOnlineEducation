@@ -22,14 +22,25 @@ export type S3MediaConfig = {
   signedGetExpiresSeconds: number;
 };
 
-export type ParsedMediaObjectKey = {
-  courseId: string;
-  kind: MediaAssetKind;
-  fileName: string;
-};
+export type ParsedMediaObjectKey =
+  | {
+      scope: "course";
+      courseId: string;
+      kind: MediaAssetKind;
+      fileName: string;
+    }
+  | {
+      scope: "group";
+      groupId: string;
+      kind: "thumbnail";
+      fileName: string;
+    };
 
 const OBJECT_KEY_RE =
   /^courses\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/(thumbnail|lesson-image|promo|attachment)\/([a-z0-9._-]+)$/i;
+
+const GROUP_OBJECT_KEY_RE =
+  /^groups\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/(thumbnail)\/([a-z0-9._-]+)$/i;
 
 const CERTIFICATE_OBJECT_KEY_RE =
   /^certificates\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/([a-z0-9._-]+)$/i;
@@ -124,6 +135,14 @@ export function buildObjectKey(input: {
   return `courses/${input.courseId}/${input.kind}/${randomUUID()}-${safe}`;
 }
 
+export function buildGroupObjectKey(input: {
+  groupId: string;
+  fileName: string;
+}): string {
+  const safe = sanitizeFileName(input.fileName) || "file";
+  return `groups/${input.groupId}/thumbnail/${randomUUID()}-${safe}`;
+}
+
 /** Stable URL stored in Postgres / TipTap HTML (never a long-lived signed URL). */
 export function stableMediaUrlForKey(config: S3MediaConfig, key: string): string {
   if (config.accessMode === "private") {
@@ -141,20 +160,32 @@ export function publicUrlForKey(config: S3MediaConfig, key: string): string {
 
 /**
  * Parse and validate an object key produced by this app.
- * Rejects path traversal and keys outside the courses/ prefix.
+ * Rejects path traversal and keys outside courses/ or groups/ prefixes.
  */
 export function parseMediaObjectKey(key: string): ParsedMediaObjectKey | null {
   const normalized = key.trim().replace(/^\/+/, "");
   if (!normalized || normalized.includes("..") || normalized.includes("\\")) {
     return null;
   }
-  const match = OBJECT_KEY_RE.exec(normalized);
-  if (!match) return null;
-  return {
-    courseId: match[1],
-    kind: match[2] as MediaAssetKind,
-    fileName: match[3],
-  };
+  const courseMatch = OBJECT_KEY_RE.exec(normalized);
+  if (courseMatch) {
+    return {
+      scope: "course",
+      courseId: courseMatch[1],
+      kind: courseMatch[2] as MediaAssetKind,
+      fileName: courseMatch[3],
+    };
+  }
+  const groupMatch = GROUP_OBJECT_KEY_RE.exec(normalized);
+  if (groupMatch) {
+    return {
+      scope: "group",
+      groupId: groupMatch[1],
+      kind: "thumbnail",
+      fileName: groupMatch[3],
+    };
+  }
+  return null;
 }
 
 export async function createPresignedUpload(input: {
@@ -177,6 +208,45 @@ export async function createPresignedUpload(input: {
   }
 
   const key = buildObjectKey(input);
+  const client = getS3Client(config);
+  const command = new PutObjectCommand({
+    Bucket: config.bucket,
+    Key: key,
+    ContentType: input.contentType,
+  });
+
+  const uploadUrl = await getSignedUrl(client, command, {
+    expiresIn: config.presignExpiresSeconds,
+  });
+
+  return {
+    uploadUrl,
+    publicUrl: stableMediaUrlForKey(config, key),
+    key,
+    access: config.accessMode,
+    headers: { "Content-Type": input.contentType },
+    expiresIn: config.presignExpiresSeconds,
+  };
+}
+
+export async function createPresignedGroupUpload(input: {
+  groupId: string;
+  fileName: string;
+  contentType: string;
+}): Promise<{
+  uploadUrl: string;
+  publicUrl: string;
+  key: string;
+  access: MediaAccessMode;
+  headers: Record<string, string>;
+  expiresIn: number;
+}> {
+  const config = getS3MediaConfig();
+  if (!config) {
+    throw new Error("AWS S3 media upload is not configured.");
+  }
+
+  const key = buildGroupObjectKey({ groupId: input.groupId, fileName: input.fileName });
   const client = getS3Client(config);
   const command = new PutObjectCommand({
     Bucket: config.bucket,

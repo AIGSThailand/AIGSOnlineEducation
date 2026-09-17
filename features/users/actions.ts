@@ -95,17 +95,13 @@ export async function inviteUserAction(
     return { success: false, error: parsed.error.errors[0]?.message || "Invalid invite." };
   }
 
-  const { email, firstName, lastName, role } = parsed.data;
+  const { email, role } = parsed.data;
   const { NEXT_PUBLIC_APP_URL: origin } = getClientEnv();
   const adminClient = createAdminClient();
 
   const { data, error } = await adminClient.auth.admin.inviteUserByEmail(email, {
     redirectTo: `${origin}/api/auth/callback`,
-    data: {
-      first_name: firstName || undefined,
-      last_name: lastName || undefined,
-      role,
-    },
+    data: { role },
   });
 
   if (error) {
@@ -127,8 +123,6 @@ export async function inviteUserAction(
       .from("profiles")
       .update({
         role,
-        first_name: firstName || null,
-        last_name: lastName || null,
         updated_at: new Date().toISOString(),
       } as never)
       .eq("id", userId);

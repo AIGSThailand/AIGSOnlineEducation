@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { RichTextEditor } from "@/components/courses/builder/rich-text-editor";
+import { MediaUploader } from "@/components/media/media-uploader";
 import { createGroupAction, updateGroupAction } from "@/features/groups/actions";
 import type { GroupDetail } from "@/features/groups/types";
 
@@ -20,6 +21,7 @@ export function GroupDetailsForm({ mode }: { mode: Mode }) {
   const [slug, setSlug] = useState(group?.slug || "");
   const [description, setDescription] = useState(group?.description || "");
   const [status, setStatus] = useState<"active" | "archived">(group?.status || "active");
+  const [thumbnailUrl, setThumbnailUrl] = useState(group?.thumbnailUrl || "");
   const [stripeProductId, setStripeProductId] = useState(group?.stripeProductId || "");
   const [stripePriceId, setStripePriceId] = useState(group?.stripePriceId || "");
   const [error, setError] = useState<string | null>(null);
@@ -46,6 +48,7 @@ export function GroupDetailsForm({ mode }: { mode: Mode }) {
         slug,
         description,
         status,
+        thumbnailUrl,
         stripeProductId,
         stripePriceId,
       });
@@ -104,30 +107,74 @@ export function GroupDetailsForm({ mode }: { mode: Mode }) {
       </div>
 
       {mode.kind === "edit" ? (
-        <div className="space-y-3 border-t border-slate-100 pt-4">
-          <h3 className="text-sm font-semibold text-slate-800">Commerce (Stripe bundle)</h3>
-          <p className="text-xs text-slate-500">
-            One price enrolls the buyer into every course attached to this group.
-          </p>
-          <div>
-            <Label htmlFor="stripe-product">Stripe product ID</Label>
-            <Input
-              id="stripe-product"
-              value={stripeProductId}
-              onChange={(e) => setStripeProductId(e.target.value)}
-              placeholder="prod_…"
-            />
+        <>
+          <div className="space-y-3 border-t border-slate-100 pt-4">
+            <h3 className="text-sm font-semibold text-slate-800">Media</h3>
+            <p className="text-xs text-slate-500">
+              Catalog thumbnail shown on /courses and the public bundle page (same as course
+              thumbnails).
+            </p>
+            <div>
+              <Label htmlFor="group-thumbnail-url">Thumbnail URL</Label>
+              <MediaUploader
+                groupId={mode.group.id}
+                kind="thumbnail"
+                className="mb-2"
+                onUploaded={(url) => setThumbnailUrl(url)}
+              />
+              <Input
+                id="group-thumbnail-url"
+                type="text"
+                inputMode="url"
+                value={thumbnailUrl}
+                onChange={(e) => setThumbnailUrl(e.target.value)}
+                placeholder="/api/media/file?key=… or https://…"
+              />
+              {thumbnailUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={thumbnailUrl}
+                  alt="Bundle thumbnail preview"
+                  className="mt-2 h-24 w-full rounded-md object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = "none";
+                  }}
+                />
+              ) : null}
+              {thumbnailUrl.startsWith("http://") ? (
+                <p className="mt-1 text-xs text-amber-700">
+                  This thumbnail uses insecure HTTP and will be blocked on HTTPS sites. Upload a new
+                  image or use an https:// /api/media/file link.
+                </p>
+              ) : null}
+            </div>
           </div>
-          <div>
-            <Label htmlFor="stripe-price">Stripe price ID</Label>
-            <Input
-              id="stripe-price"
-              value={stripePriceId}
-              onChange={(e) => setStripePriceId(e.target.value)}
-              placeholder="price_…"
-            />
+
+          <div className="space-y-3 border-t border-slate-100 pt-4">
+            <h3 className="text-sm font-semibold text-slate-800">Commerce (Stripe bundle)</h3>
+            <p className="text-xs text-slate-500">
+              One price enrolls the buyer into every course attached to this group.
+            </p>
+            <div>
+              <Label htmlFor="stripe-product">Stripe product ID</Label>
+              <Input
+                id="stripe-product"
+                value={stripeProductId}
+                onChange={(e) => setStripeProductId(e.target.value)}
+                placeholder="prod_…"
+              />
+            </div>
+            <div>
+              <Label htmlFor="stripe-price">Stripe price ID</Label>
+              <Input
+                id="stripe-price"
+                value={stripePriceId}
+                onChange={(e) => setStripePriceId(e.target.value)}
+                placeholder="price_…"
+              />
+            </div>
           </div>
-        </div>
+        </>
       ) : null}
 
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}

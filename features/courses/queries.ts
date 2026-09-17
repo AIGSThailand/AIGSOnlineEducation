@@ -222,11 +222,11 @@ async function getCourseIdsForInstructor(instructorId: string): Promise<string[]
   return (data || []).map((r) => r.course_id);
 }
 
-async function loadLessonsByIds(ids: string[]): Promise<Map<string, LessonMeta>> {
+async function loadLessonsByIds(ids: string[], client?: Awaited<ReturnType<typeof createClient>>): Promise<Map<string, LessonMeta>> {
   const lessonsById = new Map<string, LessonMeta>();
   if (ids.length === 0) return lessonsById;
 
-  const supabase = await createClient();
+  const supabase = client ?? await createClient();
   const unique = Array.from(new Set(ids));
   const { data } = await supabase
     .from("lessons")
@@ -244,8 +244,15 @@ async function loadLessonsByIds(ids: string[]): Promise<Map<string, LessonMeta>>
  * Student/staff course syllabus from course_sections + course_steps (LearnDash),
  * with modules → lessons fallback for older courses.
  */
-export async function getCourseSyllabus(courseId: string): Promise<CourseSyllabus> {
-  const supabase = await createClient();
+export async function getCourseSyllabus(courseId: string, client?: Awaited<ReturnType<typeof createClient>>): Promise<CourseSyllabus> {
+  const supabase = client ?? await createClient();
+  // Public titles come from a narrow database projection, not relaxed lesson RLS.
+  const { data: publicLessonRows, error: publicLessonsError } = await supabase.rpc(
+    "get_public_course_lessons",
+    { p_course_id: courseId } as never
+  );
+  if (publicLessonsError) throw new Error(publicLessonsError.message);
+  const publicLessons = (publicLessonRows || []) as LessonMeta[];
 
   const { data: courseSections } = await supabase
     .from("course_sections")
@@ -271,7 +278,10 @@ export async function getCourseSyllabus(courseId: string): Promise<CourseSyllabu
 
     const quizIds = (steps || []).filter((s) => s.quiz_id).map((s) => s.quiz_id as string);
 
-    const lessonsById = await loadLessonsByIds(lessonIds);
+    const lessonsById = await loadLessonsByIds(lessonIds, supabase);
+    for (const lesson of publicLessons || []) {
+      if (!lessonsById.has(lesson.id)) lessonsById.set(lesson.id, lesson);
+    }
 
     const quizzesById = new Map<
       string,
@@ -325,7 +335,9 @@ export async function getCourseSyllabus(courseId: string): Promise<CourseSyllabu
       .order("sort_order", { ascending: true })
       .returns<LessonMeta[]>();
 
-    sections = buildSectionsFromModules(modules || [], lessons || [], new Set());
+    const visibleLessons = new Map((publicLessons || []).map((lesson) => [lesson.id, lesson]));
+    for (const lesson of lessons || []) visibleLessons.set(lesson.id, lesson);
+    sections = buildSectionsFromModules(modules || [], Array.from(visibleLessons.values()), new Set());
   }
 
   const counts = countCurriculumItems(sections);
@@ -507,6 +519,8 @@ export async function getCourseBuilderData(
     slug: course.slug,
     description: course.description,
     excerpt: course.excerpt,
+    certificateTitle:
+      (course as { certificate_title?: string | null }).certificate_title ?? null,
     status: course.status,
     progressionType: course.progression_type,
     accessType: course.access_type ?? "enrollment_required",

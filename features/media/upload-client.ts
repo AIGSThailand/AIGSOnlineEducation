@@ -7,11 +7,36 @@ export async function uploadCourseMedia(input: {
   kind: "thumbnail" | "lesson-image" | "promo" | "attachment";
   file: File;
 }): Promise<{ publicUrl: string; key: string }> {
+  return uploadMedia({
+    courseId: input.courseId,
+    kind: input.kind,
+    file: input.file,
+  });
+}
+
+export async function uploadGroupMedia(input: {
+  groupId: string;
+  file: File;
+}): Promise<{ publicUrl: string; key: string }> {
+  return uploadMedia({
+    groupId: input.groupId,
+    kind: "thumbnail",
+    file: input.file,
+  });
+}
+
+async function uploadMedia(input: {
+  courseId?: string;
+  groupId?: string;
+  kind: "thumbnail" | "lesson-image" | "promo" | "attachment";
+  file: File;
+}): Promise<{ publicUrl: string; key: string }> {
   const presignRes = await fetch("/api/media/presign", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       courseId: input.courseId,
+      groupId: input.groupId,
       kind: input.kind,
       fileName: input.file.name,
       contentType: input.file.type || "application/octet-stream",

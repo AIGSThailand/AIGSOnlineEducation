@@ -16,8 +16,6 @@ export const adminUserListQuerySchema = z.object({
 
 export const inviteUserSchema = z.object({
   email: z.string().trim().email("Enter a valid email."),
-  firstName: z.string().trim().max(100).optional().or(z.literal("")),
-  lastName: z.string().trim().max(100).optional().or(z.literal("")),
   role: userRoleSchema.default("student"),
 });
 

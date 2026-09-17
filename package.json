@@ -36,6 +36,9 @@
     "test:media-inventory": "tsx scripts/test-media-inventory-extract.ts",
     "test:media-migrate-plan": "tsx scripts/test-media-migrate-plan.ts",
     "test:media-rewrite": "tsx scripts/test-media-rewrite.ts",
+    "test:video-embed": "tsx scripts/test-video-embed.ts",
+    "test:lesson-preview": "tsx scripts/test-lesson-preview.ts",
+    "test:curriculum-dnd": "tsx scripts/test-curriculum-dnd.ts",
     "auth:verify-email": "node scripts/verify-user-email.mjs"
   },
   "dependencies": {

@@ -59,6 +59,7 @@ export function ContentEditor({
   const sectionId = selected.sectionId;
   return (
     <LessonEditor
+      key={`${data.course.id}:${selected.id}`}
       courseId={data.course.id}
       lessonId={selected.id}
       moduleId={sectionId}

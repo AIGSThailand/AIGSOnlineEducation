@@ -1,4 +1,4 @@
-# Lint and production build on pull requests and pushes to develop/main.
+# Lint, tests, and production build on pull requests and pushes to develop/main.
 
 name: CI
 
@@ -12,20 +12,20 @@ on:
       - develop
       - main
 
+env:
+  # Placeholders — satisfy lib/env validation in CI only (not real credentials)
+  APP_ENV: staging
+  NEXT_PUBLIC_APP_URL: http://localhost:3000
+  NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: sb_publishable_placeholder_for_ci_only
+  SUPABASE_SERVICE_ROLE_KEY: sb_secret_placeholder_for_ci_only
+  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: pk_test_placeholder
+  STRIPE_SECRET_KEY: sk_test_placeholder
+  STRIPE_WEBHOOK_SECRET: whsec_placeholder
+
 jobs:
   lint-and-build:
     runs-on: ubuntu-latest
-    env:
-      # Placeholders — satisfy lib/env validation in CI only (not real credentials)
-      APP_ENV: staging
-      NEXT_PUBLIC_APP_URL: http://localhost:3000
-      NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: sb_publishable_placeholder_for_ci_only
-      SUPABASE_SERVICE_ROLE_KEY: sb_secret_placeholder_for_ci_only
-      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: pk_test_placeholder
-      STRIPE_SECRET_KEY: sk_test_placeholder
-      STRIPE_WEBHOOK_SECRET: whsec_placeholder
-
     steps:
       - uses: actions/checkout@v4
 
@@ -37,3 +37,25 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run build
+
+  unit-scripts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - run: npm ci
+      - run: npm run test:lesson-editor-schema
+      - run: npm run test:learndash-parse
+      - run: npm run test:learndash-transform
+      - run: npm run test:learndash-questions
+      - run: npm run test:media-inventory
+      - run: npm run test:media-migrate-plan
+      - run: npm run test:media-rewrite
+      - run: npm run test:video-embed
+      - run: npm run test:lesson-preview
+      - run: npm run test:curriculum-dnd

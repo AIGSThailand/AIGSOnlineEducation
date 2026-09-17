@@ -64,6 +64,7 @@ export function guessKindFromField(
   if (MEDIA_EXT_RE.test(url) && /\.(mp4|webm|mov|m4v|avi|mkv|pdf|zip|mp3|wav|ogg|vtt|srt)(?:$|[?#])/i.test(url)) {
     return "attachment";
   }
+  if (table === "courses" && field === "description") return "promo";
   if (f.includes("content") || f.includes("description") || f.includes("question")) {
     return "lesson-image";
   }

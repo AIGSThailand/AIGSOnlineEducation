@@ -83,6 +83,14 @@ export default async function PublicBundlePage({ params, searchParams }: PagePro
             <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
               {group.name}
             </h1>
+            {group.thumbnailUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={group.thumbnailUrl}
+                alt=""
+                className="mt-6 aspect-[16/9] w-full rounded-lg object-cover"
+              />
+            ) : null}
             <RichContent
               html={group.description}
               className="mt-4 text-base"

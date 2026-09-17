@@ -50,7 +50,12 @@ export function CourseBuilder({
   const pathname = usePathname();
   const [, startTransition] = useTransition();
   const [selected, setSelected] = useState<SelectedItem>(initialSelection);
-  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  const [editorSaveStatus, setEditorSaveStatus] = useState<SaveStatus>("idle");
+  const [settingsSaveStatus, setSettingsSaveStatus] = useState<SaveStatus>("idle");
+  const saveStatus = (["error", "saving", "unsaved", "saved", "idle"] as SaveStatus[])
+    .find((status) => status === editorSaveStatus || status === settingsSaveStatus) || "idle";
+  const saveBlocked = ["error", "saving", "unsaved"].includes(saveStatus);
+  const [navigationNotice, setNavigationNotice] = useState("");
   const [saveSignal, setSaveSignal] = useState(0);
   const [structureOpen, setStructureOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -78,6 +83,12 @@ export function CourseBuilder({
 
   const syncSelectionToUrl = useCallback(
     (item: SelectedItem) => {
+      if (["error", "saving", "unsaved"].includes(editorSaveStatus)) {
+        setNavigationNotice("Save this editor’s changes successfully before switching items. If saving failed, retry using Save.");
+        return;
+      }
+      setNavigationNotice("");
+      setEditorSaveStatus("idle");
       const params = builderSelectionToSearchParams(item);
       const qs = params.toString();
       const next = qs ? `${pathname}?${qs}` : pathname;
@@ -91,7 +102,7 @@ export function CourseBuilder({
       setSelected(item);
       syncSelectionToUrl(item);
     },
-    [syncSelectionToUrl]
+    [syncSelectionToUrl, editorSaveStatus]
   );
 
   const toggleSection = (sectionId: string) => {
@@ -288,10 +299,11 @@ export function CourseBuilder({
 
         <main className="min-w-0 flex-1 overflow-y-auto p-6 lg:p-8">
           <div className="mx-auto max-w-3xl">
+            {navigationNotice && <p role="alert" className="mb-4 rounded-md bg-amber-50 p-3 text-sm text-amber-900">{navigationNotice}</p>}
             <ContentEditor
               data={data}
               selected={selected}
-              onSaveStatusChange={setSaveStatus}
+              onSaveStatusChange={setEditorSaveStatus}
               saveSignal={saveSignal}
             />
           </div>
@@ -304,7 +316,7 @@ export function CourseBuilder({
               instructors={data.instructors}
               isAdmin={isAdmin}
               permissions={data.permissions}
-              onSaveStatusChange={setSaveStatus}
+              onSaveStatusChange={setSettingsSaveStatus}
               onPublish={() => setPublishOpen(true)}
               onArchive={() => setArchiveOpen(true)}
             />
@@ -328,7 +340,7 @@ export function CourseBuilder({
           instructors={data.instructors}
           isAdmin={isAdmin}
           permissions={data.permissions}
-          onSaveStatusChange={setSaveStatus}
+          onSaveStatusChange={setSettingsSaveStatus}
           onPublish={() => {
             setSettingsOpen(false);
             setPublishOpen(true);
@@ -340,7 +352,11 @@ export function CourseBuilder({
         />
       </Sheet>
 
-      <PublishDialog open={publishOpen} onOpenChange={setPublishOpen} courseId={data.course.id} />
+      <PublishDialog open={publishOpen} onOpenChange={setPublishOpen} courseId={data.course.id} saveBlocked={saveBlocked}
+        onFix={(target) => {
+          if (target.type === "course" || !target.id) handleSelect({ type: "course" });
+          else handleSelect({ type: target.type, id: target.id, sectionId: target.sectionId || "" });
+        }} />
       <ArchiveDialog open={archiveOpen} onOpenChange={setArchiveOpen} courseId={data.course.id} />
 
       <DeleteItemDialog

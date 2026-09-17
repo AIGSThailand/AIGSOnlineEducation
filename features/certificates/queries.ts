@@ -8,6 +8,7 @@ import type {
   EarnedCertificateListItem,
 } from "./types";
 import { asTemplateData } from "./template-data";
+import { resolveCertificateCourseTitle } from "./format-course-title";
 
 function displayName(first: string | null | undefined, last: string | null | undefined) {
   const name = [first, last].filter(Boolean).join(" ").trim();
@@ -33,6 +34,11 @@ type RuleRow = {
   course: { id: string; title: string } | { id: string; title: string }[] | null;
 };
 
+type CourseTitleRow = {
+  title: string;
+  certificate_title?: string | null;
+};
+
 type EarnedRow = {
   id: string;
   certificate_template_id: string;
@@ -46,7 +52,7 @@ type EarnedRow = {
     | { title: string; template_data?: Json }
     | { title: string; template_data?: Json }[]
     | null;
-  course: { title: string } | { title: string }[] | null;
+  course: CourseTitleRow | CourseTitleRow[] | null;
   student:
     | { email: string; first_name: string | null; last_name: string | null }
     | { email: string; first_name: string | null; last_name: string | null }[]
@@ -79,7 +85,7 @@ function mapEarned(row: EarnedRow): EarnedCertificateListItem {
     studentName: displayName(student?.first_name, student?.last_name),
     studentEmail: student?.email ?? null,
     courseId: row.course_id,
-    courseTitle: course?.title ?? null,
+    courseTitle: course ? resolveCertificateCourseTitle(course) : null,
     earnedAt: row.earned_at,
     verificationCode: row.verification_code,
     pdfUrl: row.pdf_url,
@@ -162,7 +168,7 @@ export async function listEarnedCertificatesForAdmin(
       `
       *,
       template:certificate_templates(title, template_data),
-      course:courses(title),
+      course:courses(title, certificate_title),
       student:profiles!earned_certificates_student_id_fkey(email, first_name, last_name)
     `
     )
@@ -184,7 +190,7 @@ export async function listMyEarnedCertificates(
       `
       *,
       template:certificate_templates(title, template_data),
-      course:courses(title),
+      course:courses(title, certificate_title),
       student:profiles!earned_certificates_student_id_fkey(email, first_name, last_name)
     `
     )
@@ -220,7 +226,7 @@ export async function getEarnedCertificateById(
       `
       *,
       template:certificate_templates(title, template_data),
-      course:courses(title),
+      course:courses(title, certificate_title),
       student:profiles!earned_certificates_student_id_fkey(email, first_name, last_name)
     `
     )
@@ -242,7 +248,7 @@ export async function getEarnedCertificateByVerificationCode(
       `
       *,
       template:certificate_templates(title, template_data),
-      course:courses(title),
+      course:courses(title, certificate_title),
       student:profiles!earned_certificates_student_id_fkey(email, first_name, last_name)
     `
     )

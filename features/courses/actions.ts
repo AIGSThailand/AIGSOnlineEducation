@@ -20,6 +20,8 @@ import { slugExists } from "@/features/courses/queries";
 import type { ActionResult, BuilderPortal } from "@/features/courses/types";
 import type { Database } from "@/types/database.types";
 import { slugifyTitle } from "@/features/courses/builder/ordering";
+import { loadPublishReadiness } from "./publish-readiness";
+import type { PublishReport } from "./publish-checks";
 
 type CourseInsert = Database["public"]["Tables"]["courses"]["Insert"];
 
@@ -124,6 +126,9 @@ export async function updateCourseAction(input: unknown): Promise<ActionResult> 
   if (fields.slug !== undefined) updatePayload.slug = fields.slug;
   if (fields.description !== undefined) updatePayload.description = fields.description;
   if (fields.excerpt !== undefined) updatePayload.excerpt = fields.excerpt || null;
+  if (fields.certificateTitle !== undefined) {
+    updatePayload.certificate_title = fields.certificateTitle || null;
+  }
   if (fields.thumbnailUrl !== undefined) updatePayload.thumbnail_url = fields.thumbnailUrl || null;
   if (fields.promotionalVideoUrl !== undefined) {
     updatePayload.promotional_video_url = fields.promotionalVideoUrl || null;
@@ -214,41 +219,21 @@ export async function updateStripeMappingAction(input: unknown): Promise<ActionR
 
 export async function validateCourseForPublish(
   courseId: string
-): Promise<{ valid: boolean; errors: string[] }> {
-  const supabase = await createClient();
-  const errors: string[] = [];
-
-  const { data: course } = await supabase
-    .from("courses")
-    .select("title, slug")
-    .eq("id", courseId)
-    .maybeSingle<{ title: string; slug: string }>();
-
-  if (!course?.title?.trim()) errors.push("Course title is required.");
-  if (!course?.slug?.trim()) errors.push("Course slug is required.");
-
-  const { count: moduleCount } = await supabase
-    .from("modules")
-    .select("id", { count: "exact", head: true })
-    .eq("course_id", courseId);
-
-  const { count: lessonCount } = await supabase
-    .from("lessons")
-    .select("id", { count: "exact", head: true })
-    .eq("course_id", courseId);
-
-  if ((moduleCount ?? 0) === 0) errors.push("Add at least one module.");
-  if ((lessonCount ?? 0) === 0) errors.push("Add at least one lesson.");
-
-  return { valid: errors.length === 0, errors };
+): Promise<PublishReport> {
+  if (!(await canManageCourse(courseId))) return { valid: false, errors: ["Unauthorized."], issues: [] };
+  try { return await loadPublishReadiness(courseId); }
+  catch (error) {
+    const message = error instanceof Error ? error.message : "Could not check publishing requirements. Retry.";
+    return { valid: false, errors: [message], issues: [{ severity: "error", message, target: { type: "course" } }] };
+  }
 }
 
 export async function getPublishValidationAction(
   courseId: string
-): Promise<ActionResult<{ errors: string[] }>> {
+): Promise<ActionResult<PublishReport>> {
   if (!(await canManageCourse(courseId))) {
     return { success: false, error: "Unauthorized." };
   }
   const result = await validateCourseForPublish(courseId);
-  return { success: true, data: { errors: result.errors } };
+  return { success: true, data: result };
 }

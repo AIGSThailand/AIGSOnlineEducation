@@ -70,9 +70,9 @@ export function Sidebar({ role }: SidebarProps) {
   const items = roleNavItems[role] || roleNavItems.student;
 
   return (
-    <aside className="hidden w-64 flex-col border-r border-slate-200 bg-white md:flex dark:border-slate-800 dark:bg-slate-900">
+    <aside className="hidden min-h-0 w-64 shrink-0 flex-col overflow-hidden border-r border-slate-200 bg-white md:flex dark:border-slate-800 dark:bg-slate-900">
       {/* Brand Logo */}
-      <div className="flex h-16 items-center border-b border-slate-200 px-6 dark:border-slate-800">
+      <div className="flex h-16 shrink-0 items-center border-b border-slate-200 px-6 dark:border-slate-800">
         <Link href="/" className="flex items-center space-x-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-lg font-bold text-white">
             A
@@ -82,7 +82,7 @@ export function Sidebar({ role }: SidebarProps) {
       </div>
 
       {/* Navigation Links */}
-      <div className="flex flex-1 flex-col justify-between overflow-y-auto px-3 py-4">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-4">
         <nav className="space-y-1">
           <div className="px-3 pb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
             {role} Portal
@@ -113,12 +113,11 @@ export function Sidebar({ role }: SidebarProps) {
             );
           })}
         </nav>
-
-        {/* Footer info / Version */}
-        <div className="border-t border-slate-100 px-3 pt-4 dark:border-slate-800">
-          <div className="text-xs text-slate-400">AIGS Platform v0.1.0</div>
-        </div>
       </div>
+      {/* Keep version info visible while navigation scrolls on short screens. */}
+      <footer className="shrink-0 border-t border-slate-100 px-6 py-4 dark:border-slate-800">
+        <div className="text-xs text-slate-400">AIGS Platform v0.1.0</div>
+      </footer>
     </aside>
   );
 }

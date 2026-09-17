@@ -2,7 +2,6 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { UserRole } from "@/types/database.types";
 import type {
-  AdminAuditEvent,
   AdminUserListFilters,
   AdminUserListItem,
   AdminUserListResult,
@@ -179,58 +178,6 @@ export async function countAdmins(): Promise<number> {
 
   if (error) throw new Error(error.message);
   return count ?? 0;
-}
-
-export async function listRecentAdminAuditEvents(limit = 20): Promise<AdminAuditEvent[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("admin_audit_events")
-    .select(
-      `
-      id,
-      action,
-      actor_id,
-      target_user_id,
-      metadata,
-      created_at,
-      actor:profiles!admin_audit_events_actor_id_fkey(email),
-      target:profiles!admin_audit_events_target_user_id_fkey(email)
-    `
-    )
-    .order("created_at", { ascending: false })
-    .limit(limit);
-
-  if (error) {
-    // Table may not exist until migration is applied.
-    console.error("[listRecentAdminAuditEvents]", error.message);
-    return [];
-  }
-
-  type Row = {
-    id: string;
-    action: string;
-    actor_id: string | null;
-    target_user_id: string | null;
-    metadata: Record<string, unknown> | null;
-    created_at: string;
-    actor: { email: string } | { email: string }[] | null;
-    target: { email: string } | { email: string }[] | null;
-  };
-
-  return ((data as unknown as Row[] | null) || []).map((row) => {
-    const actor = Array.isArray(row.actor) ? row.actor[0] : row.actor;
-    const target = Array.isArray(row.target) ? row.target[0] : row.target;
-    return {
-      id: row.id,
-      action: row.action,
-      actorId: row.actor_id,
-      actorEmail: actor?.email ?? null,
-      targetUserId: row.target_user_id,
-      targetEmail: target?.email ?? null,
-      metadata: row.metadata || {},
-      createdAt: row.created_at,
-    };
-  });
 }
 
 export async function listUserAuthActivity(

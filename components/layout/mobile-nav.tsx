@@ -78,7 +78,7 @@ export function MobileNav({ role }: MobileNavProps) {
       </button>
 
       {isOpen && (
-        <div className="fixed inset-x-0 top-16 z-50 border-b border-slate-200 bg-white p-4 shadow-lg dark:border-slate-800 dark:bg-slate-900">
+        <div className="fixed inset-x-0 top-16 z-50 max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain border-b border-slate-200 bg-white p-4 shadow-lg dark:border-slate-800 dark:bg-slate-900">
           <nav className="space-y-1">
             {navItems.map((item) => {
               const isActive = pathname === item.href;

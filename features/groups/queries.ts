@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { GroupDetail, GroupListItem, GroupMemberRow } from "./types";
+import { decodeHtmlEntities } from "@/lib/utils/wordpress-content";
+import type { GroupDetail, GroupListItem, GroupMemberRow, PublicBundleCatalogItem } from "./types";
 
 type GroupRow = {
   id: string;
@@ -8,6 +9,7 @@ type GroupRow = {
   slug: string;
   description: string | null;
   status: "active" | "archived";
+  thumbnail_url: string | null;
   stripe_product_id: string | null;
   stripe_price_id: string | null;
   wordpress_group_id: number | null;
@@ -19,7 +21,7 @@ export async function listGroupsForAdmin(): Promise<GroupListItem[]> {
   const { data, error } = await supabase
     .from("groups")
     .select(
-      "id, name, slug, description, status, stripe_product_id, stripe_price_id, wordpress_group_id, updated_at"
+      "id, name, slug, description, status, thumbnail_url, stripe_product_id, stripe_price_id, wordpress_group_id, updated_at"
     )
     .order("updated_at", { ascending: false })
     .returns<GroupRow[]>();
@@ -46,10 +48,11 @@ export async function listGroupsForAdmin(): Promise<GroupListItem[]> {
 
   return groups.map((g) => ({
     id: g.id,
-    name: g.name,
+    name: decodeHtmlEntities(g.name),
     slug: g.slug,
     description: g.description,
     status: g.status,
+    thumbnailUrl: g.thumbnail_url,
     stripeProductId: g.stripe_product_id,
     stripePriceId: g.stripe_price_id,
     wordpressGroupId: g.wordpress_group_id,
@@ -64,7 +67,7 @@ export async function getGroupDetail(groupId: string): Promise<GroupDetail | nul
   const { data: group, error } = await supabase
     .from("groups")
     .select(
-      "id, name, slug, description, status, stripe_product_id, stripe_price_id, wordpress_group_id, updated_at"
+      "id, name, slug, description, status, thumbnail_url, stripe_product_id, stripe_price_id, wordpress_group_id, updated_at"
     )
     .eq("id", groupId)
     .maybeSingle<GroupRow>();
@@ -124,10 +127,11 @@ export async function getGroupDetail(groupId: string): Promise<GroupDetail | nul
 
   return {
     id: group.id,
-    name: group.name,
+    name: decodeHtmlEntities(group.name),
     slug: group.slug,
     description: group.description,
     status: group.status,
+    thumbnailUrl: group.thumbnail_url,
     stripeProductId: group.stripe_product_id,
     stripePriceId: group.stripe_price_id,
     wordpressGroupId: group.wordpress_group_id,
@@ -155,7 +159,7 @@ export async function getPublicGroupBundle(groupId: string): Promise<GroupDetail
   const { data: group, error } = await supabase
     .from("groups")
     .select(
-      "id, name, slug, description, status, stripe_product_id, stripe_price_id, wordpress_group_id, updated_at"
+      "id, name, slug, description, status, thumbnail_url, stripe_product_id, stripe_price_id, wordpress_group_id, updated_at"
     )
     .eq("id", groupId)
     .eq("status", "active")
@@ -166,6 +170,65 @@ export async function getPublicGroupBundle(groupId: string): Promise<GroupDetail
 
   const detail = await getGroupDetail(groupId);
   return detail;
+}
+
+/** Active bundles for the public /courses catalog (with at least one course). */
+export async function listPublicBundlesForCatalog(): Promise<PublicBundleCatalogItem[]> {
+  const supabase = await createClient();
+  const { data: groups, error } = await supabase
+    .from("groups")
+    .select("id, name, description, thumbnail_url, stripe_price_id, updated_at")
+    .eq("status", "active")
+    .order("updated_at", { ascending: false })
+    .returns<
+      {
+        id: string;
+        name: string;
+        description: string | null;
+        thumbnail_url: string | null;
+        stripe_price_id: string | null;
+        updated_at: string;
+      }[]
+    >();
+
+  if (error) throw new Error(error.message);
+  const rows = groups || [];
+  if (rows.length === 0) return [];
+
+  const ids = rows.map((g) => g.id);
+  const { data: courseLinks } = await supabase
+    .from("group_courses")
+    .select("group_id")
+    .in("group_id", ids);
+
+  const courseCount = new Map<string, number>();
+  for (const row of (courseLinks as { group_id: string }[] | null) || []) {
+    courseCount.set(row.group_id, (courseCount.get(row.group_id) || 0) + 1);
+  }
+
+  return rows
+    .map((g) => ({
+      id: g.id,
+      name: decodeHtmlEntities(g.name),
+      description: g.description,
+      thumbnailUrl: g.thumbnail_url,
+      courseCount: courseCount.get(g.id) || 0,
+      stripePriceId: g.stripe_price_id,
+      updatedAt: g.updated_at,
+    }))
+    .filter((g) => g.courseCount > 0);
+}
+
+export async function listOwnedGroupIdsForUser(userId: string): Promise<string[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("group_users")
+    .select("group_id")
+    .eq("user_id", userId)
+    .returns<{ group_id: string }[]>();
+
+  if (error) throw new Error(error.message);
+  return (data || []).map((r) => r.group_id);
 }
 
 /** Service-role: course IDs attached to a group (for Stripe fulfillment). */

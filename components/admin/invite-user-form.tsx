@@ -12,8 +12,6 @@ import type { UserRole } from "@/types/database.types";
 export function InviteUserForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
   const [role, setRole] = useState<UserRole>("student");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -24,15 +22,13 @@ export function InviteUserForm() {
     setMessage(null);
     setError(null);
     startTransition(async () => {
-      const result = await inviteUserAction({ email, firstName, lastName, role });
+      const result = await inviteUserAction({ email, role });
       if (!result.success) {
         setError(result.error);
         return;
       }
       setMessage(`Invite sent to ${email}.`);
       setEmail("");
-      setFirstName("");
-      setLastName("");
       setRole("student");
       router.refresh();
     });
@@ -62,18 +58,6 @@ export function InviteUserForm() {
           />
         </div>
         <div>
-          <Label htmlFor="invite-first">First name</Label>
-          <Input
-            id="invite-first"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-          />
-        </div>
-        <div>
-          <Label htmlFor="invite-last">Last name</Label>
-          <Input id="invite-last" value={lastName} onChange={(e) => setLastName(e.target.value)} />
-        </div>
-        <div>
           <Label htmlFor="invite-role">Role</Label>
           <Select
             id="invite-role"
@@ -85,8 +69,8 @@ export function InviteUserForm() {
             <option value="admin">Admin</option>
           </Select>
         </div>
-        <div className="flex items-end sm:col-span-2 lg:col-span-3">
-          <Button type="submit" disabled={isPending}>
+        <div className="flex items-end">
+          <Button type="submit" disabled={isPending} className="w-full">
             {isPending ? "Sending…" : "Send invite"}
           </Button>
         </div>

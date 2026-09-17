@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { authorizeMediaRead } from "@/features/media/access";
+import { authorizeGroupMediaRead, authorizeMediaRead } from "@/features/media/access";
+import { getPublicLessonPreview } from "@/features/lessons/preview";
+import { previewMediaKeys } from "@/features/lessons/preview-media";
 import {
   createPresignedDownload,
   getS3MediaConfig,
@@ -15,6 +17,7 @@ export const dynamic = "force-dynamic";
  *
  * - Protected kinds (lesson-image, attachment): require canAccessCourse / canManageCourse
  * - Catalog kinds (thumbnail, promo): published course OR course access
+ * - Group thumbnails: active bundle catalog OR admin
  *
  * Prefer 302 redirect so <img src="/api/media/file?key=..."> works in lesson HTML.
  * Pass `?redirect=0` to receive JSON `{ downloadUrl, expiresIn }` instead.
@@ -44,7 +47,21 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, error: "Invalid media key." }, { status: 400 });
     }
 
-    const allowed = await authorizeMediaRead(parsed.courseId, parsed.kind);
+    let allowed = false;
+    if (parsed.scope === "group") {
+      allowed = await authorizeGroupMediaRead(parsed.groupId);
+    } else {
+      allowed = await authorizeMediaRead(parsed.courseId, parsed.kind, key);
+      if (!allowed) {
+        const previewCourseId = request.nextUrl.searchParams.get("previewCourseId");
+        const previewLessonId = request.nextUrl.searchParams.get("previewLessonId");
+        if (previewCourseId && previewLessonId) {
+          const preview = await getPublicLessonPreview(previewCourseId, previewLessonId);
+          allowed =
+            !!preview && previewMediaKeys(preview, [previewCourseId, preview.media_course_id]).has(key);
+        }
+      }
+    }
     if (!allowed) {
       return NextResponse.json(
         { success: false, error: "You do not have access to this media." },

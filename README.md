@@ -108,6 +108,7 @@ Validated at runtime via `lib/env/` (Zod + Stripe/Supabase environment guards).
 - [docs/vercel-staging-setup.md](./docs/vercel-staging-setup.md) — staging domain + Vercel env vars
 - [docs/github-actions.md](./docs/github-actions.md) — CI and Supabase migration deploy
 - [docs/database-migrations.md](./docs/database-migrations.md) — migration promotion
+- [docs/design-system-figma.md](./docs/design-system-figma.md) — Figma Variables, tokens, Code Connect
 
 ---
 

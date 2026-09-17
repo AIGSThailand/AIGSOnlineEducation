@@ -3,7 +3,6 @@ import { requireAdmin } from "@/features/courses/permissions";
 import { getCurrentUser } from "@/lib/auth/permissions";
 import {
   listCoursesForInstructorAssignment,
-  listRecentAdminAuditEvents,
   listUsersForAdmin,
 } from "@/features/users/queries";
 import { adminUserListQuerySchema } from "@/features/users/schema";
@@ -11,7 +10,6 @@ import { UserRoleSelect } from "@/components/admin/user-role-select";
 import { UserAccountActions } from "@/components/admin/user-account-actions";
 import { InviteUserForm } from "@/components/admin/invite-user-form";
 import { InstructorCoursesEditor } from "@/components/admin/instructor-courses-editor";
-import { AdminAuditFeed } from "@/components/admin/admin-audit-feed";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -61,14 +59,13 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
     ? parsed.data
     : { q: undefined, role: "all" as const, page: 1 };
 
-  const [result, allCourses, auditEvents] = await Promise.all([
+  const [result, allCourses] = await Promise.all([
     listUsersForAdmin({
       q: filters.q,
       role: (filters.role as UserRole | "all") || "all",
       page: filters.page ?? 1,
     }),
     listCoursesForInstructorAssignment(),
-    listRecentAdminAuditEvents(15),
   ]);
 
   const roleFilter = filters.role || "all";
@@ -88,7 +85,7 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-slate-900">Users &amp; Roles</h1>
         <p className="text-sm text-slate-500">
-          Invite users, manage roles, ban accounts, and review admin + login activity
+          Invite users, manage roles, and ban accounts
         </p>
       </div>
 
@@ -120,126 +117,120 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
         </div>
       </form>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-        <div className="xl:col-span-2">
-          <Card className="overflow-hidden p-0">
-            <CardHeader className="border-b border-slate-100 p-4">
-              <CardTitle>
-                Platform accounts ({result.total})
-                <span className="ml-2 text-sm font-normal text-slate-500">
-                  Page {result.page} of {result.totalPages}
-                </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm text-slate-700">
-                  <thead className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase text-slate-500">
-                    <tr>
-                      <th className="px-4 py-3">User</th>
-                      <th className="px-4 py-3">Role</th>
-                      <th className="px-4 py-3">Status</th>
-                      <th className="px-4 py-3">Courses</th>
-                      <th className="px-4 py-3">Last sign-in</th>
-                      <th className="px-4 py-3">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {result.users.length > 0 ? (
-                      result.users.map((u) => {
-                        const isSelf = current?.id === u.id;
-                        const isBanned = !!(
-                          u.bannedUntil && new Date(u.bannedUntil).getTime() > Date.now()
-                        );
-                        const canAssignCourses = u.role === "instructor" || u.role === "admin";
-                        return (
-                          <tr key={u.id} className="align-top hover:bg-slate-50/50">
-                            <td className="px-4 py-4">
-                              <div className="font-semibold text-slate-900">
-                                {`${u.firstName || ""} ${u.lastName || ""}`.trim() || "—"}
-                                {isSelf ? (
-                                  <span className="ml-2 text-xs font-medium text-brand-600">
-                                    You
-                                  </span>
-                                ) : null}
-                              </div>
-                              <div className="text-xs text-slate-500">{u.email}</div>
-                              <div className="mt-1 text-xs text-slate-400">
-                                Joined {formatDate(u.createdAt)}
-                                {u.wordpressUserId != null ? ` · WP ${u.wordpressUserId}` : ""}
-                              </div>
-                            </td>
-                            <td className="px-4 py-4">
-                              <UserRoleSelect
-                                userId={u.id}
-                                email={u.email}
-                                role={u.role}
-                                isSelf={isSelf}
-                              />
-                            </td>
-                            <td className="px-4 py-4">
-                              {emailStatusBadges(u.emailConfirmedAt, u.bannedUntil)}
-                            </td>
-                            <td className="px-4 py-4">
-                              {canAssignCourses ? (
-                                <InstructorCoursesEditor
-                                  userId={u.id}
-                                  assigned={u.instructorCourses}
-                                  allCourses={allCourses}
-                                />
-                              ) : (
-                                <span className="text-xs text-slate-400">—</span>
-                              )}
-                            </td>
-                            <td className="px-4 py-4 text-xs text-slate-500">
-                              {u.lastSignInAt ? formatDateTime(u.lastSignInAt) : "Never"}
-                            </td>
-                            <td className="px-4 py-4">
-                              <UserAccountActions
-                                userId={u.id}
-                                emailConfirmed={!!u.emailConfirmedAt}
-                                isBanned={isBanned}
-                                isSelf={isSelf}
-                              />
-                            </td>
-                          </tr>
-                        );
-                      })
-                    ) : (
-                      <tr>
-                        <td colSpan={6} className="px-6 py-8 text-center text-slate-500">
-                          No users match these filters.
+      <Card className="overflow-hidden p-0">
+        <CardHeader className="border-b border-slate-100 p-4">
+          <CardTitle>
+            Platform accounts ({result.total})
+            <span className="ml-2 text-sm font-normal text-slate-500">
+              Page {result.page} of {result.totalPages}
+            </span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm text-slate-700">
+              <thead className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase text-slate-500">
+                <tr>
+                  <th className="px-4 py-3">User</th>
+                  <th className="px-4 py-3">Role</th>
+                  <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3">Courses</th>
+                  <th className="px-4 py-3">Last sign-in</th>
+                  <th className="px-4 py-3">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {result.users.length > 0 ? (
+                  result.users.map((u) => {
+                    const isSelf = current?.id === u.id;
+                    const isBanned = !!(
+                      u.bannedUntil && new Date(u.bannedUntil).getTime() > Date.now()
+                    );
+                    const canAssignCourses = u.role === "instructor" || u.role === "admin";
+                    return (
+                      <tr key={u.id} className="align-top hover:bg-slate-50/50">
+                        <td className="px-4 py-4">
+                          <div className="font-semibold text-slate-900">
+                            {`${u.firstName || ""} ${u.lastName || ""}`.trim() || "—"}
+                            {isSelf ? (
+                              <span className="ml-2 text-xs font-medium text-brand-600">
+                                You
+                              </span>
+                            ) : null}
+                          </div>
+                          <div className="text-xs text-slate-500">{u.email}</div>
+                          <div className="mt-1 text-xs text-slate-400">
+                            Joined {formatDate(u.createdAt)}
+                            {u.wordpressUserId != null ? ` · WP ${u.wordpressUserId}` : ""}
+                          </div>
+                        </td>
+                        <td className="px-4 py-4">
+                          <UserRoleSelect
+                            userId={u.id}
+                            email={u.email}
+                            role={u.role}
+                            isSelf={isSelf}
+                          />
+                        </td>
+                        <td className="px-4 py-4">
+                          {emailStatusBadges(u.emailConfirmedAt, u.bannedUntil)}
+                        </td>
+                        <td className="px-4 py-4">
+                          {canAssignCourses ? (
+                            <InstructorCoursesEditor
+                              userId={u.id}
+                              assigned={u.instructorCourses}
+                              allCourses={allCourses}
+                            />
+                          ) : (
+                            <span className="text-xs text-slate-400">—</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-4 text-xs text-slate-500">
+                          {u.lastSignInAt ? formatDateTime(u.lastSignInAt) : "Never"}
+                        </td>
+                        <td className="px-4 py-4">
+                          <UserAccountActions
+                            userId={u.id}
+                            emailConfirmed={!!u.emailConfirmedAt}
+                            isBanned={isBanned}
+                            isSelf={isSelf}
+                          />
                         </td>
                       </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-8 text-center text-slate-500">
+                      No users match these filters.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
 
-              {result.totalPages > 1 ? (
-                <div className="flex items-center justify-between border-t border-slate-100 px-6 py-3 text-sm">
-                  {result.page > 1 ? (
-                    <Link href={pageHref(result.page - 1)} className="font-medium text-brand-600">
-                      ← Previous
-                    </Link>
-                  ) : (
-                    <span />
-                  )}
-                  {result.page < result.totalPages ? (
-                    <Link href={pageHref(result.page + 1)} className="font-medium text-brand-600">
-                      Next →
-                    </Link>
-                  ) : (
-                    <span />
-                  )}
-                </div>
-              ) : null}
-            </CardContent>
-          </Card>
-        </div>
-
-        <AdminAuditFeed events={auditEvents} />
-      </div>
+          {result.totalPages > 1 ? (
+            <div className="flex items-center justify-between border-t border-slate-100 px-6 py-3 text-sm">
+              {result.page > 1 ? (
+                <Link href={pageHref(result.page - 1)} className="font-medium text-brand-600">
+                  ← Previous
+                </Link>
+              ) : (
+                <span />
+              )}
+              {result.page < result.totalPages ? (
+                <Link href={pageHref(result.page + 1)} className="font-medium text-brand-600">
+                  Next →
+                </Link>
+              ) : (
+                <span />
+              )}
+            </div>
+          ) : null}
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -20,6 +20,7 @@ type ActionResult<T = undefined> =
 
 function revalidateGroupPaths(groupId?: string) {
   revalidatePath("/admin/groups");
+  revalidatePath("/courses");
   if (groupId) {
     revalidatePath(`/admin/groups/${groupId}`);
     revalidatePath(`/bundles/${groupId}`);
@@ -74,6 +75,9 @@ export async function updateGroupAction(input: unknown): Promise<ActionResult> {
   if (fields.slug !== undefined) updatePayload.slug = fields.slug;
   if (fields.description !== undefined) updatePayload.description = fields.description;
   if (fields.status !== undefined) updatePayload.status = fields.status;
+  if (fields.thumbnailUrl !== undefined) {
+    updatePayload.thumbnail_url = fields.thumbnailUrl || null;
+  }
   if (fields.stripeProductId !== undefined) {
     updatePayload.stripe_product_id = fields.stripeProductId || null;
   }

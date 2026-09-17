@@ -35,17 +35,6 @@ export type CourseOption = {
   status: string;
 };
 
-export type AdminAuditEvent = {
-  id: string;
-  action: string;
-  actorId: string | null;
-  actorEmail: string | null;
-  targetUserId: string | null;
-  targetEmail: string | null;
-  metadata: Record<string, unknown>;
-  createdAt: string;
-};
-
 export type UserAuthActivityEvent = {
   id: string;
   createdAt: string;

@@ -33,7 +33,8 @@ export const MEDIA_KIND_LIMITS: Record<
 };
 
 export type PresignUploadRequest = {
-  courseId: string;
+  courseId?: string;
+  groupId?: string;
   kind: MediaAssetKind;
   fileName: string;
   contentType: string;

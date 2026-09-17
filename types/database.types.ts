@@ -568,6 +568,7 @@ export interface Database {
           slug: string;
           description: string | null;
           status: GroupStatus;
+          thumbnail_url: string | null;
           stripe_product_id: string | null;
           stripe_price_id: string | null;
           wordpress_group_id: number | null;
@@ -580,6 +581,7 @@ export interface Database {
           slug: string;
           description?: string | null;
           status?: GroupStatus;
+          thumbnail_url?: string | null;
           stripe_product_id?: string | null;
           stripe_price_id?: string | null;
           wordpress_group_id?: number | null;
@@ -592,6 +594,7 @@ export interface Database {
           slug?: string;
           description?: string | null;
           status?: GroupStatus;
+          thumbnail_url?: string | null;
           stripe_product_id?: string | null;
           stripe_price_id?: string | null;
           wordpress_group_id?: number | null;
@@ -1090,6 +1093,33 @@ export interface Database {
     };
     Views: Record<string, never>;
     Functions: {
+      public_preview_lesson_ids: {
+        Args: { p_course_id: string };
+        Returns: string[];
+      };
+      get_public_lesson_preview: {
+        Args: { p_course_id: string; p_lesson_id: string };
+        Returns: Json;
+      };
+      get_lesson_preview_setting: {
+        Args: { p_course_id: string; p_lesson_id: string };
+        Returns: boolean;
+      };
+      set_lesson_preview: {
+        Args: { p_course_id: string; p_lesson_id: string; p_enabled: boolean };
+        Returns: undefined;
+      };
+      get_public_course_lessons: {
+        Args: { p_course_id: string };
+        Returns: {
+          id: string;
+          module_id: string | null;
+          title: string;
+          slug: string;
+          sort_order: number;
+          status: ContentStatus;
+        }[];
+      };
       admin_list_user_auth_events: {
         Args: { p_user_id: string; p_limit: number };
         Returns: {

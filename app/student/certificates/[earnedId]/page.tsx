@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAuth } from "@/lib/auth/permissions";
 import { getEarnedCertificateById } from "@/features/certificates/queries";
-import { CertificatePreview } from "@/components/certificates/certificate-preview";
+import { CertificateDetailView } from "@/components/certificates/certificate-detail-view";
 import { Button } from "@/components/ui/button";
 
 interface PageProps {
@@ -43,7 +43,8 @@ export default async function StudentCertificateDetailPage({ params }: PageProps
         </div>
       </div>
 
-      <CertificatePreview
+      <CertificateDetailView
+        pdfUrl={item.pdfUrl}
         studentName={studentName}
         courseTitle={courseTitle}
         earnedAt={item.earnedAt}

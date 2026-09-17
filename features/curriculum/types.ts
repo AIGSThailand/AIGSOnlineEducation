@@ -71,6 +71,8 @@ export interface CourseBuilderCourse {
   slug: string;
   description: string | null;
   excerpt: string | null;
+  /** Optional title used on certificates; falls back to title when null/empty. */
+  certificateTitle: string | null;
   status: CourseStatus;
   progressionType: CourseProgressionType;
   accessType: CourseAccessType;

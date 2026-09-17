@@ -16,6 +16,8 @@ import {
 } from "@/features/certificates/actions";
 import { formatCertificateDate } from "@/features/certificates/format";
 import {
+  CERTIFICATE_CONTENT_INSET_PERCENT,
+  CERTIFICATE_OVERLAY_LINE_HEIGHT,
   mergeCertificateLayout,
   resolveCertificateBackgroundUrl,
 } from "@/features/certificates/layout";
@@ -25,6 +27,7 @@ import type {
 } from "@/features/certificates/types";
 import { uploadCertificateBackground } from "@/features/certificates/upload-client";
 import { isMediaUploadAvailable } from "@/features/media/upload-client";
+import { useCertificateCanvasScale } from "./use-certificate-canvas-scale";
 
 const trirong = Trirong({
   subsets: ["latin", "latin-ext", "thai"],
@@ -51,6 +54,9 @@ export function CertificateTemplateForm({ mode }: { mode: Mode }) {
   const initial = mergeCertificateLayout(t?.templateData);
   const backgroundInputId = useId();
   const backgroundInputRef = useRef<HTMLInputElement>(null);
+  const livePreviewRef = useRef<HTMLDivElement>(null);
+  const previewScale = useCertificateCanvasScale(livePreviewRef);
+  const previewInset = `${CERTIFICATE_CONTENT_INSET_PERCENT}%`;
 
   const [title, setTitle] = useState(t?.title || "");
   const [slug, setSlug] = useState(t?.slug || "");
@@ -508,7 +514,11 @@ export function CertificateTemplateForm({ mode }: { mode: Mode }) {
 
       <div>
         <h3 className="mb-2 text-sm font-semibold text-slate-900">Live preview</h3>
+        <p className="mb-2 text-xs text-slate-500">
+          Fonts scale to match PDF A4 landscape — positions should match regenerated PDFs.
+        </p>
         <div
+          ref={livePreviewRef}
           className="relative mx-auto aspect-[1.414/1] w-full max-w-3xl overflow-hidden rounded-lg border border-slate-200 shadow-sm"
           style={{
             backgroundImage: `url(${previewBackgroundUrl})`,
@@ -516,13 +526,15 @@ export function CertificateTemplateForm({ mode }: { mode: Mode }) {
           }}
         >
           <p
-            className={`absolute left-[14%] right-[14%] text-center text-slate-900 ${
+            className={`absolute text-center text-slate-900 ${
               nameFont === "trirong" ? trirong.className : ""
             }`}
             style={{
+              left: previewInset,
+              right: previewInset,
               top: `${nameYPercent}%`,
-              fontSize: nameFontSize,
-              lineHeight: 1.1,
+              fontSize: nameFontSize * previewScale,
+              lineHeight: CERTIFICATE_OVERLAY_LINE_HEIGHT,
               fontFamily: fieldFontFamily(nameFont),
             }}
           >
@@ -530,13 +542,15 @@ export function CertificateTemplateForm({ mode }: { mode: Mode }) {
           </p>
           {showCourseTitle && (
             <p
-              className={`absolute left-[14%] right-[14%] text-center text-slate-900 ${
+              className={`absolute text-center text-slate-900 ${
                 courseFont === "trirong" ? trirong.className : ""
               }`}
               style={{
+                left: previewInset,
+                right: previewInset,
                 top: `${courseYPercent}%`,
-                fontSize: courseFontSize,
-                lineHeight: 1.15,
+                fontSize: courseFontSize * previewScale,
+                lineHeight: CERTIFICATE_OVERLAY_LINE_HEIGHT,
                 fontFamily: fieldFontFamily(courseFont),
               }}
             >
@@ -544,13 +558,15 @@ export function CertificateTemplateForm({ mode }: { mode: Mode }) {
             </p>
           )}
           <p
-            className={`absolute left-[14%] right-[14%] text-center text-slate-900 ${
+            className={`absolute text-center text-slate-900 ${
               dateFont === "trirong" ? trirong.className : ""
             }`}
             style={{
+              left: previewInset,
+              right: previewInset,
               top: `${dateYPercent}%`,
-              fontSize: dateFontSize,
-              lineHeight: 1.2,
+              fontSize: dateFontSize * previewScale,
+              lineHeight: CERTIFICATE_OVERLAY_LINE_HEIGHT,
               fontFamily: fieldFontFamily(dateFont),
             }}
           >
@@ -558,8 +574,14 @@ export function CertificateTemplateForm({ mode }: { mode: Mode }) {
           </p>
           {showVerification && (
             <p
-              className="absolute left-[14%] right-[14%] text-center font-mono text-[10px] text-slate-500"
-              style={{ top: `${verificationYPercent}%` }}
+              className="absolute text-center font-mono text-slate-500"
+              style={{
+                left: previewInset,
+                right: previewInset,
+                top: `${verificationYPercent}%`,
+                fontSize: 8 * previewScale,
+                lineHeight: CERTIFICATE_OVERLAY_LINE_HEIGHT,
+              }}
             >
               Verification: ABC12DEF34
             </p>

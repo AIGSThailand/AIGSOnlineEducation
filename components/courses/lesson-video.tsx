@@ -5,6 +5,7 @@ interface LessonVideoProps {
   url: string;
   title: string;
   className?: string;
+  captionsUrl?: string;
 }
 
 function looksLikeDirectFile(url: string): boolean {
@@ -19,7 +20,7 @@ function looksLikeDirectFile(url: string): boolean {
  * Direct MP4/WebM (etc.) use <video>; YouTube/Vimeo/other embeds use <iframe>.
  * Putting a file URL in an iframe typically causes a download instead of playback.
  */
-export function LessonVideo({ url, title, className }: LessonVideoProps) {
+export function LessonVideo({ url, title, className, captionsUrl }: LessonVideoProps) {
   const kind = classifyVideoUrl(url);
   const embedSrc = toEmbedSrc(url);
   const useNativeVideo = kind === "file" || (kind === "unknown" && looksLikeDirectFile(url));
@@ -36,6 +37,7 @@ export function LessonVideo({ url, title, className }: LessonVideoProps) {
           controlsList="nodownload"
           title={title}
         >
+          {captionsUrl && <track kind="captions" src={captionsUrl} label="Captions" />}
           Your browser does not support embedded video.{" "}
           <a href={url} className="underline">
             Open video

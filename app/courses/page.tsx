@@ -1,5 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth/permissions";
+import {
+  listOwnedGroupIdsForUser,
+  listPublicBundlesForCatalog,
+} from "@/features/groups/queries";
 import { PublicCatalog } from "@/components/courses/public-catalog";
 import { SectionHeader } from "@/components/public/section-header";
 import type { Database } from "@/types/database.types";
@@ -8,10 +12,11 @@ export default async function CourseCatalogPage() {
   const supabase = await createClient();
   const user = await getCurrentUser();
 
-  const { data: courses, error } = await supabase
-    .from("courses")
-    .select(
-      `
+  const [{ data: courses, error }, bundles] = await Promise.all([
+    supabase
+      .from("courses")
+      .select(
+        `
       id,
       title,
       slug,
@@ -24,17 +29,23 @@ export default async function CourseCatalogPage() {
       created_at,
       updated_at
     `
-    )
-    .eq("status", "published")
-    .order("created_at", { ascending: false });
+      )
+      .eq("status", "published")
+      .order("created_at", { ascending: false }),
+    listPublicBundlesForCatalog(),
+  ]);
 
   let enrolledCourseIds: string[] = [];
+  let ownedBundleIds: string[] = [];
   if (user) {
-    const { data: enrollments } = await supabase
-      .from("enrollments")
-      .select("course_id, expires_at")
-      .eq("student_id", user.id)
-      .eq("status", "active");
+    const [{ data: enrollments }, owned] = await Promise.all([
+      supabase
+        .from("enrollments")
+        .select("course_id, expires_at")
+        .eq("student_id", user.id)
+        .eq("status", "active"),
+      listOwnedGroupIdsForUser(user.id),
+    ]);
 
     const now = Date.now();
     const rawEnrollments =
@@ -42,6 +53,7 @@ export default async function CourseCatalogPage() {
     enrolledCourseIds = rawEnrollments
       .filter((e) => !e.expires_at || new Date(e.expires_at).getTime() > now)
       .map((e) => e.course_id);
+    ownedBundleIds = owned;
   }
 
   type CourseRow = Database["public"]["Tables"]["courses"]["Row"];
@@ -52,7 +64,7 @@ export default async function CourseCatalogPage() {
       <SectionHeader
         eyebrow="Course catalog"
         title="Explore AIGS online courses"
-        description="Browse published programs. Open a course to review the curriculum before you enroll."
+        description="Browse published courses and bundles. Open a listing to review what’s included before you enroll."
         headingLevel="h1"
       />
       {error ? (
@@ -66,7 +78,12 @@ export default async function CourseCatalogPage() {
           </p>
         </div>
       ) : (
-        <PublicCatalog courses={courseList} enrolledCourseIds={enrolledCourseIds} />
+        <PublicCatalog
+          courses={courseList}
+          bundles={bundles}
+          enrolledCourseIds={enrolledCourseIds}
+          ownedBundleIds={ownedBundleIds}
+        />
       )}
     </div>
   );

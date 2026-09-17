@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/features/courses/permissions";
 import { getEarnedCertificateById } from "@/features/certificates/queries";
-import { CertificatePreview } from "@/components/certificates/certificate-preview";
+import { CertificateDetailView } from "@/components/certificates/certificate-detail-view";
 import { RegenerateCertificateButton } from "@/components/certificates/regenerate-certificate-button";
 import { Button } from "@/components/ui/button";
 
@@ -52,7 +52,8 @@ export default async function AdminEarnedCertificatePage({ params }: PageProps) 
         </div>
       </div>
 
-      <CertificatePreview
+      <CertificateDetailView
+        pdfUrl={item.pdfUrl}
         studentName={studentName}
         courseTitle={courseTitle}
         earnedAt={item.earnedAt}

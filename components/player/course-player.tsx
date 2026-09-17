@@ -15,6 +15,7 @@ interface CoursePlayerProps {
   current: PlayerStep;
   lockedKeys: string[];
   canToggleComplete: boolean;
+  previewMode?: boolean;
   children: React.ReactNode;
 }
 
@@ -23,6 +24,7 @@ export function CoursePlayer({
   current,
   lockedKeys,
   canToggleComplete,
+  previewMode = false,
   children,
 }: CoursePlayerProps) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -57,7 +59,7 @@ export function CoursePlayer({
         <div className="fixed inset-0 z-40 lg:hidden">
           <button
             type="button"
-            className="absolute inset-0 bg-[var(--brand-dark)]/40"
+            className="bg-[var(--brand-dark)]/40 absolute inset-0"
             aria-label="Close syllabus"
             onClick={closeMenu}
           />
@@ -78,29 +80,38 @@ export function CoursePlayer({
               <List className="h-5 w-5" aria-hidden />
             </button>
 
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)]">
-                {percent}% complete
-                <span className="ml-2 font-medium normal-case tracking-normal">
-                  {completedCount}/{total} steps
-                </span>
-              </p>
-              <div
-                className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[var(--surface-muted)]"
-                role="progressbar"
-                aria-valuenow={percent}
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-label="Course progress"
-              >
-                <div
-                  className="h-full rounded-full bg-[var(--brand-primary)] transition-[width] duration-300"
-                  style={{ width: `${percent}%` }}
-                />
+            {previewMode ? (
+              <div className="min-w-0 flex-1 text-sm">
+                <p className="font-semibold text-brand-700">Free preview</p>
+                <Link href={`/courses/${player.courseId}`} className="underline">
+                  Enroll to access the full course
+                </Link>
               </div>
-            </div>
+            ) : (
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)]">
+                  {percent}% complete
+                  <span className="ml-2 font-medium normal-case tracking-normal">
+                    {completedCount}/{total} steps
+                  </span>
+                </p>
+                <div
+                  className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[var(--surface-muted)]"
+                  role="progressbar"
+                  aria-valuenow={percent}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label="Course progress"
+                >
+                  <div
+                    className="h-full rounded-full bg-[var(--brand-primary)] transition-[width] duration-300"
+                    style={{ width: `${percent}%` }}
+                  />
+                </div>
+              </div>
+            )}
 
-            {canToggleComplete ? (
+            {canToggleComplete && !previewMode ? (
               <PlayerCompleteButton
                 courseId={player.courseId}
                 current={current}
@@ -137,7 +148,7 @@ export function CoursePlayer({
                   variant={isCompleted ? "success" : "default"}
                   className="ml-1 uppercase tracking-wide"
                 >
-                  {isCompleted ? "Complete" : "In progress"}
+                  {previewMode ? "Free preview" : isCompleted ? "Complete" : "In progress"}
                 </Badge>
               </div>
               <h1 className="font-display text-2xl font-semibold tracking-tight text-[var(--text-primary)] sm:text-3xl">
@@ -148,7 +159,11 @@ export function CoursePlayer({
             {children}
 
             <div className="border-t border-[var(--border)] pt-6">
-              <PlayerNav prev={prev} next={next} nextLocked={nextLocked} />
+              <PlayerNav
+                prev={prev && !lockedSet.has(prev.key) ? prev : null}
+                next={next}
+                nextLocked={nextLocked}
+              />
               <p className="mt-5 text-center">
                 <Link
                   href={`/courses/${player.courseId}`}

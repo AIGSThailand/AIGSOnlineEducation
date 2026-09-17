@@ -1,11 +1,17 @@
+"use client";
+
+import { useRef } from "react";
 import { Trirong } from "next/font/google";
 import { formatCertificateDate } from "@/features/certificates/format";
 import {
+  CERTIFICATE_CONTENT_INSET_PERCENT,
+  CERTIFICATE_OVERLAY_LINE_HEIGHT,
   mergeCertificateLayout,
   resolveCertificateBackgroundUrl,
 } from "@/features/certificates/layout";
 import { containsCjk } from "@/features/certificates/text-runs";
 import type { CertificateTemplateData } from "@/features/certificates/types";
+import { useCertificateCanvasScale } from "./use-certificate-canvas-scale";
 
 const trirong = Trirong({
   subsets: ["latin", "latin-ext", "thai"],
@@ -41,12 +47,16 @@ export function CertificatePreview({
   verificationCode: string;
   templateData?: CertificateTemplateData | null;
 }) {
+  const canvasRef = useRef<HTMLElement>(null);
+  const scale = useCertificateCanvasScale(canvasRef);
   const layout = mergeCertificateLayout(templateData);
   const completedDate = formatCertificateDate(earnedAt);
   const backgroundUrl = resolveCertificateBackgroundUrl(templateData);
+  const inset = `${CERTIFICATE_CONTENT_INSET_PERCENT}%`;
 
   return (
     <article
+      ref={canvasRef}
       className="certificate-print relative mx-auto aspect-[1.414/1] w-full overflow-hidden rounded-lg border border-slate-200 shadow-sm print:border-0 print:shadow-none"
       style={{
         backgroundImage: `url(${backgroundUrl})`,
@@ -57,14 +67,16 @@ export function CertificatePreview({
     >
       <div className="absolute inset-0">
         <p
-          className={`absolute left-[14%] right-[14%] text-center text-slate-900 ${fieldClass(
+          className={`absolute text-center text-slate-900 ${fieldClass(
             layout.nameFont,
             studentName
           )}`}
           style={{
+            left: inset,
+            right: inset,
             top: `${layout.nameYPercent}%`,
-            fontSize: layout.nameFontSize,
-            lineHeight: 1.1,
+            fontSize: layout.nameFontSize * scale,
+            lineHeight: CERTIFICATE_OVERLAY_LINE_HEIGHT,
             fontFamily: fieldFamily(layout.nameFont, studentName),
           }}
         >
@@ -72,14 +84,16 @@ export function CertificatePreview({
         </p>
         {layout.showCourseTitle && (
           <p
-            className={`absolute left-[14%] right-[14%] text-center text-slate-900 ${fieldClass(
+            className={`absolute text-center text-slate-900 ${fieldClass(
               layout.courseFont,
               courseTitle
             )}`}
             style={{
+              left: inset,
+              right: inset,
               top: `${layout.courseYPercent}%`,
-              fontSize: layout.courseFontSize,
-              lineHeight: 1.25,
+              fontSize: layout.courseFontSize * scale,
+              lineHeight: CERTIFICATE_OVERLAY_LINE_HEIGHT,
               fontFamily: fieldFamily(layout.courseFont, courseTitle),
             }}
           >
@@ -87,14 +101,16 @@ export function CertificatePreview({
           </p>
         )}
         <p
-          className={`absolute left-[14%] right-[14%] text-center text-slate-900 ${fieldClass(
+          className={`absolute text-center text-slate-900 ${fieldClass(
             layout.dateFont,
             completedDate
           )}`}
           style={{
+            left: inset,
+            right: inset,
             top: `${layout.dateYPercent}%`,
-            fontSize: layout.dateFontSize,
-            lineHeight: 1.2,
+            fontSize: layout.dateFontSize * scale,
+            lineHeight: CERTIFICATE_OVERLAY_LINE_HEIGHT,
             fontFamily: fieldFamily(layout.dateFont, completedDate),
           }}
         >
@@ -102,8 +118,14 @@ export function CertificatePreview({
         </p>
         {layout.showVerification && (
           <p
-            className="absolute left-[14%] right-[14%] text-center font-mono text-[10px] text-slate-500 sm:text-xs"
-            style={{ top: `${layout.verificationYPercent}%` }}
+            className="absolute text-center font-mono text-slate-500"
+            style={{
+              left: inset,
+              right: inset,
+              top: `${layout.verificationYPercent}%`,
+              fontSize: 8 * scale,
+              lineHeight: CERTIFICATE_OVERLAY_LINE_HEIGHT,
+            }}
           >
             Verification: {verificationCode}
           </p>

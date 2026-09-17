@@ -43,24 +43,24 @@ export function PublicHeader({
 
   const linkClass = (href: string) =>
     cn(
-      "rounded-md px-2 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:text-[var(--brand-primary)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand-primary)]",
+      "rounded-md px-2 py-2 text-sm font-medium text-white/80 transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
       (href === "/courses" && pathname.startsWith("/courses")) ||
         (href !== "/courses" && pathname === href)
-        ? "text-[var(--brand-primary)]"
+        ? "text-white"
         : null
     );
 
   return (
-    <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--surface)]/95 backdrop-blur supports-[backdrop-filter]:bg-[var(--surface)]/90">
+    <header className="sticky top-0 z-40 border-b border-white/10 bg-[var(--brand-chrome)]">
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-[var(--surface)] focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:shadow"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-[var(--brand-chrome)] focus:shadow"
       >
         Skip to content
       </a>
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-3.5 sm:px-8">
         <Link href="/" aria-label="AIGS Online Education home" className="shrink-0">
-          <BrandLogo priority />
+          <BrandLogo variant="white" priority />
         </Link>
 
         <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
@@ -77,7 +77,7 @@ export function PublicHeader({
               <Link href={dashboardHref} className={linkClass(dashboardHref)}>
                 My Learning
               </Link>
-              <PublicLinkButton href={dashboardHref} variant="primary">
+              <PublicLinkButton href={dashboardHref} variant="onChrome">
                 {userLabel || "Dashboard"}
               </PublicLinkButton>
             </>
@@ -86,7 +86,7 @@ export function PublicHeader({
               <Link href="/login" className={linkClass("/login")}>
                 Sign in
               </Link>
-              <PublicLinkButton href="/register" variant="primary">
+              <PublicLinkButton href="/register" variant="onChrome">
                 Get started
               </PublicLinkButton>
             </>
@@ -95,7 +95,7 @@ export function PublicHeader({
 
         <button
           type="button"
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-[var(--border)] text-[var(--text-primary)] md:hidden"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-white/30 text-white md:hidden"
           aria-expanded={open}
           aria-controls={panelId}
           onClick={() => setOpen((value) => !value)}
@@ -108,7 +108,7 @@ export function PublicHeader({
       {open ? (
         <div
           id={panelId}
-          className="border-t border-[var(--border)] bg-[var(--surface)] px-5 py-4 md:hidden"
+          className="border-t border-white/10 bg-[var(--brand-chrome)] px-5 py-4 md:hidden"
         >
           <nav aria-label="Mobile" className="flex flex-col gap-1">
             {NAV.map((item) => (
@@ -122,7 +122,7 @@ export function PublicHeader({
               </Link>
             ))}
             {dashboardHref ? (
-              <PublicLinkButton href={dashboardHref} className="mt-3 w-full">
+              <PublicLinkButton href={dashboardHref} variant="onChrome" className="mt-3 w-full">
                 My Learning
               </PublicLinkButton>
             ) : (
@@ -130,7 +130,7 @@ export function PublicHeader({
                 <Link href="/login" className={cn(linkClass("/login"), "px-3")} onClick={() => setOpen(false)}>
                   Sign in
                 </Link>
-                <PublicLinkButton href="/register" className="mt-3 w-full">
+                <PublicLinkButton href="/register" variant="onChrome" className="mt-3 w-full">
                   Get started
                 </PublicLinkButton>
               </>

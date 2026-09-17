@@ -15,7 +15,7 @@ export function PublicFooter() {
   const year = new Date().getUTCFullYear();
 
   return (
-    <footer className="border-t border-[var(--border)] bg-[var(--brand-dark)] text-white">
+    <footer className="border-t border-white/10 bg-[var(--brand-chrome)] text-white">
       <div className="mx-auto grid max-w-7xl gap-10 px-5 py-12 sm:px-8 sm:py-16 md:grid-cols-2 lg:grid-cols-4">
         <div className="lg:col-span-1">
           <BrandLogo variant="white" />
