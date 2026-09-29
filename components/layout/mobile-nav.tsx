@@ -73,14 +73,14 @@ export function MobileNav({ role }: MobileNavProps) {
     <div className="md:hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="rounded-md p-2 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+        className="rounded-sm p-2 text-[var(--text-primary)] hover:bg-[var(--surface-muted)]"
         aria-label="Toggle navigation menu"
       >
         {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
       </button>
 
       {isOpen && (
-        <div className="fixed inset-x-0 top-16 z-50 max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain border-b border-slate-200 bg-white p-4 shadow-lg dark:border-slate-800 dark:bg-slate-900">
+        <div className="fixed inset-x-0 top-16 z-50 max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain border-b border-[var(--border)] bg-white p-4">
           <nav className="space-y-1">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
@@ -92,13 +92,13 @@ export function MobileNav({ role }: MobileNavProps) {
                   href={item.href}
                   onClick={() => setIsOpen(false)}
                   className={cn(
-                    "flex items-center rounded-md px-3 py-2 text-sm font-medium",
+                    "flex items-center rounded-sm px-3 py-2 text-xs font-bold uppercase tracking-wide",
                     isActive
-                      ? "dark:bg-brand-950 bg-brand-50 font-semibold text-brand-700 dark:text-brand-300"
-                      : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                      ? "bg-[var(--brand-chrome)] text-white"
+                      : "text-[var(--text-secondary)] hover:bg-[var(--surface-muted)] hover:text-[var(--text-primary)]"
                   )}
                 >
-                  <Icon className="mr-3 h-5 w-5 text-brand-600" />
+                  <Icon className={cn("mr-3 h-4 w-4", isActive ? "text-white" : "text-[var(--text-secondary)]")} />
                   {item.label}
                 </Link>
               );

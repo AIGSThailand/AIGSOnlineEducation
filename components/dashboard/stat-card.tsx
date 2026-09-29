@@ -16,11 +16,9 @@ export function StatCard({ title, value, description, icon: Icon, trend }: StatC
   return (
     <Card className="flex items-center justify-between p-6">
       <div className="space-y-1">
-        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{title}</p>
-        <p className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-          {value}
-        </p>
-        {description && <p className="text-xs text-slate-500 dark:text-slate-400">{description}</p>}
+        <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--text-secondary)]">{title}</p>
+        <p className="text-3xl font-bold tracking-tight text-[var(--text-primary)]">{value}</p>
+        {description && <p className="text-xs text-[var(--text-secondary)]">{description}</p>}
         {trend && (
           <p
             className={cn(
@@ -32,8 +30,8 @@ export function StatCard({ title, value, description, icon: Icon, trend }: StatC
           </p>
         )}
       </div>
-      <div className="dark:bg-brand-950/80 flex h-12 w-12 items-center justify-center rounded-lg bg-brand-50 text-brand-600 dark:text-brand-400">
-        <Icon className="h-6 w-6" />
+      <div className="flex h-11 w-11 items-center justify-center border border-[var(--border)] text-[var(--text-secondary)]">
+        <Icon className="h-5 w-5" />
       </div>
     </Card>
   );

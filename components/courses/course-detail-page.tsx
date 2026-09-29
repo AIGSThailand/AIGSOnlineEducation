@@ -109,7 +109,7 @@ export default async function CourseDetailPage({
   return (
     <div className="mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-14">
       {visitorReview && (
-        <p role="status" className="mb-6 rounded-md bg-amber-50 p-4 text-sm text-amber-900">
+        <p role="status" className="mb-6 rounded-sm border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
           Visitor content review — course and curriculum data use anonymous permissions. Your staff
           account remains signed in. Also use a private browser window to verify media permissions
           and sign-in behavior end to end.
@@ -124,8 +124,8 @@ export default async function CourseDetailPage({
         <div
           className={
             checkoutMessage.tone === "success"
-              ? "mb-6 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900"
-              : "mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+              ? "mb-6 rounded-sm border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900"
+              : "mb-6 rounded-sm border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
           }
           role="status"
         >
@@ -134,7 +134,7 @@ export default async function CourseDetailPage({
       ) : null}
       {isPreview && (
         <div
-          className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+          className="mb-6 rounded-sm border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
           role="status"
         >
           Preview mode — you are viewing this course as an authorized builder. Draft content is
@@ -205,7 +205,7 @@ export default async function CourseDetailPage({
                     key={module.id}
                     id={`module-${module.id}`}
                     open={mIdx === 0}
-                    className="group rounded-xl border border-[var(--border)] bg-white"
+                    className="group rounded-sm border border-[var(--border)] bg-white"
                   >
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 [&::-webkit-details-marker]:hidden">
                       <span>
@@ -224,7 +224,7 @@ export default async function CourseDetailPage({
                         module.lessons.map((lesson) => (
                           <div
                             key={lesson.id}
-                            className="flex items-center justify-between gap-4 border-t border-slate-100 py-3 text-sm text-slate-700"
+                            className="flex items-center justify-between gap-4 border-t border-[var(--border)] py-3 text-sm text-[var(--text-primary)]"
                           >
                             <div className="flex items-center space-x-2">
                               <BookOpen className="h-4 w-4 shrink-0 text-slate-400" />
@@ -233,7 +233,7 @@ export default async function CourseDetailPage({
                             {hasContentAccess || previewLessonIds.has(lesson.id) ? (
                               <Link
                                 href={`/courses/${courseId}/lessons/${lesson.id}${visitorReview ? "?audience=visitor" : ""}`}
-                                className="shrink-0 rounded-full bg-brand-50 px-3 py-2 text-xs font-semibold text-brand-700 hover:bg-brand-100"
+                                className="inline-flex min-h-9 shrink-0 items-center rounded-sm border border-[var(--border-strong)] bg-white px-3 py-2 text-xs font-bold text-[var(--text-primary)] hover:bg-[var(--surface-muted)]"
                               >
                                 {hasContentAccess ? "Start →" : "Free preview →"}
                               </Link>
@@ -260,9 +260,9 @@ export default async function CourseDetailPage({
           id="enrollment"
           className="order-2 scroll-mt-28 lg:order-none lg:col-start-2 xl:sticky xl:top-28 xl:col-start-auto"
         >
-          <Card className="rounded-sm border-[var(--border)] bg-white p-5 shadow-sm sm:p-6">
+          <Card className="rounded-sm border-[var(--border)] bg-white p-5 shadow-none sm:p-6">
             {course.thumbnail_url && (
-              <div className="mb-4 aspect-video max-h-64 overflow-hidden rounded-md bg-slate-100 lg:max-h-none">
+              <div className="mb-4 aspect-video max-h-64 overflow-hidden border border-[var(--border)] bg-[var(--surface-muted)] lg:max-h-none">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={course.thumbnail_url}
@@ -299,16 +299,20 @@ export default async function CourseDetailPage({
                 </div>
               </div>
 
-              <div className="border-t border-slate-100 pt-4">
+              <div className="border-t border-[var(--border)] pt-4">
                 {hasContentAccess && firstLessonId ? (
                   <Link href={`/courses/${courseId}/lessons/${firstLessonId}`} className="block">
-                    <Button className="w-full" size="lg">
+                    <Button className="w-full rounded-sm font-bold shadow-none" size="lg">
                       {isEnrolled ? "Go to First Lesson" : "Open as staff"}
                     </Button>
                   </Link>
                 ) : hasContentAccess && canManage ? (
                   <Link href={`/admin/courses/${courseId}/edit`} className="block">
-                    <Button className="w-full" size="lg" variant="outline">
+                    <Button
+                      className="w-full rounded-sm border-[var(--border-strong)] font-bold text-[var(--text-primary)] shadow-none"
+                      size="lg"
+                      variant="outline"
+                    >
                       Open course builder
                     </Button>
                   </Link>
@@ -319,15 +323,16 @@ export default async function CourseDetailPage({
                       courseTitle={course.title}
                       priceId={course.stripe_price_id}
                       label="Enroll Now"
+                      className="w-full rounded-sm font-bold shadow-none"
                     />
                   ) : (
-                    <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                    <p className="rounded-sm border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
                       Enrollment is not open for this course yet. Please check back soon.
                     </p>
                   )
                 ) : (
                   <Link href={`/login?redirect=/courses/${courseId}`} className="block">
-                    <Button className="w-full" size="lg">
+                    <Button className="w-full rounded-sm font-bold shadow-none" size="lg">
                       Sign In to Enroll
                     </Button>
                   </Link>
@@ -336,7 +341,7 @@ export default async function CourseDetailPage({
               {!hasContentAccess && previewLessonIds.size > 0 && (
                 <a
                   href="#curriculum"
-                  className="block rounded-lg border border-brand-200 px-4 py-3 text-center text-sm font-semibold text-brand-700 hover:bg-brand-50"
+                  className="block rounded-sm border border-[var(--border-strong)] px-4 py-3 text-center text-sm font-bold text-[var(--text-primary)] hover:bg-[var(--surface-muted)]"
                 >
                   Try a free lesson first
                 </a>

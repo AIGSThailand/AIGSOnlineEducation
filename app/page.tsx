@@ -126,7 +126,7 @@ export default async function HomePage() {
         />
         {error ? (
           <div
-            className="rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] p-8"
+            className="rounded-sm border border-[var(--border)] bg-[var(--surface-muted)] p-8"
             role="status"
           >
             <h3 className="text-lg font-semibold">Course highlights are temporarily unavailable</h3>

@@ -277,7 +277,7 @@ export function PublicCatalog({
               )}
             </PublicCourseGrid>
           ) : (
-            <div className="rounded-lg border border-dashed border-[var(--border-strong)] bg-[var(--surface)] px-6 py-16 text-center">
+            <div className="rounded-sm border border-dashed border-[var(--border-strong)] bg-[var(--surface)] px-6 py-16 text-center">
               <BookOpen className="mx-auto mb-5 h-8 w-8 text-[var(--brand-primary)]" aria-hidden />
               <h2 className="text-xl font-semibold">
                 {totalCount

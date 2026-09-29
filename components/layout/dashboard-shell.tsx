@@ -12,7 +12,7 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
   const role = (user.profile?.role as UserRole) || "student";
 
   return (
-    <div className="flex h-dvh overflow-hidden bg-slate-50 dark:bg-slate-950">
+    <div className="public-site portal-shell flex h-dvh overflow-hidden">
       <Sidebar role={role} />
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <Header user={user} />

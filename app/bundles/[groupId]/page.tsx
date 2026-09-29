@@ -88,7 +88,7 @@ export default async function PublicBundlePage({ params, searchParams }: PagePro
               <img
                 src={group.thumbnailUrl}
                 alt=""
-                className="mt-6 aspect-[16/9] w-full rounded-lg object-cover"
+                className="mt-6 aspect-[16/9] w-full border border-[var(--border)] object-cover"
               />
             ) : null}
             <RichContent
@@ -108,7 +108,7 @@ export default async function PublicBundlePage({ params, searchParams }: PagePro
                   <li key={course.id}>
                     <Link
                       href={`/courses/${course.id}`}
-                      className="flex items-center justify-between rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-800 hover:border-brand-300"
+                      className="flex items-center justify-between rounded-sm border border-[var(--border)] bg-white px-4 py-3 text-sm font-medium text-[var(--text-primary)] hover:border-[var(--border-strong)]"
                     >
                       <span>{course.title}</span>
                       <span className="text-xs text-brand-600">View →</span>
@@ -125,20 +125,25 @@ export default async function PublicBundlePage({ params, searchParams }: PagePro
             <div className="space-y-3">
               <p className="text-sm font-semibold text-emerald-800">You have access to this bundle.</p>
               <Link href="/student/courses" className="block">
-                <Button className="w-full">Go to my courses</Button>
+                <Button className="w-full rounded-sm font-bold shadow-none">Go to my courses</Button>
               </Link>
             </div>
           ) : user ? (
             group.stripePriceId ? (
-              <BuyBundleButton groupId={group.id} priceId={group.stripePriceId} label="Buy bundle" />
+              <BuyBundleButton
+                groupId={group.id}
+                priceId={group.stripePriceId}
+                label="Buy bundle"
+                className="w-full rounded-sm font-bold shadow-none"
+              />
             ) : (
-              <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+              <p className="rounded-sm border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
                 This bundle is not open for purchase yet.
               </p>
             )
           ) : (
             <Link href={`/login?redirect=/bundles/${group.id}`} className="block">
-              <Button className="w-full" size="lg">
+              <Button className="w-full rounded-sm font-bold shadow-none" size="lg">
                 Sign in to buy
               </Button>
             </Link>

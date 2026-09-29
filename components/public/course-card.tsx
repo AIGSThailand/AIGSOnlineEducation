@@ -59,7 +59,7 @@ export function PublicCourseCard({ course, enrolled = false, className }: Public
   return (
     <article
       className={cn(
-        "group flex h-full flex-col overflow-hidden rounded-sm border border-[var(--border)] bg-white transition-shadow hover:border-[var(--border-strong)]",
+        "group flex h-full flex-col overflow-hidden rounded-sm border border-[var(--border)] bg-white hover:border-[var(--border-strong)]",
         className
       )}
     >
@@ -71,7 +71,7 @@ export function PublicCourseCard({ course, enrolled = false, className }: Public
             src={course.thumbnail_url}
             alt=""
             loading="lazy"
-            className="h-full w-full object-cover motion-safe:transition-transform motion-safe:duration-500 motion-safe:group-hover:scale-[1.03]"
+            className="h-full w-full object-cover"
           />
         ) : (
           <div className="flex h-full items-center justify-center">
@@ -83,7 +83,7 @@ export function PublicCourseCard({ course, enrolled = false, className }: Public
           </div>
         )}
         {badge ? (
-          <span className="absolute left-3 top-3 rounded-md bg-[var(--surface)] px-2.5 py-1 text-xs font-semibold text-[var(--brand-primary)] shadow-sm">
+          <span className="absolute left-3 top-3 border border-[var(--border)] bg-white px-2.5 py-1 text-xs font-bold text-[var(--text-primary)]">
             {badge}
           </span>
         ) : null}
@@ -123,7 +123,7 @@ export function PublicBundleCard({ bundle, owned = false, className }: PublicBun
   return (
     <article
       className={cn(
-        "group flex h-full flex-col overflow-hidden rounded-sm border border-[var(--border)] bg-white transition-shadow hover:border-[var(--border-strong)]",
+        "group flex h-full flex-col overflow-hidden rounded-sm border border-[var(--border)] bg-white hover:border-[var(--border-strong)]",
         className
       )}
     >
@@ -134,14 +134,14 @@ export function PublicBundleCard({ bundle, owned = false, className }: PublicBun
             src={bundle.thumbnailUrl}
             alt=""
             loading="lazy"
-            className="h-full w-full object-cover motion-safe:transition-transform motion-safe:duration-500 motion-safe:group-hover:scale-[1.03]"
+            className="h-full w-full object-cover"
           />
         ) : (
           <div className="flex h-full items-center justify-center">
             <Layers className="h-12 w-12 text-white/70" strokeWidth={1.25} aria-hidden />
           </div>
         )}
-        <span className="absolute left-3 top-3 rounded-md bg-[var(--surface)] px-2.5 py-1 text-xs font-semibold text-[var(--brand-chrome)] shadow-sm">
+        <span className="absolute left-3 top-3 border border-[var(--border)] bg-white px-2.5 py-1 text-xs font-bold text-[var(--text-primary)]">
           {badge}
         </span>
       </div>

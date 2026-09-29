@@ -100,7 +100,7 @@ export function HelpFaqs() {
             key={category.title}
             href={`#help-category-${index}`}
             onClick={() => setQuery("")}
-            className="flex min-h-24 items-center justify-between gap-4 border border-[var(--border)] bg-white p-6 font-bold hover:border-brand-600 hover:text-brand-700"
+            className="flex min-h-24 items-center justify-between gap-4 rounded-sm border border-[var(--border)] bg-white p-6 font-bold hover:border-[var(--border-strong)]"
           >
             {category.title}
             <ArrowRight className="h-5 w-5 shrink-0" aria-hidden />
