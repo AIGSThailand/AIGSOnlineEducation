@@ -15,11 +15,9 @@ function LoginFormFallback() {
 export default function LoginPage() {
   return (
     <div>
-      <div className="mb-6 text-center">
-        <h2 className="text-2xl font-bold tracking-tight text-slate-900">
-          Sign In to Your Account
-        </h2>
-        <p className="mt-1 text-sm text-slate-600">
+      <div className="mb-7">
+        <h1 className="text-3xl font-bold leading-tight text-[var(--text-primary)]">Sign in</h1>
+        <p className="mt-3 text-sm leading-6 text-[var(--text-secondary)]">
           Access your courses, dashboard, and learning materials
         </p>
       </div>
@@ -28,9 +26,12 @@ export default function LoginPage() {
         <LoginForm />
       </Suspense>
 
-      <div className="mt-6 text-center text-sm text-slate-600">
+      <div className="mt-7 border-t border-[var(--border)] pt-6 text-sm leading-6 text-[var(--text-secondary)]">
         Don&apos;t have an account?{" "}
-        <Link href="/register" className="font-semibold text-brand-600 hover:text-brand-500">
+        <Link
+          href="/register"
+          className="font-bold text-brand-700 underline underline-offset-4 hover:text-brand-800"
+        >
           Sign up
         </Link>
       </div>

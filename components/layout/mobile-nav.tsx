@@ -19,6 +19,7 @@ import {
   Layers,
   Megaphone,
   LifeBuoy,
+  Mail,
   Settings,
 } from "lucide-react";
 
@@ -43,6 +44,7 @@ export function MobileNav({ role }: MobileNavProps) {
         { label: "Certificates", href: "/admin/certificates", icon: Award },
         { label: "Reports", href: "/admin/reports", icon: BarChart3 },
         { label: "Settings", href: "/admin/settings", icon: Settings },
+        { label: "Email", href: "/admin/settings/email", icon: Mail },
       ],
       instructor: [
         { label: "Dashboard", href: "/instructor/dashboard", icon: LayoutDashboard },

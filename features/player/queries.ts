@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { isPlayerStepComplete } from "@/features/progress/completion";
 import {
   buildPlayerFromModules,
   buildPlayerFromSteps,
@@ -43,13 +44,7 @@ function completedKeySet(
 ): string[] {
   const keys: string[] = [];
   for (const step of flatSteps) {
-    let done = false;
-    if (step.stepId && stepProgress.has(step.stepId)) {
-      done = stepProgress.get(step.stepId) === true;
-    } else if (step.kind === "lesson") {
-      done = lessonProgress.get(step.contentId) === true;
-    }
-    if (done) keys.push(step.key);
+    if (isPlayerStepComplete(step, stepProgress, lessonProgress)) keys.push(step.key);
   }
   return keys;
 }

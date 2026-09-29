@@ -1,14 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { List, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { PlayerSidebar } from "./player-sidebar";
 import { PlayerNav } from "./player-nav";
 import { PlayerCompleteButton } from "./player-complete-button";
+import {
+  LessonSidePanels,
+  lessonSidePanelsAvailable,
+} from "./lesson-side-panels";
 import { adjacentSteps } from "@/features/player/build-player";
 import type { CoursePlayerData, PlayerStep } from "@/features/player/types";
+import type { LessonResourceItem } from "@/components/courses/lesson-resources-list";
 
 interface CoursePlayerProps {
   player: CoursePlayerData;
@@ -16,7 +21,10 @@ interface CoursePlayerProps {
   lockedKeys: string[];
   canToggleComplete: boolean;
   previewMode?: boolean;
-  children: React.ReactNode;
+  /** Optional right-rail / mobile panel data (lessons only). */
+  transcript?: string | null;
+  resources?: LessonResourceItem[];
+  children: ReactNode;
 }
 
 export function CoursePlayer({
@@ -25,9 +33,24 @@ export function CoursePlayer({
   lockedKeys,
   canToggleComplete,
   previewMode = false,
+  transcript,
+  resources,
   children,
 }: CoursePlayerProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    contentRef.current?.scrollTo({ top: 0 });
+  }, [current.key]);
+  useEffect(() => {
+    if (!menuOpen) return;
+    const close = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+    window.addEventListener("keydown", close);
+    return () => window.removeEventListener("keydown", close);
+  }, [menuOpen]);
+
   const completedSet = new Set(player.completedKeys);
   const lockedSet = new Set(lockedKeys);
   const { prev, next } = adjacentSteps(player.flatSteps, current.key);
@@ -36,6 +59,7 @@ export function CoursePlayer({
   const percent = total === 0 ? 0 : Math.round((completedCount / total) * 100);
   const isCompleted = completedSet.has(current.key);
   const nextLocked = next ? lockedSet.has(next.key) : false;
+  const showRightRail = lessonSidePanelsAvailable(transcript, resources);
 
   const closeMenu = () => setMenuOpen(false);
 
@@ -53,7 +77,9 @@ export function CoursePlayer({
 
   return (
     <div className="public-site fixed inset-0 z-50 flex bg-[var(--surface)] text-[var(--text-primary)]">
-      <aside className="hidden h-full w-[19rem] shrink-0 lg:flex">{sidebar}</aside>
+      <aside className="hidden h-full w-[19rem] shrink-0 overflow-hidden lg:flex">
+        {sidebar}
+      </aside>
 
       {menuOpen ? (
         <div className="fixed inset-0 z-40 lg:hidden">
@@ -63,13 +89,14 @@ export function CoursePlayer({
             aria-label="Close syllabus"
             onClick={closeMenu}
           />
-          <div className="relative z-50 h-full w-[19rem] max-w-[88vw] shadow-xl">{sidebar}</div>
+          <div className="relative z-50 h-full w-[19rem] max-w-[88vw] shadow-xl">
+            {sidebar}
+          </div>
         </div>
       ) : null}
 
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        {/* Top progress + Mark Complete (LearnDash-style) */}
-        <header className="border-b border-[var(--border)] bg-[var(--surface)]">
+        <header className="shrink-0 border-b border-[var(--border)] bg-white">
           <div className="flex items-center gap-3 px-3 py-2.5 sm:px-5">
             <button
               type="button"
@@ -132,48 +159,70 @@ export function CoursePlayer({
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-4xl space-y-6 px-4 py-6 sm:px-8 sm:py-8">
-            <div>
-              <div className="mb-3 flex flex-wrap items-center gap-2 text-sm text-[var(--text-secondary)]">
-                <Link
-                  href={`/courses/${player.courseId}`}
-                  className="hover:text-[var(--brand-primary)]"
-                >
-                  {player.courseTitle}
-                </Link>
-                <span aria-hidden="true">/</span>
-                <span className="text-[var(--text-primary)]">{current.title}</span>
-                <Badge
-                  variant={isCompleted ? "success" : "default"}
-                  className="ml-1 uppercase tracking-wide"
-                >
-                  {previewMode ? "Free preview" : isCompleted ? "Complete" : "In progress"}
-                </Badge>
+        <div className="flex min-h-0 flex-1 overflow-hidden">
+          <div
+            ref={contentRef}
+            className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain bg-[var(--surface-muted)]"
+          >
+            <div className="mx-auto max-w-4xl space-y-5 px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
+              <div>
+                <div className="mb-2 flex flex-wrap items-center gap-2 text-sm text-[var(--text-secondary)]">
+                  <Link
+                    href={`/courses/${player.courseId}`}
+                    className="hover:text-[var(--brand-primary)]"
+                  >
+                    {player.courseTitle}
+                  </Link>
+                  <span aria-hidden="true">/</span>
+                  <span className="text-[var(--text-primary)]">{current.title}</span>
+                  <Badge
+                    variant={isCompleted ? "success" : "default"}
+                    className="ml-1 uppercase tracking-wide"
+                  >
+                    {previewMode
+                      ? "Free preview"
+                      : isCompleted
+                        ? "Complete"
+                        : "In progress"}
+                  </Badge>
+                </div>
+                <h1 className="font-display text-2xl font-semibold tracking-tight text-[var(--text-primary)] sm:text-3xl">
+                  {current.title}
+                </h1>
               </div>
-              <h1 className="font-display text-2xl font-semibold tracking-tight text-[var(--text-primary)] sm:text-3xl">
-                {current.title}
-              </h1>
-            </div>
 
-            {children}
+              <div className="rounded-xl border border-[var(--border)] bg-white p-4 shadow-sm sm:p-6">
+                {children}
+              </div>
 
-            <div className="border-t border-[var(--border)] pt-6">
-              <PlayerNav
-                prev={prev && !lockedSet.has(prev.key) ? prev : null}
-                next={next}
-                nextLocked={nextLocked}
-              />
-              <p className="mt-5 text-center">
-                <Link
-                  href={`/courses/${player.courseId}`}
-                  className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--brand-primary)]"
-                >
-                  Back to course overview
-                </Link>
-              </p>
+              <div className="border-t border-[var(--border)] pt-5">
+                <PlayerNav
+                  prev={prev && !lockedSet.has(prev.key) ? prev : null}
+                  next={next}
+                  nextLocked={nextLocked}
+                />
+                <p className="mt-4 text-center">
+                  <Link
+                    href={`/courses/${player.courseId}`}
+                    className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--brand-primary)]"
+                  >
+                    Back to course overview
+                  </Link>
+                </p>
+              </div>
             </div>
           </div>
+
+          {showRightRail ? (
+            <div className="hidden w-[20rem] shrink-0 overflow-hidden xl:flex 2xl:w-[22rem]">
+              <LessonSidePanels
+                transcript={transcript}
+                resources={resources}
+                variant="rail"
+                className="w-full"
+              />
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

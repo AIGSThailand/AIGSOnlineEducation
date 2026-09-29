@@ -9,7 +9,12 @@ import { descriptionReferencesImage } from "./public-description";
  * Lesson/attachment assets require course content access (paid / enrolled / staff).
  */
 export function isProtectedMediaKind(kind: MediaAssetKind): boolean {
-  return kind === "lesson-image" || kind === "attachment";
+  return (
+    kind === "lesson-image" ||
+    kind === "attachment" ||
+    kind === "lesson-video" ||
+    kind === "caption"
+  );
 }
 
 export async function authorizeMediaRead(

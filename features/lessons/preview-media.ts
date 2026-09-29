@@ -5,6 +5,7 @@ type PreviewMedia = {
   content: string | null;
   video_url: string | null;
   video_captions_url: string | null;
+  video_thumbnail_url?: string | null;
 };
 const mediaAttribute = /\s(src|poster)\s*=\s*(["'])(.*?)\2/gi;
 const mediaTag = /<(img|video|source|track)\b[^>]*>/gi;
@@ -28,6 +29,7 @@ export function previewMediaKeys(preview: PreviewMedia, allowedCourseIds: string
   }
   add(preview.video_url, /\.(mp4|webm|mov|m4v)$/i);
   add(preview.video_captions_url, /\.(vtt|srt)$/i);
+  add(preview.video_thumbnail_url ?? null, /\.(png|jpg|jpeg|gif|webp|avif)$/i);
   for (const tag of Array.from(previewHtml(preview.content).matchAll(mediaTag))) {
     const extensions =
       tag[1].toLowerCase() === "img"

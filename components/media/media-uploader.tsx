@@ -69,7 +69,18 @@ export function MediaUploader({
           if (!file) return;
 
           setError(null);
-          if (!limits.accept.includes(file.type)) {
+          const resolvedType =
+            file.type ||
+            (kind === "caption" && /\.vtt$/i.test(file.name)
+              ? "text/vtt"
+              : kind === "lesson-video" && /\.mp4$/i.test(file.name)
+                ? "video/mp4"
+                : kind === "lesson-video" && /\.webm$/i.test(file.name)
+                  ? "video/webm"
+                  : kind === "lesson-video" && /\.mov$/i.test(file.name)
+                    ? "video/quicktime"
+                    : "");
+          if (!limits.accept.includes(resolvedType)) {
             setError(`Unsupported type: ${file.type || "unknown"}`);
             return;
           }
@@ -86,9 +97,13 @@ export function MediaUploader({
 
           setUploading(true);
           try {
+            const uploadFile =
+              resolvedType && resolvedType !== file.type
+                ? new File([file], file.name, { type: resolvedType })
+                : file;
             const { publicUrl } = groupId
-              ? await uploadGroupMedia({ groupId, file })
-              : await uploadCourseMedia({ courseId: courseId!, kind, file });
+              ? await uploadGroupMedia({ groupId, file: uploadFile })
+              : await uploadCourseMedia({ courseId: courseId!, kind, file: uploadFile });
             onUploaded(publicUrl);
           } catch (err) {
             setError(err instanceof Error ? err.message : "Upload failed.");

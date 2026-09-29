@@ -17,6 +17,7 @@ import {
   Layers,
   Megaphone,
   LifeBuoy,
+  Mail,
 } from "lucide-react";
 
 interface NavItem {
@@ -37,6 +38,7 @@ const roleNavItems: Record<UserRole, NavItem[]> = {
     { label: "Certificates", href: "/admin/certificates", icon: Award },
     { label: "System Reports", href: "/admin/reports", icon: BarChart3 },
     { label: "Settings", href: "/admin/settings", icon: Settings },
+    { label: "Email", href: "/admin/settings/email", icon: Mail },
   ],
   instructor: [
     { label: "Dashboard", href: "/instructor/dashboard", icon: LayoutDashboard },
@@ -88,7 +90,10 @@ export function Sidebar({ role }: SidebarProps) {
             {role} Portal
           </div>
           {items.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+            const isActive =
+              item.href === "/admin/settings"
+                ? pathname === item.href
+                : pathname === item.href || pathname.startsWith(`${item.href}/`);
             const Icon = item.icon;
 
             return (

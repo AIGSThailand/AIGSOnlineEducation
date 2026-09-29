@@ -6,6 +6,8 @@ export const mediaAssetKindSchema = z.enum([
   "lesson-image",
   "promo",
   "attachment",
+  "lesson-video",
+  "caption",
 ]);
 
 export const presignUploadSchema = z

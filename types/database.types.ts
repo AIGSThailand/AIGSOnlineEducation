@@ -648,6 +648,105 @@ export interface Database {
           updated_by?: string | null;
         };
       };
+      email_smtp_configs: {
+        Row: {
+          app_env: string;
+          host: string;
+          port: number;
+          secure: boolean;
+          username: string | null;
+          password_ciphertext: string | null;
+          from_email: string;
+          from_name: string | null;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          app_env: string;
+          host: string;
+          port: number;
+          secure?: boolean;
+          username?: string | null;
+          password_ciphertext?: string | null;
+          from_email: string;
+          from_name?: string | null;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          app_env?: string;
+          host?: string;
+          port?: number;
+          secure?: boolean;
+          username?: string | null;
+          password_ciphertext?: string | null;
+          from_email?: string;
+          from_name?: string | null;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+      };
+      email_templates: {
+        Row: {
+          app_env: string;
+          event_key: string;
+          subject: string;
+          html_body: string;
+          text_body: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          app_env: string;
+          event_key: string;
+          subject: string;
+          html_body: string;
+          text_body: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          app_env?: string;
+          event_key?: string;
+          subject?: string;
+          html_body?: string;
+          text_body?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+      };
+      email_logs: {
+        Row: {
+          id: string;
+          app_env: string;
+          event_key: string;
+          to_email: string;
+          subject: string;
+          status: string;
+          error: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          app_env: string;
+          event_key: string;
+          to_email: string;
+          subject: string;
+          status: string;
+          error?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          app_env?: string;
+          event_key?: string;
+          to_email?: string;
+          subject?: string;
+          status?: string;
+          error?: string | null;
+          created_at?: string;
+        };
+      };
       announcements: {
         Row: {
           id: string;

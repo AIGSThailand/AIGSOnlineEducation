@@ -3,14 +3,16 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BrandLogo } from "@/components/public/brand-logo";
 import { PublicLinkButton } from "@/components/public/public-button";
 
 const NAV = [
   { href: "/courses", label: "Courses" },
-  { href: "/#about-aigs", label: "About" },
+  { href: "/#about-aigs", label: "About AIGS" },
+  { href: "/help", label: "Help & FAQs" },
+  { href: "/contact", label: "Contact us" },
 ] as const;
 
 export function PublicHeader({
@@ -43,7 +45,7 @@ export function PublicHeader({
 
   const linkClass = (href: string) =>
     cn(
-      "rounded-md px-2 py-2 text-sm font-medium text-white/80 transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
+      "rounded-md px-2 py-2 text-xs font-bold uppercase tracking-wide text-white/80 transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
       (href === "/courses" && pathname.startsWith("/courses")) ||
         (href !== "/courses" && pathname === href)
         ? "text-white"
@@ -58,12 +60,35 @@ export function PublicHeader({
       >
         Skip to content
       </a>
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-3.5 sm:px-8">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-5 sm:px-8">
         <Link href="/" aria-label="AIGS Online Education home" className="shrink-0">
           <BrandLogo variant="white" priority />
         </Link>
 
-        <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
+        <form
+          action="/courses"
+          role="search"
+          className="hidden min-w-0 max-w-xs flex-1 items-center rounded-sm bg-white p-1 pl-4 lg:flex"
+        >
+          <label htmlFor="header-course-search" className="sr-only">
+            Search courses
+          </label>
+          <input
+            id="header-course-search"
+            name="q"
+            type="search"
+            placeholder="What would you like to learn?"
+            className="min-w-0 flex-1 rounded-sm bg-transparent py-2 text-sm text-slate-900 outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
+          />
+          <button
+            type="submit"
+            aria-label="Search courses"
+            className="rounded-sm bg-brand-50 p-2.5 text-brand-700 hover:bg-brand-100"
+          >
+            <Search className="h-4 w-4" />
+          </button>
+        </form>
+        <nav aria-label="Main" className="hidden items-center gap-1 lg:flex">
           {NAV.map((item) => (
             <Link key={item.href} href={item.href} className={linkClass(item.href)}>
               {item.label}
@@ -95,7 +120,7 @@ export function PublicHeader({
 
         <button
           type="button"
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-white/30 text-white md:hidden"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-white/30 text-white lg:hidden"
           aria-expanded={open}
           aria-controls={panelId}
           onClick={() => setOpen((value) => !value)}
@@ -108,7 +133,7 @@ export function PublicHeader({
       {open ? (
         <div
           id={panelId}
-          className="border-t border-white/10 bg-[var(--brand-chrome)] px-5 py-4 md:hidden"
+          className="border-t border-white/10 bg-[var(--brand-chrome)] px-5 py-4 lg:hidden"
         >
           <nav aria-label="Mobile" className="flex flex-col gap-1">
             {NAV.map((item) => (
@@ -127,7 +152,11 @@ export function PublicHeader({
               </PublicLinkButton>
             ) : (
               <>
-                <Link href="/login" className={cn(linkClass("/login"), "px-3")} onClick={() => setOpen(false)}>
+                <Link
+                  href="/login"
+                  className={cn(linkClass("/login"), "px-3")}
+                  onClick={() => setOpen(false)}
+                >
                   Sign in
                 </Link>
                 <PublicLinkButton href="/register" variant="onChrome" className="mt-3 w-full">

@@ -5,9 +5,10 @@ import { listActiveAnnouncements } from "@/features/announcements/queries";
 import { countMyEarnedCertificates } from "@/features/certificates/queries";
 import { AnnouncementsFeed } from "@/components/announcements/announcements-feed";
 import { StatCard } from "@/components/dashboard/stat-card";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardTitle } from "@/components/ui/card";
+import { ResumeLearning } from "@/components/dashboard/resume-learning";
 import { CourseCard } from "@/components/courses/course-card";
-import { BookOpen, CheckCircle, Clock, Award } from "lucide-react";
+import { BookOpen, CheckCircle, Award } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import type { CourseWithInstructors } from "@/types/lms.types";
@@ -81,14 +82,32 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
 
   const announcements = await listActiveAnnouncements(5);
   const certificateCount = user?.id ? await countMyEarnedCertificates(user.id) : 0;
+  const { data: recent } =
+    activeCourses.length && user
+      ? await supabase
+          .from("step_progress")
+          .select("course_id")
+          .eq("student_id", user.id)
+          .in(
+            "course_id",
+            activeCourses.map((course) => course.id)
+          )
+          .order("updated_at", { ascending: false })
+          .limit(1)
+          .maybeSingle<{ course_id: string }>()
+      : { data: null };
+  const resumeCourseId = recent?.course_id || activeCourses[0]?.id;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="mx-auto max-w-7xl space-y-8">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Student Dashboard</h1>
-          <p className="text-sm text-slate-500">
-            Track your ongoing courses, completed lessons, and certifications
+          <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-brand-700">
+            Your AIGS learning space
+          </p>
+          <h1 className="text-3xl font-semibold tracking-tight text-slate-900">My Learning</h1>
+          <p className="mt-2 text-sm text-slate-500">
+            Take the next step in your gemology journey.
           </p>
         </div>
         <Link href="/courses">
@@ -96,13 +115,9 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
         </Link>
       </div>
 
-      <AnnouncementsFeed
-        items={announcements}
-        listHref="/student/announcements"
-        detailBaseHref="/student/announcements"
-      />
+      {resumeCourseId && user && <ResumeLearning courseId={resumeCourseId} studentId={user.id} />}
 
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatCard
           title="Enrolled Courses"
           value={activeCourses.length}
@@ -115,7 +130,6 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
           description="Lessons finished"
           icon={CheckCircle}
         />
-        <StatCard title="Time Spent" value="—" description="Weekly study time" icon={Clock} />
         <StatCard
           title="Certificates"
           value={certificateCount}
@@ -126,7 +140,7 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
 
       <div>
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-slate-900">Continue Learning</h2>
+          <h2 className="text-xl font-semibold text-slate-900">Your courses</h2>
           <Link
             href="/student/courses"
             className="text-sm font-semibold text-brand-600 hover:text-brand-500"
@@ -153,6 +167,11 @@ export default async function StudentDashboardPage({ searchParams }: StudentDash
           </Card>
         )}
       </div>
+      <AnnouncementsFeed
+        items={announcements}
+        listHref="/student/announcements"
+        detailBaseHref="/student/announcements"
+      />
     </div>
   );
 }

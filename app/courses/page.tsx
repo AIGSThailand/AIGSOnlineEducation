@@ -1,14 +1,15 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth/permissions";
-import {
-  listOwnedGroupIdsForUser,
-  listPublicBundlesForCatalog,
-} from "@/features/groups/queries";
+import { listOwnedGroupIdsForUser, listPublicBundlesForCatalog } from "@/features/groups/queries";
 import { PublicCatalog } from "@/components/courses/public-catalog";
 import { SectionHeader } from "@/components/public/section-header";
 import type { Database } from "@/types/database.types";
 
-export default async function CourseCatalogPage() {
+export default async function CourseCatalogPage({
+  searchParams,
+}: {
+  searchParams?: { q?: string; kind?: string; sort?: string };
+}) {
   const supabase = await createClient();
   const user = await getCurrentUser();
 
@@ -60,11 +61,11 @@ export default async function CourseCatalogPage() {
   const courseList = (courses as CourseRow[] | null) || [];
 
   return (
-    <div className="public-container public-section">
+    <div className="public-container py-10 sm:py-14">
       <SectionHeader
-        eyebrow="Course catalog"
+        align="center"
         title="Explore AIGS online courses"
-        description="Browse published courses and bundles. Open a listing to review what’s included before you enroll."
+        description="Discover courses in gemology, grading, and jewelry."
         headingLevel="h1"
       />
       {error ? (
@@ -83,6 +84,9 @@ export default async function CourseCatalogPage() {
           bundles={bundles}
           enrolledCourseIds={enrolledCourseIds}
           ownedBundleIds={ownedBundleIds}
+          initialQuery={searchParams?.q || ""}
+          initialKind={searchParams?.kind}
+          initialSort={searchParams?.sort}
         />
       )}
     </div>

@@ -10,11 +10,7 @@ type SearchParams = { code?: string };
  * Recovery emails may still point here with ?code= — forward to the PKCE callback.
  * After exchange, callback returns here with a recovery session so updateUser works.
  */
-export default async function ResetPasswordPage({
-  searchParams,
-}: {
-  searchParams: SearchParams;
-}) {
+export default async function ResetPasswordPage({ searchParams }: { searchParams: SearchParams }) {
   const code = searchParams.code?.trim();
   if (code) {
     redirect(
@@ -29,10 +25,10 @@ export default async function ResetPasswordPage({
 
   if (!user) {
     return (
-      <div className="text-center">
-        <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+      <div className="text-left">
+        <h1 className="text-3xl font-bold leading-tight text-[var(--text-primary)]">
           Reset link required
-        </h2>
+        </h1>
         <p className="mt-2 text-sm text-slate-600">
           Open the password reset link from your email in this browser (same device where you
           requested the reset). Links expire after use.
@@ -53,9 +49,11 @@ export default async function ResetPasswordPage({
 
   return (
     <div>
-      <div className="mb-6 text-center">
-        <h2 className="text-2xl font-bold tracking-tight text-slate-900">Choose a New Password</h2>
-        <p className="mt-1 text-sm text-slate-600">
+      <div className="mb-7">
+        <h1 className="text-3xl font-bold leading-tight text-[var(--text-primary)]">
+          Choose a new password
+        </h1>
+        <p className="mt-3 text-sm leading-6 text-[var(--text-secondary)]">
           Please enter and confirm your new secure password
         </p>
       </div>

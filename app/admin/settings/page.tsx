@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireAdmin } from "@/features/courses/permissions";
 import { getPlatformSettings } from "@/features/settings/queries";
 import { PlatformSettingsForm } from "@/components/settings/platform-settings-form";
@@ -15,6 +16,12 @@ export default async function AdminSettingsPage() {
         </p>
       </div>
       <PlatformSettingsForm settings={settings} />
+      <p className="text-sm text-slate-600">
+        <Link href="/admin/settings/email" className="font-medium text-brand-700 hover:underline">
+          Email settings
+        </Link>{" "}
+        — SMTP, templates, and send log for this environment.
+      </p>
     </div>
   );
 }
