@@ -8,7 +8,7 @@ import type { ComponentProps } from "react";
 import { cn } from "@/lib/utils";
 
 const base =
-  "inline-flex min-h-11 items-center justify-center gap-2 rounded-sm text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand-primary)] disabled:pointer-events-none disabled:opacity-50";
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-sm text-sm font-bold shadow-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand-primary)] disabled:pointer-events-none disabled:opacity-50";
 
 const variants = {
   primary: "bg-[var(--brand-primary)] px-5 py-2.5 text-white hover:bg-[var(--brand-primary-hover)]",

@@ -7,9 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { createSupportTicketAction } from "@/features/support/actions";
+import { cn } from "@/lib/utils";
 import type { SupportTicketPriority } from "@/types/database.types";
 
-export function CreateTicketForm() {
+export function CreateTicketForm({ plain = false }: { plain?: boolean }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [subject, setSubject] = useState("");
@@ -31,7 +32,13 @@ export function CreateTicketForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4 rounded-lg border border-slate-200 bg-white p-4">
+    <form
+      onSubmit={onSubmit}
+      className={cn(
+        "space-y-4",
+        plain ? "" : "rounded-lg border border-slate-200 bg-white p-4"
+      )}
+    >
       <div>
         <Label htmlFor="ticket-subject">Subject</Label>
         <Input
@@ -62,12 +69,21 @@ export function CreateTicketForm() {
           onChange={(e) => setBody(e.target.value)}
           required
           rows={5}
-          className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+          className={cn(
+            "mt-1 w-full border px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500",
+            plain
+              ? "rounded-sm border-[var(--border-strong)] shadow-none"
+              : "rounded-md border-slate-300 shadow-sm"
+          )}
           placeholder="Describe your issue…"
         />
       </div>
       {error && <p className="text-sm text-red-600">{error}</p>}
-      <Button type="submit" disabled={isPending}>
+      <Button
+        type="submit"
+        disabled={isPending}
+        className={plain ? "rounded-sm font-bold shadow-none" : undefined}
+      >
         {isPending ? "Submitting…" : "Submit ticket"}
       </Button>
     </form>

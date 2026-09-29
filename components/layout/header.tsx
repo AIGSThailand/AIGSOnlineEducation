@@ -11,12 +11,12 @@ export function Header({ user }: HeaderProps) {
   const role = (user.profile?.role as UserRole) || "student";
 
   return (
-    <header className="relative z-40 flex h-16 w-full shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
+    <header className="relative z-40 flex h-16 w-full shrink-0 items-center justify-between border-b border-[var(--border)] bg-white px-4 sm:px-6">
       <div className="flex items-center space-x-3">
         <MobileNav role={role} />
-        <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
+        <span className="text-sm text-[var(--text-secondary)]">
           Welcome back,{" "}
-          <span className="font-semibold text-slate-900 dark:text-slate-100">
+          <span className="font-bold text-[var(--text-primary)]">
             {user.profile?.first_name || user.email.split("@")[0]}
           </span>
         </span>

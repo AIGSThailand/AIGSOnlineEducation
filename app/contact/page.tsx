@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PublicLayout } from "@/components/public/public-layout";
-import { PublicLinkButton } from "@/components/public/public-button";
+import { PublicLinkButton, publicButtonClassName } from "@/components/public/public-button";
 import { CreateTicketForm } from "@/components/support/create-ticket-form";
 import { getCurrentUser } from "@/lib/auth/permissions";
 import { getRoleDashboardPath } from "@/lib/auth/redirects";
@@ -42,14 +42,34 @@ export default async function ContactPage() {
               </PublicLinkButton>
             </section>
             <section className="border-t border-[var(--border)] pt-6">
-              <h2 className="text-xl font-bold">Email AIGS</h2>
-              <a
-                href="mailto:education@aigsthailand.com"
-                className="mt-3 inline-block break-all text-sm font-bold text-brand-700 underline underline-offset-4"
-              >
-                education@aigsthailand.com
-              </a>
-              <p className="mt-3 text-sm text-[var(--text-secondary)]">Bangkok, Thailand</p>
+              <h2 className="text-xl font-bold">Contact AIGS</h2>
+              <address className="mt-3 space-y-3 text-sm not-italic leading-6 text-[var(--text-secondary)]">
+                <p>
+                  Jewelry Trade Center (48th Floor), 919/539 Silom Road, Bangrak, Bangkok 10500,
+                  Thailand
+                </p>
+                <p>
+                  Phone:{" "}
+                  <a className="font-bold text-brand-700 underline underline-offset-4" href="tel:+6622674315">
+                    +66 (0) 2267 4315
+                  </a>
+                </p>
+                <p>
+                  Mobile:{" "}
+                  <a className="font-bold text-brand-700 underline underline-offset-4" href="tel:+66844397577">
+                    +66 (0) 84 439 7577
+                  </a>
+                </p>
+                <p>
+                  Email:{" "}
+                  <a
+                    className="break-all font-bold text-brand-700 underline underline-offset-4"
+                    href="mailto:registrar@aigsthailand.com"
+                  >
+                    registrar@aigsthailand.com
+                  </a>
+                </p>
+              </address>
             </section>
             <section className="border-t border-[var(--border)] pt-6">
               <h2 className="text-lg font-bold">What to include</h2>
@@ -59,14 +79,14 @@ export default async function ContactPage() {
               </p>
             </section>
           </aside>
-          <section className="auth-pages border border-t-4 border-[var(--border)] border-t-brand-600 bg-white p-6 sm:p-8">
+          <section className="auth-pages rounded-sm border border-[var(--border)] bg-white p-6 sm:p-8">
             <h2 className="text-2xl font-bold">Submit a request</h2>
             {user ? (
               <>
                 <p className="mb-6 mt-3 text-sm leading-6 text-[var(--text-secondary)]">
                   Your request will be linked to your account. You can track replies in Support.
                 </p>
-                <CreateTicketForm />
+                <CreateTicketForm plain />
                 <Link
                   href="/student/support"
                   className="mt-5 inline-flex min-h-11 items-center text-sm font-bold text-brand-700 underline"
@@ -84,8 +104,8 @@ export default async function ContactPage() {
                   Sign in to submit a request
                 </PublicLinkButton>
                 <a
-                  href="mailto:education@aigsthailand.com"
-                  className="mt-3 flex min-h-11 items-center justify-center border border-[var(--border-strong)] px-4 py-3 text-sm font-bold text-brand-700 hover:bg-[var(--surface-muted)]"
+                  href="mailto:registrar@aigsthailand.com"
+                  className={publicButtonClassName("secondary", "mt-3 w-full")}
                 >
                   Email us instead
                 </a>

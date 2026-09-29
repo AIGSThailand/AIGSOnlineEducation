@@ -5,7 +5,7 @@ export function Card({ className, children, ...props }: React.HTMLAttributes<HTM
   return (
     <div
       className={cn(
-        "rounded-lg border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900",
+        "rounded-sm border border-[var(--border)] bg-white p-6 text-[var(--text-primary)] shadow-none",
         className
       )}
       {...props}
@@ -35,7 +35,7 @@ export function CardTitle({
   return (
     <h3
       className={cn(
-        "text-lg font-semibold leading-none tracking-tight text-slate-900 dark:text-slate-100",
+        "text-lg font-bold leading-none tracking-tight text-[var(--text-primary)]",
         className
       )}
       {...props}
@@ -51,7 +51,7 @@ export function CardDescription({
   ...props
 }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
-    <p className={cn("text-sm text-slate-500 dark:text-slate-400", className)} {...props}>
+    <p className={cn("text-sm text-[var(--text-secondary)]", className)} {...props}>
       {children}
     </p>
   );
@@ -63,7 +63,7 @@ export function CardContent({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn("text-sm text-slate-700 dark:text-slate-300", className)} {...props}>
+    <div className={cn("text-sm text-[var(--text-secondary)]", className)} {...props}>
       {children}
     </div>
   );
@@ -77,7 +77,7 @@ export function CardFooter({
   return (
     <div
       className={cn(
-        "mt-4 flex items-center border-t border-slate-100 pt-4 dark:border-slate-800",
+        "mt-4 flex items-center border-t border-[var(--border)] pt-4",
         className
       )}
       {...props}

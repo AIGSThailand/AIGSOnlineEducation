@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
 import { StatCard } from "@/components/dashboard/stat-card";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Users, BookOpen, GraduationCap } from "lucide-react";
 
 export default async function AdminDashboardPage() {
@@ -19,9 +18,9 @@ export default async function AdminDashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Admin Overview</h1>
-        <p className="text-sm text-slate-500">
-          System-wide metrics, user administration, and LMS migration status
+        <h1 className="text-3xl font-bold tracking-tight">Admin overview</h1>
+        <p className="mt-2 text-sm text-[var(--text-secondary)]">
+          Users, courses, and enrollments on this environment.
         </p>
       </div>
 
@@ -45,23 +44,6 @@ export default async function AdminDashboardPage() {
           icon={GraduationCap}
         />
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>LearnDash Migration Reconciler</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <p className="text-sm text-slate-600">
-              Database schema is equipped with legacy columns (`wordpress_user_id`,
-              `wordpress_course_id`, `wordpress_lesson_id`).
-            </p>
-            <div className="rounded-md border border-slate-200 bg-slate-50 p-4 font-mono text-xs text-slate-700">
-              Status: Ready for migration script ingestion
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

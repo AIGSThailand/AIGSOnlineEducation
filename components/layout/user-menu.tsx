@@ -24,14 +24,14 @@ export function UserMenu({ profile, email }: UserMenuProps) {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-3 rounded-full p-1 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+        className="flex items-center space-x-3 rounded-sm p-1 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]"
       >
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-600 font-semibold text-white">
+        <div className="flex h-9 w-9 items-center justify-center bg-[var(--brand-chrome)] text-xs font-bold text-white">
           {initials}
         </div>
         <div className="hidden text-left md:block">
-          <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{fullName}</p>
-          <p className="text-xs capitalize text-slate-500 dark:text-slate-400">
+          <p className="text-sm font-bold text-[var(--text-primary)]">{fullName}</p>
+          <p className="text-xs capitalize text-[var(--text-secondary)]">
             {profile?.role || "Student"}
           </p>
         </div>
@@ -40,11 +40,11 @@ export function UserMenu({ profile, email }: UserMenuProps) {
       {isOpen && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
-          <div className="absolute right-0 z-20 mt-2 w-56 rounded-md border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-800 dark:bg-slate-900">
-            <div className="border-b border-slate-100 px-4 py-2.5 dark:border-slate-800">
-              <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{fullName}</p>
-              <p className="truncate text-xs text-slate-500 dark:text-slate-400">{email}</p>
-              <div className="mt-1 flex items-center text-xs font-semibold capitalize text-brand-600 dark:text-brand-400">
+          <div className="absolute right-0 z-20 mt-2 w-56 rounded-sm border border-[var(--border)] bg-white py-1">
+            <div className="border-b border-[var(--border)] px-4 py-2.5">
+              <p className="text-sm font-bold text-[var(--text-primary)]">{fullName}</p>
+              <p className="truncate text-xs text-[var(--text-secondary)]">{email}</p>
+              <div className="mt-1 flex items-center text-xs font-bold capitalize text-[var(--text-primary)]">
                 <Shield className="mr-1 h-3.5 w-3.5" />
                 {profile?.role || "student"}
               </div>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { BrandLogo } from "@/components/public/brand-logo";
 import { cn } from "@/lib/utils";
 import type { UserRole } from "@/types/database.types";
 import {
@@ -72,22 +73,18 @@ export function Sidebar({ role }: SidebarProps) {
   const items = roleNavItems[role] || roleNavItems.student;
 
   return (
-    <aside className="hidden min-h-0 w-64 shrink-0 flex-col overflow-hidden border-r border-slate-200 bg-white md:flex dark:border-slate-800 dark:bg-slate-900">
-      {/* Brand Logo */}
-      <div className="flex h-16 shrink-0 items-center border-b border-slate-200 px-6 dark:border-slate-800">
-        <Link href="/" className="flex items-center space-x-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-lg font-bold text-white">
-            A
-          </div>
-          <span className="text-base font-bold text-slate-900 dark:text-white">AIGS Education</span>
+    <aside className="hidden min-h-0 w-64 shrink-0 flex-col overflow-hidden border-r border-[var(--border)] bg-white md:flex">
+      <div className="flex h-16 shrink-0 items-center border-b border-[var(--border)] px-5">
+        <Link href="/">
+          <BrandLogo className="h-8" />
         </Link>
       </div>
 
       {/* Navigation Links */}
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-4">
         <nav className="space-y-1">
-          <div className="px-3 pb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
-            {role} Portal
+          <div className="px-3 pb-2 text-xs font-bold uppercase tracking-[0.16em] text-[var(--text-secondary)]">
+            {role}
           </div>
           {items.map((item) => {
             const isActive =
@@ -101,17 +98,14 @@ export function Sidebar({ role }: SidebarProps) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                  "flex items-center rounded-sm px-3 py-2 text-xs font-bold uppercase tracking-wide transition-colors",
                   isActive
-                    ? "dark:bg-brand-950/60 bg-brand-50 font-semibold text-brand-700 dark:text-brand-300"
-                    : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                    ? "bg-[var(--brand-chrome)] text-white"
+                    : "text-[var(--text-secondary)] hover:bg-[var(--surface-muted)] hover:text-[var(--text-primary)]"
                 )}
               >
                 <Icon
-                  className={cn(
-                    "mr-3 h-5 w-5",
-                    isActive ? "text-brand-600 dark:text-brand-400" : "text-slate-400"
-                  )}
+                  className={cn("mr-3 h-4 w-4", isActive ? "text-white" : "text-[var(--text-secondary)]")}
                 />
                 {item.label}
               </Link>
@@ -120,8 +114,8 @@ export function Sidebar({ role }: SidebarProps) {
         </nav>
       </div>
       {/* Keep version info visible while navigation scrolls on short screens. */}
-      <footer className="shrink-0 border-t border-slate-100 px-6 py-4 dark:border-slate-800">
-        <div className="text-xs text-slate-400">AIGS Platform v0.1.0</div>
+      <footer className="shrink-0 border-t border-[var(--border)] px-5 py-4">
+        <div className="text-xs text-[var(--text-secondary)]">AIGS Platform v0.1.0</div>
       </footer>
     </aside>
   );

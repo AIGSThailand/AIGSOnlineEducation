@@ -120,7 +120,7 @@ export function PublicHeader({
 
         <button
           type="button"
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-white/30 text-white lg:hidden"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-sm border border-white/30 text-white lg:hidden"
           aria-expanded={open}
           aria-controls={panelId}
           onClick={() => setOpen((value) => !value)}
