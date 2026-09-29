@@ -4,8 +4,7 @@ import { previewContentHtml, previewMediaUrl } from "@/features/lessons/preview-
 import { buildPlayerFromModules } from "@/features/player/build-player";
 import { createClient } from "@/lib/supabase/server";
 import { CoursePlayer } from "./course-player";
-import { LessonVideo } from "@/components/courses/lesson-video";
-import { RichContent } from "@/components/courses/rich-content";
+import { LessonWorkspace } from "./lesson-workspace";
 import { notFound } from "next/navigation";
 import { createAnonymousClient } from "@/lib/supabase/anonymous";
 
@@ -35,8 +34,14 @@ export async function LessonPreview({
     syllabus.modules.flatMap((module) => module.lessons)
   );
   if (visitorReview) {
-    built.flatSteps.forEach((step) => { step.href += "?audience=visitor"; });
-    built.sections.forEach((section) => section.items.forEach((item) => { item.href += "?audience=visitor"; }));
+    built.flatSteps.forEach((step) => {
+      step.href += "?audience=visitor";
+    });
+    built.sections.forEach((section) =>
+      section.items.forEach((item) => {
+        item.href += "?audience=visitor";
+      })
+    );
   }
   const current = built.flatSteps.find((step) => step.contentId === preview.id);
   if (!current) notFound();
@@ -50,6 +55,18 @@ export async function LessonPreview({
   const lockedKeys = built.flatSteps
     .filter((step) => !previewIds.includes(step.contentId))
     .map((step) => step.key);
+
+  const videoUrl = preview.video_url
+    ? previewMediaUrl(preview.video_url, courseId, preview.id)
+    : null;
+  const captionsUrl = preview.video_captions_url
+    ? previewMediaUrl(preview.video_captions_url, courseId, preview.id)
+    : null;
+  const posterUrl = preview.video_thumbnail_url
+    ? previewMediaUrl(preview.video_thumbnail_url, courseId, preview.id)
+    : null;
+  const transcript = preview.video_transcript ?? null;
+
   return (
     <CoursePlayer
       player={player}
@@ -57,21 +74,19 @@ export async function LessonPreview({
       lockedKeys={lockedKeys}
       canToggleComplete={false}
       previewMode
+      transcript={transcript}
+      resources={[]}
     >
-      {preview.video_url && (
-        <LessonVideo
-          url={previewMediaUrl(preview.video_url, courseId, preview.id)}
-          title={preview.title}
-          captionsUrl={
-            preview.video_captions_url
-              ? previewMediaUrl(preview.video_captions_url, courseId, preview.id)
-              : undefined
-          }
-        />
-      )}
-      <RichContent
-        html={previewContentHtml(preview.content, courseId, preview.id)}
-        fallback="No supplementary notes for this lesson."
+      <LessonWorkspace
+        media={{
+          videoUrl,
+          title: preview.title,
+          posterUrl,
+          captionsUrl,
+          transcript,
+        }}
+        contentHtml={previewContentHtml(preview.content, courseId, preview.id)}
+        contentFallback="No supplementary notes for this lesson."
       />
     </CoursePlayer>
   );

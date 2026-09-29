@@ -37,7 +37,7 @@ export type ParsedMediaObjectKey =
     };
 
 const OBJECT_KEY_RE =
-  /^courses\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/(thumbnail|lesson-image|promo|attachment)\/([a-z0-9._-]+)$/i;
+  /^courses\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/(thumbnail|lesson-image|promo|attachment|lesson-video|caption)\/([a-z0-9._-]+)$/i;
 
 const GROUP_OBJECT_KEY_RE =
   /^groups\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/(thumbnail)\/([a-z0-9._-]+)$/i;

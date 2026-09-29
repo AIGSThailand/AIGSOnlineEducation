@@ -8,6 +8,8 @@ const previewSchema = z.object({
   content: z.string().nullable(),
   video_url: z.string().nullable(),
   video_captions_url: z.string().nullable(),
+  video_thumbnail_url: z.string().nullable().optional(),
+  video_transcript: z.string().nullable().optional(),
 });
 export type PublicLessonPreview = z.infer<typeof previewSchema>;
 

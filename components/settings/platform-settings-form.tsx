@@ -63,7 +63,7 @@ export function PlatformSettingsForm({ settings }: { settings: PlatformSettingsM
           placeholder="education@aigsthailand.com"
         />
         <p className="mt-1 text-xs text-slate-500">
-          Used for new support-ticket notifications when configured.
+          Receives new support-ticket mail. SMTP and message design are under Email settings.
         </p>
       </div>
       <div>

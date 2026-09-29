@@ -59,6 +59,7 @@ Related documentation (keep in sync with this file):
 12. Code should be readable without excessive comments.
 13. Comments should explain _why_, not restate what the code already says.
 14. Never commit secrets, credentials, private keys, production exports, or customer data.
+15. Keep one Next.js process per build output directory. Stop the dev server before rebuilding or clearing `.next`; after restarting, verify the page's generated CSS returns HTTP 200 before declaring the preview ready.
 
 ---
 

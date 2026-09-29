@@ -59,11 +59,11 @@ export function PublicCourseCard({ course, enrolled = false, className }: Public
   return (
     <article
       className={cn(
-        "group flex h-full flex-col overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface)] transition-shadow hover:shadow-md",
+        "group flex h-full flex-col overflow-hidden rounded-sm border border-[var(--border)] bg-white transition-shadow hover:border-[var(--border-strong)]",
         className
       )}
     >
-      <div className="relative aspect-[16/10] overflow-hidden bg-[var(--brand-dark)]">
+      <div className="relative aspect-video overflow-hidden bg-[var(--brand-dark)]">
         {course.thumbnail_url ? (
           // Migrated / external thumbnails may be absolute hosts.
           // eslint-disable-next-line @next/next/no-img-element
@@ -75,7 +75,11 @@ export function PublicCourseCard({ course, enrolled = false, className }: Public
           />
         ) : (
           <div className="flex h-full items-center justify-center">
-            <BookOpen className="h-12 w-12 text-[var(--brand-primary-muted)]" strokeWidth={1.25} aria-hidden />
+            <BookOpen
+              className="h-12 w-12 text-[var(--brand-primary-muted)]"
+              strokeWidth={1.25}
+              aria-hidden
+            />
           </div>
         )}
         {badge ? (
@@ -85,7 +89,10 @@ export function PublicCourseCard({ course, enrolled = false, className }: Public
         ) : null}
       </div>
       <div className="flex flex-1 flex-col p-5 sm:p-6">
-        <h3 className="text-lg font-semibold leading-snug tracking-tight text-[var(--text-primary)] sm:text-xl">
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--brand-primary)]">
+          AIGS · Online course
+        </p>
+        <h3 className="text-lg font-bold leading-snug tracking-tight text-[var(--text-primary)] sm:text-xl">
           {title}
         </h3>
         <p className="mt-3 line-clamp-3 flex-1 text-sm leading-6 text-[var(--text-secondary)]">
@@ -116,11 +123,11 @@ export function PublicBundleCard({ bundle, owned = false, className }: PublicBun
   return (
     <article
       className={cn(
-        "group flex h-full flex-col overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface)] transition-shadow hover:shadow-md",
+        "group flex h-full flex-col overflow-hidden rounded-sm border border-[var(--border)] bg-white transition-shadow hover:border-[var(--border-strong)]",
         className
       )}
     >
-      <div className="relative aspect-[16/10] overflow-hidden bg-[var(--brand-chrome)]">
+      <div className="relative aspect-video overflow-hidden bg-[var(--brand-chrome)]">
         {bundle.thumbnailUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -139,7 +146,7 @@ export function PublicBundleCard({ bundle, owned = false, className }: PublicBun
         </span>
       </div>
       <div className="flex flex-1 flex-col p-5 sm:p-6">
-        <h3 className="text-lg font-semibold leading-snug tracking-tight text-[var(--text-primary)] sm:text-xl">
+        <h3 className="text-lg font-bold leading-snug tracking-tight text-[var(--text-primary)] sm:text-xl">
           {name}
         </h3>
         <p className="mt-2 text-xs font-medium text-[var(--text-secondary)]">

@@ -8,13 +8,15 @@ import { canManageCourse } from "@/features/courses/permissions";
 import { getCoursePlayerData } from "@/features/player/queries";
 import { findStepByContent, lockedStepKeys } from "@/features/player/build-player";
 import { CoursePlayer } from "@/components/player/course-player";
-import { RichContent } from "@/components/courses/rich-content";
-import { LessonVideo } from "@/components/courses/lesson-video";
-import { LessonResourcesList } from "@/components/courses/lesson-resources-list";
+import { LessonWorkspace } from "@/components/player/lesson-workspace";
 import { Card } from "@/components/ui/card";
 import type { Database } from "@/types/database.types";
 
-type LessonRow = Database["public"]["Tables"]["lessons"]["Row"];
+type LessonRow = Database["public"]["Tables"]["lessons"]["Row"] & {
+  video_thumbnail_url?: string | null;
+  video_transcript?: string | null;
+  video_captions_url?: string | null;
+};
 
 interface LessonPageProps {
   searchParams?: { audience?: string };
@@ -27,7 +29,7 @@ interface LessonPageProps {
 export default async function LessonPage({ params, searchParams }: LessonPageProps) {
   const { courseId, lessonId } = params;
   const user = await getCurrentUser();
-  const visitorReview = searchParams?.audience === "visitor" && await canManageCourse(courseId);
+  const visitorReview = searchParams?.audience === "visitor" && (await canManageCourse(courseId));
 
   const hasAccess = await canAccessCourse(courseId);
   if (!hasAccess || !user || visitorReview) {
@@ -40,7 +42,9 @@ export default async function LessonPage({ params, searchParams }: LessonPagePro
           <p className="mt-2 text-sm text-slate-600">
             You must be enrolled in this course with an active subscription to access its lessons.
           </p>
-          <Link href={`/courses/${courseId}`} className="mt-4 inline-block font-semibold text-brand-700">View course and enrollment options</Link>
+          <Link href={`/courses/${courseId}`} className="mt-4 inline-block font-semibold text-brand-700">
+            View course and enrollment options
+          </Link>
         </Card>
       </div>
     );
@@ -96,28 +100,33 @@ export default async function LessonPage({ params, searchParams }: LessonPagePro
     isDownloadable: r.is_downloadable,
   }));
 
+  const transcript = lesson.video_transcript ?? null;
+
   return (
     <CoursePlayer
       player={player}
       current={current}
       lockedKeys={Array.from(lockedKeys)}
       canToggleComplete={!isLocked}
+      transcript={isLocked ? null : transcript}
+      resources={isLocked ? [] : resources}
     >
       {isLocked ? (
         <p className="rounded-md border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600">
           Complete the previous steps to unlock this lesson.
         </p>
       ) : (
-        <div className="space-y-6">
-          {lesson.video_url && (
-            <LessonVideo url={lesson.video_url} title={lesson.title} />
-          )}
-          <RichContent
-            html={lesson.content}
-            fallback="No supplementary textual notes provided for this lesson."
-          />
-          <LessonResourcesList resources={resources} />
-        </div>
+        <LessonWorkspace
+          media={{
+            videoUrl: lesson.video_url,
+            title: lesson.title,
+            posterUrl: lesson.video_thumbnail_url,
+            captionsUrl: lesson.video_captions_url,
+            transcript,
+          }}
+          contentHtml={lesson.content}
+          resources={resources}
+        />
       )}
     </CoursePlayer>
   );

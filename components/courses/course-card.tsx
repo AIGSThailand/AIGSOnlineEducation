@@ -15,7 +15,7 @@ interface CourseCardProps {
 
 export function CourseCard({ course, isEnrolled }: CourseCardProps) {
   return (
-    <Card className="flex flex-col overflow-hidden p-0 transition-shadow hover:shadow-md">
+    <Card className="flex flex-col overflow-hidden rounded-xl border-[var(--border)] bg-white p-0 transition-shadow hover:shadow-lg">
       {course.thumbnail_url ? (
         <div className="aspect-video w-full overflow-hidden bg-slate-100">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -33,13 +33,13 @@ export function CourseCard({ course, isEnrolled }: CourseCardProps) {
 
       <div className="flex flex-1 flex-col p-5">
         <div className="mb-2 flex items-center justify-between">
-          <Badge variant={course.status === "published" ? "success" : "default"}>
-            {course.status}
-          </Badge>
+          <span className="text-xs font-semibold uppercase tracking-wider text-brand-700">
+            AIGS · Online course
+          </span>
           {isEnrolled && <Badge variant="default">Enrolled</Badge>}
         </div>
 
-        <h4 className="mb-2 line-clamp-1 text-lg font-bold text-slate-900 dark:text-slate-100">
+        <h4 className="mb-2 line-clamp-2 text-lg font-semibold text-slate-900 dark:text-slate-100">
           {course.title}
         </h4>
 

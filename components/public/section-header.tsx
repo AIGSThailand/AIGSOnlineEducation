@@ -24,7 +24,9 @@ export function SectionHeader({
     <div
       className={cn(
         "mb-10 flex flex-col gap-6 sm:mb-12",
-        align === "center" ? "items-center text-center" : "sm:flex-row sm:items-end sm:justify-between",
+        align === "center"
+          ? "items-center text-center"
+          : "sm:flex-row sm:items-end sm:justify-between",
         className
       )}
     >
@@ -32,9 +34,9 @@ export function SectionHeader({
         {eyebrow ? <p className="public-eyebrow">{eyebrow}</p> : null}
         <Heading
           className={cn(
-            "font-semibold tracking-tight text-[var(--text-primary)]",
+            "font-bold tracking-tight text-[var(--text-primary)]",
             eyebrow ? "mt-3" : null,
-            headingLevel === "h1" && "font-display text-4xl sm:text-5xl lg:text-6xl",
+            headingLevel === "h1" && "font-display text-3xl sm:text-4xl",
             headingLevel === "h2" && "text-3xl sm:text-4xl",
             headingLevel === "h3" && "text-2xl sm:text-3xl"
           )}

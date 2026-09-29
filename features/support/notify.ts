@@ -1,8 +1,9 @@
+import { sendApplicationEmail } from "@/features/email/service";
 import { getPlatformSettings } from "@/features/settings/queries";
 
 /**
  * Best-effort staff notification when a new support ticket is created.
- * Skips when support_email is unset. Uses Resend when RESEND_API_KEY is set.
+ * Failures are logged by EmailService and never block ticket creation.
  */
 export async function notifyNewSupportTicket(params: {
   ticketId: string;
@@ -11,50 +12,15 @@ export async function notifyNewSupportTicket(params: {
   userEmail?: string | null;
 }): Promise<void> {
   const settings = await getPlatformSettings();
-  const to = settings.support_email;
-  if (!to) return;
-
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    console.info(
-      "[support] New ticket stored; email skipped (no RESEND_API_KEY). Ticket:",
-      params.ticketId,
-      "→",
-      to
-    );
-    return;
-  }
-
-  const fromName = settings.support_from_name || "AIGS Support";
-  const from = process.env.SUPPORT_FROM_EMAIL || "onboarding@resend.dev";
-
-  try {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: `${fromName} <${from}>`,
-        to: [to],
-        subject: `[Support] ${params.subject}`,
-        text: [
-          `New support ticket: ${params.ticketId}`,
-          params.userEmail ? `From: ${params.userEmail}` : null,
-          "",
-          params.body,
-        ]
-          .filter(Boolean)
-          .join("\n"),
-      }),
-    });
-
-    if (!res.ok) {
-      const text = await res.text();
-      console.error("[support] Failed to send ticket email:", res.status, text);
-    }
-  } catch (err) {
-    console.error("[support] Failed to send ticket email:", err);
-  }
+  await sendApplicationEmail({
+    eventKey: "support.ticket_created",
+    to: settings.support_email || "",
+    variables: {
+      siteName: settings.site_name,
+      ticketId: params.ticketId,
+      subject: params.subject,
+      body: params.body,
+      userEmail: params.userEmail || "",
+    },
+  });
 }

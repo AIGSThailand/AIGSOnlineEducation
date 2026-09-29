@@ -155,6 +155,63 @@
 
 /* Public identity scope — tokens already on :root; class marks the public chrome tree. */
 .public-site {
+  --font-aigs-sans: Helvetica, Arial, sans-serif;
+  --font-aigs-display: Helvetica, Arial, sans-serif;
+  --surface: #ffffff;
+  --surface-muted: #f4f4f4;
+  --border: #dedede;
+  --border-strong: #bdbdbd;
+  --text-primary: #202020;
+  --text-secondary: #555555;
+  --brand-chrome: #191919;
+  font-family: Helvetica, Arial, sans-serif;
   color: var(--text-primary);
   background-color: var(--surface);
+}
+
+.public-site h1,
+.public-site h2,
+.public-site h3 {
+  font-family: Helvetica, Arial, sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.catalog-list > article {
+  border-radius: 2px;
+}
+
+/* Account forms share the public site's typography and restrained controls. */
+.auth-pages input {
+  min-height: 48px;
+  border-radius: 2px;
+  background: var(--surface);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+  font-size: 16px;
+}
+
+.auth-pages button,
+.auth-pages a[role="button"] {
+  min-height: 48px;
+  border-radius: 2px;
+  font-weight: 700;
+  box-shadow: none;
+}
+
+.auth-pages label {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+@media (min-width: 640px) {
+  .catalog-list > article {
+    flex-direction: row;
+  }
+  .catalog-list > article > div:first-child {
+    order: 2;
+    width: 180px;
+    flex-shrink: 0;
+    align-self: center;
+    margin: 20px;
+  }
 }

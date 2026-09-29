@@ -4,7 +4,7 @@
  */
 export async function uploadCourseMedia(input: {
   courseId: string;
-  kind: "thumbnail" | "lesson-image" | "promo" | "attachment";
+  kind: "thumbnail" | "lesson-image" | "promo" | "attachment" | "lesson-video" | "caption";
   file: File;
 }): Promise<{ publicUrl: string; key: string }> {
   return uploadMedia({
@@ -28,7 +28,7 @@ export async function uploadGroupMedia(input: {
 async function uploadMedia(input: {
   courseId?: string;
   groupId?: string;
-  kind: "thumbnail" | "lesson-image" | "promo" | "attachment";
+  kind: "thumbnail" | "lesson-image" | "promo" | "attachment" | "lesson-video" | "caption";
   file: File;
 }): Promise<{ publicUrl: string; key: string }> {
   const presignRes = await fetch("/api/media/presign", {

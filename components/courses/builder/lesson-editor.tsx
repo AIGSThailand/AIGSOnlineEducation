@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Sheet } from "@/components/ui/sheet";
-import { RichTextEditor } from "@/components/courses/builder/rich-text-editor";import { LessonMediaEditor, type LessonMediaFields } from "./lesson/lesson-media-editor";
+import { RichTextEditor } from "@/components/courses/builder/rich-text-editor";
+import { LessonMediaEditor, type LessonMediaFields } from "./lesson/lesson-media-editor";
 import { LessonResourcesEditor } from "./lesson/lesson-resources-editor";
 import {
   LessonLearningSettings,
@@ -572,6 +573,7 @@ export function LessonEditor({
               </div>
 
               <LessonMediaEditor
+                courseId={courseId}
                 value={form.media}
                 onChange={(patch) =>
                   patchForm((prev) => ({

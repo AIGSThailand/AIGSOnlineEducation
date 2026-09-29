@@ -65,7 +65,7 @@ export default async function StudentCoursesPage() {
         <Card className="py-12 text-center">
           <CardTitle className="mb-2">You have not enrolled in any courses yet</CardTitle>
           <p className="mb-6 text-sm text-slate-500">
-            Discover courses covering AI engineering, web systems, and data science.
+            Explore gemstone identification, grading, and gemological practice.
           </p>
           <Link href="/courses">
             <Button>Explore Course Catalog</Button>

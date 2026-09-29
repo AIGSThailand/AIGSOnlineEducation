@@ -1,4 +1,10 @@
-export type MediaAssetKind = "thumbnail" | "lesson-image" | "promo" | "attachment";
+export type MediaAssetKind =
+  | "thumbnail"
+  | "lesson-image"
+  | "promo"
+  | "attachment"
+  | "lesson-video"
+  | "caption";
 
 export const MEDIA_KIND_LIMITS: Record<
   MediaAssetKind,
@@ -29,6 +35,16 @@ export const MEDIA_KIND_LIMITS: Record<
       "application/zip",
     ],
     label: "Attachment",
+  },
+  "lesson-video": {
+    maxBytes: 500 * 1024 * 1024,
+    accept: ["video/mp4", "video/webm", "video/quicktime"],
+    label: "Lesson video",
+  },
+  caption: {
+    maxBytes: 2 * 1024 * 1024,
+    accept: ["text/vtt", "text/plain", "application/octet-stream"],
+    label: "Caption file",
   },
 };
 

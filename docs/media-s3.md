@@ -40,7 +40,7 @@ For **paid / enrolled content**, use **`private`**. Students cannot usefully sha
 
 | Kind | Who can read |
 |------|----------------|
-| `lesson-image`, `attachment` | `canAccessCourse` or `canManageCourse` |
+| `lesson-image`, `attachment`, `lesson-video`, `caption` | `canAccessCourse` or `canManageCourse` (plus free-preview media gate when query params present) |
 | `thumbnail`, `promo` | Published course **or** `canAccessCourse` / `canManageCourse` |
 
 ---
@@ -77,8 +77,15 @@ courses/{courseId}/thumbnail/{uuid}-{filename}
 courses/{courseId}/lesson-image/{uuid}-{filename}
 courses/{courseId}/promo/{uuid}-{filename}
 courses/{courseId}/attachment/{uuid}-{filename}
+courses/{courseId}/lesson-video/{uuid}-{filename}
+courses/{courseId}/caption/{uuid}-{filename}
 groups/{groupId}/thumbnail/{uuid}-{filename}
 ```
+
+| Kind | Max size | Accept |
+|------|----------|--------|
+| `lesson-video` | 500MB | `video/mp4`, `video/webm`, `video/quicktime` |
+| `caption` | 2MB | `text/vtt` (preferred), `text/plain`, `application/octet-stream` |
 
 Keys are validated strictly before signing; path traversal is rejected.
 

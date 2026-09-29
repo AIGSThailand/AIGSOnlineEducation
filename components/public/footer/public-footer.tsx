@@ -4,6 +4,8 @@ import { BrandLogo } from "@/components/public/brand-logo";
 const EXPLORE = [
   { href: "/courses", label: "Courses" },
   { href: "/#about-aigs", label: "About AIGS" },
+  { href: "/help", label: "Help & FAQs" },
+  { href: "/contact", label: "Contact us" },
 ] as const;
 
 const ACCOUNT = [
