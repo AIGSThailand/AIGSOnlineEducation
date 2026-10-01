@@ -42,11 +42,11 @@ export function BuilderHeader({
   const statusText = saveStatusLabel[saveStatus];
 
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-200 bg-white">
+    <header className="sticky top-0 z-30 border-b border-[var(--border)] bg-white">
       <div className="flex flex-wrap items-center gap-3 px-4 py-3 lg:px-6">
         <Link
           href={`/${portal}/courses`}
-          className="inline-flex items-center gap-1 rounded-md px-1 text-sm text-slate-600 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="inline-flex items-center gap-1 rounded-sm px-1 text-sm text-slate-600 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
         >
           <ArrowLeft className="h-4 w-4" />
           <span className="hidden sm:inline">Courses</span>
@@ -55,7 +55,7 @@ export function BuilderHeader({
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <button
             type="button"
-            className="rounded-md p-2 text-slate-600 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 lg:hidden"
+            className="rounded-sm p-2 text-slate-600 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 lg:hidden"
             onClick={onOpenStructure}
             aria-label="Open course structure"
           >
@@ -91,8 +91,8 @@ export function BuilderHeader({
           )}
 
           <details className="relative">
-            <summary className="flex cursor-pointer items-center rounded-md border px-3 py-2 text-sm"><Eye className="mr-1.5 h-4 w-4" />Preview as…</summary>
-            <div className="absolute right-0 z-40 mt-2 w-56 space-y-2 rounded-md border bg-white p-3 shadow-lg">
+            <summary className="flex cursor-pointer items-center rounded-sm border px-3 py-2 text-sm"><Eye className="mr-1.5 h-4 w-4" />Preview as…</summary>
+            <div className="absolute right-0 z-40 mt-2 w-56 space-y-2 rounded-sm border bg-white p-3 shadow-lg">
               <Link className="block text-sm underline" href={`/courses/${course.id}/preview`} target="_blank" rel="noopener noreferrer">Staff draft preview</Link>
               <Link className="block text-sm underline" href={`/courses/${course.id}/preview?audience=visitor`} target="_blank" rel="noopener noreferrer">Visitor / before enrollment</Link>
               <p className="text-xs text-slate-500">Preview uses saved content. Student progress should be verified with a test student account.</p>
@@ -120,7 +120,7 @@ export function BuilderHeader({
 
           <button
             type="button"
-            className="rounded-md p-2 text-slate-600 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 xl:hidden"
+            className="rounded-sm p-2 text-slate-600 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 xl:hidden"
             onClick={onOpenSettings}
             aria-label="Open settings"
           >

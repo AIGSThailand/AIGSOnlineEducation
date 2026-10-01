@@ -19,13 +19,13 @@ export function LessonResourcesList({ resources, className }: LessonResourcesLis
 
   return (
     <section
-      className={cn("rounded-lg border border-slate-200 bg-slate-50 p-4", className)}
+      className={cn("rounded-sm border border-[var(--border)] bg-[var(--surface-muted)] p-4", className)}
       aria-labelledby="lesson-resources-heading"
     >
-      <h3 id="lesson-resources-heading" className="text-sm font-semibold text-slate-900">
+      <h3 id="lesson-resources-heading" className="text-sm font-bold text-slate-900">
         Resources
       </h3>
-      <ul className="mt-3 divide-y divide-slate-200">
+      <ul className="mt-3 divide-y divide-[var(--border)]">
         {resources.map((r) => {
           const href = r.url?.trim() || null;
           return (
@@ -42,7 +42,7 @@ export function LessonResourcesList({ resources, className }: LessonResourcesLis
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex shrink-0 items-center gap-1 rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-brand-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="inline-flex shrink-0 items-center gap-1 rounded-sm border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs font-medium text-brand-700 hover:bg-[var(--surface-muted)] focus:outline-none focus:ring-2 focus:ring-brand-500"
                 >
                   {r.isDownloadable ? (
                     <>

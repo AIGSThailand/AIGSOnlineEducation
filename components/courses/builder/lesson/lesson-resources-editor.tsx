@@ -115,7 +115,7 @@ export function LessonResourcesEditor({
   }
 
   return (
-    <section className="space-y-4 rounded-lg border border-slate-200 bg-white p-4">
+    <section className="space-y-4 rounded-sm border border-[var(--border)] bg-white p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h3 className="text-sm font-semibold text-slate-900">Resources</h3>
@@ -129,13 +129,13 @@ export function LessonResourcesEditor({
       </div>
 
       {error && (
-        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
+        <p className="rounded-sm bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
           {error}
         </p>
       )}
 
       {adding && (
-        <div className="space-y-3 rounded-md border border-slate-200 bg-slate-50 p-3">
+        <div className="space-y-3 rounded-sm border border-[var(--border)] bg-slate-50 p-3">
           <div>
             <Label htmlFor="resource-title">Title</Label>
             <Input

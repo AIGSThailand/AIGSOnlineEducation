@@ -39,7 +39,7 @@ export default async function AdminSupportPage({ searchParams }: PageProps) {
           <Link
             key={s}
             href={s === "all" ? "/admin/support" : `/admin/support?status=${s}`}
-            className={`rounded-md px-3 py-1.5 text-sm font-medium capitalize ${
+            className={`rounded-sm px-3 py-1.5 text-sm font-medium capitalize ${
               status === s
                 ? "bg-brand-600 text-white"
                 : "bg-slate-100 text-slate-700 hover:bg-slate-200"
@@ -57,7 +57,7 @@ export default async function AdminSupportPage({ searchParams }: PageProps) {
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm text-slate-700">
-              <thead className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase text-slate-500">
+              <thead className="border-b border-[var(--border)] bg-slate-50 text-xs font-semibold uppercase text-slate-500">
                 <tr>
                   <th className="px-6 py-3">Subject</th>
                   <th className="px-6 py-3">User</th>

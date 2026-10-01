@@ -17,7 +17,7 @@ export function CourseListTable({
 }: CourseListTableProps) {
   if (courses.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-slate-200 bg-white px-6 py-16 text-center">
+      <div className="rounded-sm border border-dashed border-[var(--border)] bg-white px-6 py-16 text-center">
         <h3 className="text-lg font-semibold text-slate-900">No courses yet</h3>
         <p className="mt-2 text-sm text-slate-600">
           Create your first course to start building learning content.
@@ -30,10 +30,10 @@ export function CourseListTable({
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+    <div className="overflow-hidden rounded-sm border border-[var(--border)] bg-white">
       <div className="overflow-x-auto">
         <table className="w-full table-fixed text-left text-sm text-slate-700">
-          <thead className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase text-slate-500">
+          <thead className="border-b border-[var(--border)] bg-slate-50 text-xs font-semibold uppercase text-slate-500">
             <tr>
               <th className="w-[40%] px-6 py-3">Course</th>
               <th className="w-[10%] whitespace-nowrap px-6 py-3">Status</th>

@@ -67,7 +67,7 @@ export function GroupMembersEditor({
   }
 
   return (
-    <div className="space-y-4 rounded-lg border border-slate-200 bg-white p-4">
+    <div className="space-y-4 rounded-sm border border-[var(--border)] bg-white p-4">
       <div>
         <h3 className="text-sm font-semibold text-slate-800">Members</h3>
         <p className="text-xs text-slate-500">
@@ -87,7 +87,7 @@ export function GroupMembersEditor({
       </div>
 
       {results.length > 0 ? (
-        <ul className="space-y-1 rounded-md border border-slate-100 p-2 text-sm">
+        <ul className="space-y-1 rounded-sm border border-slate-100 p-2 text-sm">
           {results.map((r) => (
             <li key={r.id} className="flex items-center justify-between gap-2 px-1 py-1">
               <span>
@@ -110,7 +110,7 @@ export function GroupMembersEditor({
       ) : null}
 
       <table className="w-full text-left text-sm">
-        <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
+        <thead className="border-b border-[var(--border)] text-xs uppercase text-slate-500">
           <tr>
             <th className="py-2">Member</th>
             <th className="py-2">Joined</th>

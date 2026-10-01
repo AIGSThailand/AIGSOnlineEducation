@@ -35,8 +35,11 @@ export function MobileNav({ role }: MobileNavProps) {
     {
       admin: [
         { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
+    { label: "Lesson Questions", href: "/admin/questions", icon: HelpCircle },
         { label: "Users & Roles", href: "/admin/users", icon: Users },
         { label: "Courses", href: "/admin/courses", icon: BookOpen },
+        { label: "Assignments", href: "/admin/assignments", icon: FileCheck },
+        { label: "Quizzes", href: "/admin/quizzes", icon: HelpCircle },
         { label: "Groups & Bundles", href: "/admin/groups", icon: Layers },
         { label: "Enrollments", href: "/admin/enrollments", icon: GraduationCap },
         { label: "Announcements", href: "/admin/announcements", icon: Megaphone },
@@ -48,6 +51,7 @@ export function MobileNav({ role }: MobileNavProps) {
       ],
       instructor: [
         { label: "Dashboard", href: "/instructor/dashboard", icon: LayoutDashboard },
+    { label: "Lesson Questions", href: "/instructor/questions", icon: HelpCircle },
         { label: "Courses", href: "/instructor/courses", icon: BookOpen },
         { label: "Students", href: "/instructor/students", icon: Users },
         { label: "Assignments", href: "/instructor/assignments", icon: FileCheck },
@@ -59,6 +63,7 @@ export function MobileNav({ role }: MobileNavProps) {
       student: [
         { label: "Dashboard", href: "/student/dashboard", icon: LayoutDashboard },
         { label: "My Courses", href: "/student/courses", icon: BookOpen },
+    { label: "Saved Lessons", href: "/student/bookmarks", icon: BookOpen },
         { label: "Catalog", href: "/courses", icon: GraduationCap },
         { label: "Assignments", href: "/student/assignments", icon: FileCheck },
         { label: "Grades", href: "/student/grades", icon: BarChart3 },

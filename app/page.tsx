@@ -1,3 +1,4 @@
+import { getPublicPrice } from "@/lib/stripe/public-price";
 import Image from "next/image";
 import { getCurrentUser } from "@/lib/auth/permissions";
 import { getRoleDashboardPath } from "@/lib/auth/redirects";
@@ -11,7 +12,7 @@ import { ArrowRight } from "lucide-react";
 
 type Course = Pick<
   Database["public"]["Tables"]["courses"]["Row"],
-  "id" | "title" | "description" | "excerpt" | "thumbnail_url" | "access_type" | "created_at"
+  "id" | "title" | "description" | "excerpt" | "thumbnail_url" | "access_type" | "created_at" | "stripe_price_id"
 >;
 
 export default async function HomePage() {
@@ -20,11 +21,11 @@ export default async function HomePage() {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("courses")
-    .select("id, title, description, excerpt, thumbnail_url, access_type, created_at")
+    .select("id, title, description, excerpt, thumbnail_url, access_type, stripe_price_id, created_at")
     .eq("status", "published")
     .order("created_at", { ascending: false })
     .limit(6);
-  const courses = (data || []) as Course[];
+  const courses = await Promise.all(((data || []) as Course[]).map(async (course) => ({ ...course, price: await getPublicPrice(course.stripe_price_id) })));
 
   let enrolledCourseIds: string[] = [];
   if (user) {

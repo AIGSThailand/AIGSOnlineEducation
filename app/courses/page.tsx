@@ -1,3 +1,4 @@
+import { getPublicPrice } from "@/lib/stripe/public-price";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth/permissions";
 import { listOwnedGroupIdsForUser, listPublicBundlesForCatalog } from "@/features/groups/queries";
@@ -26,6 +27,7 @@ export default async function CourseCatalogPage({
       status,
       thumbnail_url,
       access_type,
+      stripe_price_id,
       wordpress_course_id,
       created_at,
       updated_at
@@ -60,6 +62,9 @@ export default async function CourseCatalogPage({
   type CourseRow = Database["public"]["Tables"]["courses"]["Row"];
   const courseList = (courses as CourseRow[] | null) || [];
 
+  const pricedCourses = await Promise.all(courseList.map(async (course) => ({ ...course, price: await getPublicPrice(course.stripe_price_id) })));
+  const pricedBundles = await Promise.all(bundles.map(async (bundle) => ({ ...bundle, price: await getPublicPrice(bundle.stripePriceId) })));
+
   return (
     <div className="public-container py-10 sm:py-14">
       <SectionHeader
@@ -80,8 +85,8 @@ export default async function CourseCatalogPage({
         </div>
       ) : (
         <PublicCatalog
-          courses={courseList}
-          bundles={bundles}
+          courses={pricedCourses}
+          bundles={pricedBundles}
           enrolledCourseIds={enrolledCourseIds}
           ownedBundleIds={ownedBundleIds}
           initialQuery={searchParams?.q || ""}

@@ -91,7 +91,7 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
 
       <InviteUserForm />
 
-      <form className="grid grid-cols-1 gap-4 rounded-lg border border-slate-200 bg-white p-4 md:grid-cols-4">
+      <form className="grid grid-cols-1 gap-4 rounded-sm border border-[var(--border)] bg-white p-4 md:grid-cols-4">
         <div className="md:col-span-2">
           <Label htmlFor="user-search">Search</Label>
           <Input
@@ -129,7 +129,7 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm text-slate-700">
-              <thead className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase text-slate-500">
+              <thead className="border-b border-[var(--border)] bg-slate-50 text-xs font-semibold uppercase text-slate-500">
                 <tr>
                   <th className="px-4 py-3">User</th>
                   <th className="px-4 py-3">Role</th>

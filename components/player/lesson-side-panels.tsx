@@ -66,7 +66,7 @@ export function LessonSidePanels({
       className={cn(
         "flex min-h-0 flex-col border-[var(--border)] bg-[var(--surface)]",
         variant === "rail" && "h-full border-l",
-        variant === "stack" && "rounded-xl border",
+        variant === "stack" && "rounded-sm border",
         className
       )}
       aria-label="Lesson tools"
@@ -91,7 +91,7 @@ export function LessonSidePanels({
                 id={`lesson-panel-tab-${id}`}
                 onClick={() => setTab(id)}
                 className={cn(
-                  "inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-md px-3 text-sm font-semibold transition-colors",
+                  "inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-sm px-3 text-sm font-bold transition-colors",
                   selected
                     ? "bg-[var(--brand-primary-muted)] text-[var(--brand-primary)]"
                     : "text-[var(--text-secondary)] hover:bg-[var(--surface-muted)] hover:text-[var(--text-primary)]"
@@ -105,7 +105,7 @@ export function LessonSidePanels({
         </div>
       ) : (
         <div className="shrink-0 border-b border-[var(--border)] px-4 py-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)]">
+          <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--text-secondary)]">
             {tabs[0]?.label}
           </p>
         </div>

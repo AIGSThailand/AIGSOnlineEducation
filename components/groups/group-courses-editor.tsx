@@ -53,7 +53,7 @@ export function GroupCoursesEditor({
   }
 
   return (
-    <div className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
+    <div className="space-y-3 rounded-sm border border-[var(--border)] bg-white p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h3 className="text-sm font-semibold text-slate-800">Courses in this bundle</h3>
@@ -64,15 +64,15 @@ export function GroupCoursesEditor({
         </Button>
       </div>
       <input
-        className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm"
+        className="h-10 w-full rounded-sm border border-[var(--border-strong)] px-3 text-sm"
         placeholder="Filter courses…"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
-      <ul className="max-h-80 space-y-1 overflow-y-auto rounded-md border border-slate-100 p-2">
+      <ul className="max-h-80 space-y-1 overflow-y-auto rounded-sm border border-slate-100 p-2">
         {filtered.map((course) => (
           <li key={course.id}>
-            <label className="flex cursor-pointer items-start gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-slate-50">
+            <label className="flex cursor-pointer items-start gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-slate-50">
               <input
                 type="checkbox"
                 className="mt-1"

@@ -76,12 +76,12 @@ export function LessonLearningSettings({
             <img
               src={value.featuredImageUrl}
               alt=""
-              className="mt-2 h-24 w-full rounded-md object-cover"
+              className="mt-2 h-24 w-full rounded-sm object-cover"
             />
           ) : null}
           <div className="mt-2 flex flex-wrap gap-2">
             {onFeaturedUpload && (
-              <label className="inline-flex cursor-pointer items-center rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">
+              <label className="inline-flex cursor-pointer items-center rounded-sm border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">
                 Upload
                 <input
                   type="file"
@@ -99,7 +99,7 @@ export function LessonLearningSettings({
             {value.featuredImageUrl && onFeaturedRemove && (
               <button
                 type="button"
-                className="rounded-md border border-slate-200 px-2.5 py-1.5 text-xs text-slate-700 hover:bg-slate-50"
+                className="rounded-sm border border-[var(--border)] px-2.5 py-1.5 text-xs text-slate-700 hover:bg-slate-50"
                 disabled={disabled}
                 onClick={onFeaturedRemove}
               >

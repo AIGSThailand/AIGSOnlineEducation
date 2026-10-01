@@ -39,7 +39,7 @@ export function EnrollmentProgressList({
           <select
             name="course"
             defaultValue={selectedCourseId || ""}
-            className="mt-1 block h-10 min-w-64 rounded-md border border-slate-300 bg-white px-3 text-sm"
+            className="mt-1 block h-10 min-w-64 rounded-sm border border-[var(--border-strong)] bg-white px-3 text-sm"
           >
             <option value="">All courses</option>
             {courses.map((course) => (
@@ -51,7 +51,7 @@ export function EnrollmentProgressList({
         </label>
         <button
           type="submit"
-          className="h-10 rounded-md bg-brand-600 px-4 text-sm font-semibold text-white hover:bg-brand-700"
+          className="h-10 rounded-sm bg-brand-600 px-4 text-sm font-semibold text-white hover:bg-brand-700"
         >
           Filter
         </button>
@@ -64,7 +64,7 @@ export function EnrollmentProgressList({
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm text-slate-700">
-              <thead className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase text-slate-500">
+              <thead className="border-b border-[var(--border)] bg-slate-50 text-xs font-semibold uppercase text-slate-500">
                 <tr>
                   <th className="px-6 py-3">Student</th>
                   <th className="px-6 py-3">Course</th>

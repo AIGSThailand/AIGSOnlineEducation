@@ -5,7 +5,11 @@ import { CreateTicketForm } from "@/components/support/create-ticket-form";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
-export default async function StudentSupportPage() {
+export default async function StudentSupportPage({
+  searchParams,
+}: {
+  searchParams?: { subject?: string; lesson?: string };
+}) {
   const user = await requireAuth();
   const tickets = await listMySupportTickets(user.id);
 
@@ -18,7 +22,15 @@ export default async function StudentSupportPage() {
 
       <div className="mx-auto max-w-2xl">
         <h2 className="mb-3 text-lg font-semibold text-slate-900">New ticket</h2>
-        <CreateTicketForm />
+        <CreateTicketForm
+          initialSubject={searchParams?.subject?.slice(0, 200)}
+          initialBody={
+            searchParams?.lesson &&
+            /^\/courses\/[a-f0-9-]+\/lessons\/[a-f0-9-]+$/.test(searchParams.lesson)
+              ? `Lesson: ${searchParams.lesson}\n\nDescribe the issue:\n`
+              : ""
+          }
+        />
       </div>
 
       <Card className="overflow-hidden p-0">
@@ -42,9 +54,7 @@ export default async function StudentSupportPage() {
                         Updated {new Date(t.updatedAt).toLocaleString()}
                       </div>
                     </div>
-                    <Badge variant={t.status === "open" ? "success" : "default"}>
-                      {t.status}
-                    </Badge>
+                    <Badge variant={t.status === "open" ? "success" : "default"}>{t.status}</Badge>
                   </Link>
                 </li>
               ))}

@@ -281,7 +281,7 @@ export function CourseStructure({
             type="button"
             onClick={() => onSelect({ type: "course" })}
             className={cn(
-              "w-full rounded-md px-3 py-2 text-left text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-500",
+              "w-full rounded-sm px-3 py-2 text-left text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-500",
               selected.type === "course"
                 ? "bg-brand-50 text-brand-800"
                 : "text-slate-700 hover:bg-slate-50"
@@ -376,7 +376,7 @@ export function CourseStructure({
 
       <DragOverlay dropAnimation={null}>
         {activeOverlay ? (
-          <div className="rounded-md border border-brand-200 bg-white px-3 py-2 text-sm shadow-md">
+          <div className="rounded-sm border border-brand-200 bg-white px-3 py-2 text-sm shadow-md">
             {activeOverlay.title}
           </div>
         ) : null}
@@ -470,7 +470,7 @@ function SortableSectionRow({
     >
       <div
         className={cn(
-          "group flex items-center gap-1 rounded-md pr-1",
+          "group flex items-center gap-1 rounded-sm pr-1",
           isSectionSelected ? "bg-brand-50" : "hover:bg-slate-50"
         )}
       >
@@ -494,7 +494,7 @@ function SortableSectionRow({
         <button
           type="button"
           onClick={() => onSelect({ type: "section", id: section.id })}
-          className="min-w-0 flex-1 truncate rounded-md px-1 py-2 text-left text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="min-w-0 flex-1 truncate rounded-sm px-1 py-2 text-left text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500"
         >
           {section.title}
         </button>
@@ -525,7 +525,7 @@ function SortableSectionRow({
 
       {expanded && (
         <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
-          <ul className="ml-5 mt-1 space-y-0.5 border-l border-slate-200 pl-2" role="group">
+          <ul className="ml-5 mt-1 space-y-0.5 border-l border-[var(--border)] pl-2" role="group">
             {items.length === 0 ? (
               <li className="px-2 py-2 text-xs text-slate-500">
                 No content yet.{" "}
@@ -664,7 +664,7 @@ function SortableItemRow({
     <li ref={setNodeRef} style={style} className={cn(isDragging && "opacity-50")}>
       <div
         className={cn(
-          "group flex items-center gap-1 rounded-md",
+          "group flex items-center gap-1 rounded-sm",
           isLessonSelected || isQuizSelected ? "bg-brand-50" : "hover:bg-slate-50"
         )}
       >
@@ -691,7 +691,7 @@ function SortableItemRow({
             }
           }}
           className={cn(
-            "min-w-0 flex-1 truncate rounded-md px-1 py-1.5 text-left text-sm focus:outline-none focus:ring-2 focus:ring-brand-500",
+            "min-w-0 flex-1 truncate rounded-sm px-1 py-1.5 text-left text-sm focus:outline-none focus:ring-2 focus:ring-brand-500",
             isQuiz ? "flex items-center gap-2 text-slate-600" : "text-slate-700"
           )}
         >

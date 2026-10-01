@@ -63,10 +63,10 @@ export function TicketThread({
         {messages.map((m) => (
           <div
             key={m.id}
-            className={`rounded-lg border p-4 ${
+            className={`rounded-sm border p-4 ${
               m.isStaff
                 ? "border-brand-100 bg-brand-50/50"
-                : "border-slate-200 bg-white"
+                : "border-[var(--border)] bg-white"
             }`}
           >
             <div className="mb-2 flex items-center justify-between gap-2 text-xs text-slate-500">
@@ -82,7 +82,7 @@ export function TicketThread({
       </div>
 
       {showStatusControls && (
-        <div className="flex flex-wrap items-end gap-3 rounded-lg border border-slate-200 bg-white p-4">
+        <div className="flex flex-wrap items-end gap-3 rounded-sm border border-[var(--border)] bg-white p-4">
           <div className="min-w-[160px] flex-1">
             <Label htmlFor="ticket-status">Status</Label>
             <Select
@@ -103,7 +103,7 @@ export function TicketThread({
       )}
 
       {status !== "closed" && (
-        <form onSubmit={onReply} className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
+        <form onSubmit={onReply} className="space-y-3 rounded-sm border border-[var(--border)] bg-white p-4">
           <Label htmlFor="reply-body">Reply</Label>
           <textarea
             id="reply-body"
@@ -111,7 +111,7 @@ export function TicketThread({
             onChange={(e) => setBody(e.target.value)}
             required
             rows={4}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+            className="w-full rounded-sm border border-[var(--border-strong)] px-3 py-2 text-sm shadow-none focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             placeholder="Write a reply…"
           />
           {error && <p className="text-sm text-red-600">{error}</p>}

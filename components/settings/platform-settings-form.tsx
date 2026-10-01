@@ -43,7 +43,7 @@ export function PlatformSettingsForm({ settings }: { settings: PlatformSettingsM
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4 rounded-lg border border-slate-200 bg-white p-4">
+    <form onSubmit={onSubmit} className="space-y-4 rounded-sm border border-[var(--border)] bg-white p-4">
       <div>
         <Label htmlFor="site-name">Site name</Label>
         <Input

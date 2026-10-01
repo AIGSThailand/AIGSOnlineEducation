@@ -29,7 +29,7 @@ export function StructureItem({
   return (
     <div
       className={cn(
-        "group flex items-center gap-1 rounded-md pr-1",
+        "group flex items-center gap-1 rounded-sm pr-1",
         selected ? "bg-brand-50" : "hover:bg-slate-50"
       )}
       style={{ paddingLeft: depth * 8 }}
@@ -47,7 +47,7 @@ export function StructureItem({
       <button
         type="button"
         onClick={onSelect}
-        className="min-w-0 flex-1 truncate rounded-md px-1 py-2 text-left text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+        className="min-w-0 flex-1 truncate rounded-sm px-1 py-2 text-left text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
       >
         {title}
       </button>

@@ -50,7 +50,7 @@ export default async function AdminCoursesPage({ searchParams }: AdminCoursesPag
         </Link>
       </div>
 
-      <form className="grid grid-cols-1 gap-4 rounded-lg border border-slate-200 bg-white p-4 md:grid-cols-4">
+      <form className="grid grid-cols-1 gap-4 rounded-sm border border-[var(--border)] bg-white p-4 md:grid-cols-4">
         <div>
           <Label htmlFor="search">Search</Label>
           <Input

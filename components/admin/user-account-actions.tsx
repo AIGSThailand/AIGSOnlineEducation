@@ -128,7 +128,7 @@ export function UserAccountActions({
       {error ? <p className="text-xs text-rose-600">{error}</p> : null}
       {message ? <p className="text-xs text-emerald-700">{message}</p> : null}
       {activityOpen ? (
-        <div className="mt-2 max-h-40 overflow-y-auto rounded border border-slate-200 bg-slate-50 p-2 text-xs text-slate-600">
+        <div className="mt-2 max-h-40 overflow-y-auto rounded border border-[var(--border)] bg-slate-50 p-2 text-xs text-slate-600">
           {activity && activity.length > 0 ? (
             <ul className="space-y-1">
               {activity.map((ev) => (

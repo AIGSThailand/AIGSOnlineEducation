@@ -29,6 +29,24 @@ export type SubscriptionStatus =
 export interface Database {
   public: {
     Tables: {
+      lesson_bookmarks: {
+        Row: { student_id: string; course_id: string; lesson_id: string; created_at: string };
+        Insert: { student_id: string; course_id: string; lesson_id: string; created_at?: string };
+        Update: { created_at?: string };
+        Relationships: [];
+      };
+      lesson_questions: {
+        Row: { id: string; student_id: string; course_id: string; lesson_id: string; author_id: string; body: string; created_at: string };
+        Insert: { id?: string; student_id: string; course_id: string; lesson_id: string; author_id: string; body: string; created_at?: string };
+        Update: { body?: string };
+        Relationships: [];
+      };
+      lesson_notes: {
+        Row: { student_id: string; course_id: string; lesson_id: string; body: string; updated_at: string };
+        Insert: { student_id: string; course_id: string; lesson_id: string; body?: string; updated_at?: string };
+        Update: { body?: string; updated_at?: string };
+        Relationships: [];
+      };
       profiles: {
         Row: {
           id: string;

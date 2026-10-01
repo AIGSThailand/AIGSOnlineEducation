@@ -46,7 +46,7 @@ export function AccountSettingsForm({
     <div className="space-y-6">
       <form
         onSubmit={onSubmit}
-        className="space-y-4 rounded-lg border border-slate-200 bg-white p-4"
+        className="space-y-4 rounded-sm border border-[var(--border)] bg-white p-4"
       >
         <div>
           <Label htmlFor="account-email">Email</Label>
@@ -77,7 +77,7 @@ export function AccountSettingsForm({
         </Button>
       </form>
 
-      <div className="rounded-lg border border-slate-200 bg-white p-4">
+      <div className="rounded-sm border border-[var(--border)] bg-white p-4">
         <h2 className="text-sm font-semibold text-slate-900">Password</h2>
         <p className="mt-1 text-sm text-slate-500">
           Use the password reset flow to change your password securely.

@@ -1,3 +1,5 @@
+import { LessonTools } from "@/components/player/lesson-tools";
+import { LessonNotes } from "@/components/player/lesson-notes";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser, canAccessCourse } from "@/lib/auth/permissions";
@@ -34,7 +36,8 @@ export default async function LessonPage({ params, searchParams }: LessonPagePro
   const hasAccess = await canAccessCourse(courseId);
   if (!hasAccess || !user || visitorReview) {
     const preview = await getPublicLessonPreview(courseId, lessonId);
-    if (preview) return <LessonPreview courseId={courseId} preview={preview} visitorReview={visitorReview} />;
+    if (preview)
+      return <LessonPreview courseId={courseId} preview={preview} visitorReview={visitorReview} />;
     return (
       <div className="mx-auto max-w-md py-20 text-center">
         <Card className="p-8">
@@ -42,7 +45,10 @@ export default async function LessonPage({ params, searchParams }: LessonPagePro
           <p className="mt-2 text-sm text-slate-600">
             You must be enrolled in this course with an active subscription to access its lessons.
           </p>
-          <Link href={`/courses/${courseId}`} className="mt-4 inline-block font-semibold text-brand-700">
+          <Link
+            href={`/courses/${courseId}`}
+            className="mt-4 inline-block font-bold text-brand-700"
+          >
             View course and enrollment options
           </Link>
         </Card>
@@ -112,21 +118,29 @@ export default async function LessonPage({ params, searchParams }: LessonPagePro
       resources={isLocked ? [] : resources}
     >
       {isLocked ? (
-        <p className="rounded-md border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600">
+        <p className="rounded-sm border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-6 text-sm text-slate-600">
           Complete the previous steps to unlock this lesson.
         </p>
       ) : (
-        <LessonWorkspace
-          media={{
-            videoUrl: lesson.video_url,
-            title: lesson.title,
-            posterUrl: lesson.video_thumbnail_url,
-            captionsUrl: lesson.video_captions_url,
-            transcript,
-          }}
-          contentHtml={lesson.content}
-          resources={resources}
-        />
+        <>
+          <LessonWorkspace
+            media={{
+              videoUrl: lesson.video_url,
+              title: lesson.title,
+              posterUrl: lesson.video_thumbnail_url,
+              captionsUrl: lesson.video_captions_url,
+              transcript,
+            }}
+            contentHtml={lesson.content}
+            resources={resources}
+          />
+          <LessonTools key={`tools:${user.id}:${courseId}:${lessonId}`} courseId={courseId} lessonId={lessonId} title={lesson.title} />
+          <LessonNotes
+            key={`${user.id}:${courseId}:${lessonId}`}
+            courseId={courseId}
+            lessonId={lessonId}
+          />
+        </>
       )}
     </CoursePlayer>
   );

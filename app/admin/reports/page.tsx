@@ -34,7 +34,7 @@ export default async function AdminReportsPage() {
           </p>
           <div className="overflow-x-auto">
             <table className="min-w-full text-left text-sm">
-              <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
+              <thead className="border-b border-[var(--border)] text-xs uppercase text-slate-500">
                 <tr>
                   <th className="py-2 pr-4 font-medium">Day (UTC)</th>
                   <th className="py-2 pr-4 font-medium">Enrollments</th>
@@ -72,7 +72,7 @@ export default async function AdminReportsPage() {
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full text-left text-sm">
-                <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
+                <thead className="border-b border-[var(--border)] text-xs uppercase text-slate-500">
                   <tr>
                     <th className="py-2 pr-4 font-medium">Course</th>
                     <th className="py-2 pr-4 font-medium">Enrollments</th>
@@ -112,7 +112,7 @@ export default async function AdminReportsPage() {
           </p>
           <div className="overflow-x-auto">
             <table className="min-w-full text-left text-sm">
-              <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
+              <thead className="border-b border-[var(--border)] text-xs uppercase text-slate-500">
                 <tr>
                   <th className="py-2 pr-4 font-medium">Entity</th>
                   <th className="py-2 pr-4 font-medium">Live</th>
