@@ -43,6 +43,7 @@ export type GroupDetail = {
 
 /** Public catalog card for an active group/bundle. */
 export type PublicBundleCatalogItem = {
+  price?: string | null;
   id: string;
   name: string;
   description: string | null;

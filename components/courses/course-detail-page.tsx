@@ -1,3 +1,5 @@
+import { getPublicPrice } from "@/lib/stripe/public-price";
+import { CoursePrice } from "@/components/public/course-price";
 import { CourseContentsNav } from "@/components/courses/course-contents-nav";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -77,6 +79,7 @@ export default async function CourseDetailPage({
     notFound();
   }
 
+  const price = await getPublicPrice(course.stripe_price_id);
   const syllabus = await getCourseSyllabus(courseId, supabase);
   const previewLessonIds = new Set(await getPublicPreviewIds(courseId, supabase));
   const { modules, lessonCount, firstLessonId } = syllabus;
@@ -276,6 +279,8 @@ export default async function CourseDetailPage({
               <h2 className="text-xl font-semibold text-slate-900">
                 {hasContentAccess ? "Your course" : "Start your learning journey"}
               </h2>
+              <CoursePrice price={price} openAccess={course.access_type === "open" && !course.stripe_price_id} />
+              {course.access_expiration_enabled && course.access_period_days ? <p className="text-sm text-[var(--text-secondary)]">Access for {course.access_period_days} days from enrollment</p> : null}
               <div className="space-y-2 text-sm text-slate-600">
                 <div className="flex items-center justify-between">
                   <span className="flex items-center">
@@ -316,6 +321,8 @@ export default async function CourseDetailPage({
                       Open course builder
                     </Button>
                   </Link>
+                ) : !price ? (
+                  <p className="text-sm text-[var(--text-secondary)]">Enrollment is currently unavailable.</p>
                 ) : user ? (
                   course.stripe_price_id ? (
                     <BuyCourseButton

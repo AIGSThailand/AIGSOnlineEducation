@@ -43,7 +43,7 @@ export default async function InstructorCoursesPage({ searchParams }: Instructor
         </Link>
       </div>
 
-      <form className="grid grid-cols-1 gap-4 rounded-lg border border-slate-200 bg-white p-4 md:grid-cols-3">
+      <form className="grid grid-cols-1 gap-4 rounded-sm border border-[var(--border)] bg-white p-4 md:grid-cols-3">
         <div>
           <Label htmlFor="search">Search</Label>
           <Input

@@ -22,7 +22,7 @@ export function EnrollmentProgressDetailView({
         <p className="text-sm text-slate-500">{detail.email}</p>
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white p-4">
+      <div className="rounded-sm border border-[var(--border)] bg-white p-4">
         <p className="font-medium text-slate-900">{detail.courseTitle}</p>
         <p className="mt-1 text-sm text-slate-600">
           {detail.total === 0
@@ -38,7 +38,7 @@ export function EnrollmentProgressDetailView({
         <p className="text-sm text-slate-500">No lessons or quizzes are published in this course.</p>
       ) : (
         detail.sections.map((section) => (
-          <section key={section.id} className="rounded-lg border border-slate-200 bg-white">
+          <section key={section.id} className="rounded-sm border border-[var(--border)] bg-white">
             <h2 className="border-b border-slate-100 px-4 py-3 text-sm font-semibold text-slate-900">
               {section.title}
             </h2>

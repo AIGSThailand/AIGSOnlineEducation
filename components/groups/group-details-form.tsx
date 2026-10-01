@@ -62,7 +62,7 @@ export function GroupDetailsForm({ mode }: { mode: Mode }) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4 rounded-lg border border-slate-200 bg-white p-4">
+    <form onSubmit={onSubmit} className="space-y-4 rounded-sm border border-[var(--border)] bg-white p-4">
       <div>
         <Label htmlFor="group-name">Name</Label>
         <Input
@@ -135,7 +135,7 @@ export function GroupDetailsForm({ mode }: { mode: Mode }) {
                 <img
                   src={thumbnailUrl}
                   alt="Bundle thumbnail preview"
-                  className="mt-2 h-24 w-full rounded-md object-cover"
+                  className="mt-2 h-24 w-full rounded-sm object-cover"
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.display = "none";
                   }}

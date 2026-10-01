@@ -100,9 +100,9 @@ function StepRow({
   );
 
   const className = cn(
-    "flex items-center gap-3 rounded-md px-2.5 py-2 text-sm transition-colors",
+    "flex items-center gap-3 rounded-sm px-2.5 py-2 text-sm transition-colors",
     step.nested && "ml-4",
-    isActive && "bg-[var(--brand-primary-muted)] font-semibold text-[var(--brand-primary)]",
+    isActive && "bg-[var(--brand-primary-muted)] font-bold text-[var(--brand-primary)]",
     !isActive && !isLocked && "text-[var(--text-primary)] hover:bg-[var(--surface-muted)]",
     isLocked && "cursor-not-allowed text-[var(--text-secondary)] opacity-70"
   );
@@ -162,7 +162,7 @@ export function PlayerSidebar({
     >
       <Link
         href={`/courses/${courseId}`}
-        className="flex items-center gap-2 bg-[var(--brand-primary)] px-4 py-3.5 text-sm font-semibold text-white hover:bg-[var(--brand-primary-hover)]"
+        className="flex items-center gap-2 bg-[var(--brand-primary)] px-4 py-3.5 text-sm font-bold text-white hover:bg-[var(--brand-primary-hover)]"
         onClick={onNavigate}
       >
         <ChevronRight className="h-4 w-4 rotate-180 opacity-80" aria-hidden />
@@ -177,7 +177,7 @@ export function PlayerSidebar({
               <button
                 type="button"
                 onClick={() => toggle(section.id)}
-                className="flex w-full items-center justify-between gap-2 px-1 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                className="flex w-full items-center justify-between gap-2 px-1 py-2 text-left text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                 aria-expanded={open}
               >
                 <span className="leading-snug">

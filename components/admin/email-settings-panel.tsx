@@ -34,7 +34,7 @@ export function EmailSettingsPanel({
 }) {
   if (loadError) {
     return (
-      <p className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+      <p className="rounded-sm border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
         Email tables are not available yet. Apply migration{" "}
         <span className="font-mono">20260928000000_email_system.sql</span>. {loadError}
       </p>
@@ -110,7 +110,7 @@ function SmtpForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4 rounded-lg border border-slate-200 bg-white p-4">
+    <form onSubmit={onSubmit} className="space-y-4 rounded-sm border border-[var(--border)] bg-white p-4">
       <div>
         <h2 className="text-sm font-semibold text-slate-900">SMTP</h2>
         <p className="mt-1 text-xs text-slate-500">
@@ -271,7 +271,7 @@ function TemplateForm({ templates }: { templates: TemplateAdminView[] }) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4 rounded-lg border border-slate-200 bg-white p-4">
+    <form onSubmit={onSubmit} className="space-y-4 rounded-sm border border-[var(--border)] bg-white p-4">
       <div>
         <h2 className="text-sm font-semibold text-slate-900">Templates</h2>
         <p className="mt-1 text-xs text-slate-500">
@@ -283,7 +283,7 @@ function TemplateForm({ templates }: { templates: TemplateAdminView[] }) {
         <Label htmlFor="email-event">Event</Label>
         <select
           id="email-event"
-          className="mt-1 h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm"
+          className="mt-1 h-10 w-full rounded-sm border border-[var(--border-strong)] bg-white px-3 text-sm"
           value={current.eventKey}
           onChange={(e) => {
             setEventKey(e.target.value as TemplateAdminView["eventKey"]);
@@ -354,7 +354,7 @@ function TemplateForm({ templates }: { templates: TemplateAdminView[] }) {
 
 function LogList({ logs }: { logs: EmailLogView[] }) {
   return (
-    <section className="rounded-lg border border-slate-200 bg-white p-4">
+    <section className="rounded-sm border border-[var(--border)] bg-white p-4">
       <h2 className="text-sm font-semibold text-slate-900">Recent sends</h2>
       {logs.length === 0 ? (
         <p className="mt-2 text-sm text-slate-500">No messages yet for this environment.</p>

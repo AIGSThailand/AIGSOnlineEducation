@@ -184,7 +184,7 @@ export function ExtendAccessPanel({ courseId }: ExtendAccessPanelProps) {
             />
             <select
               multiple
-              className="h-48 w-full rounded-md border border-slate-300 bg-white px-2 py-1 text-sm"
+              className="h-48 w-full rounded-sm border border-[var(--border-strong)] bg-white px-2 py-1 text-sm"
               value={availableSelected}
               onChange={(e) =>
                 setAvailableSelected(Array.from(e.target.selectedOptions, (o) => o.value))
@@ -218,7 +218,7 @@ export function ExtendAccessPanel({ courseId }: ExtendAccessPanelProps) {
             />
             <select
               multiple
-              className="h-48 w-full rounded-md border border-slate-300 bg-white px-2 py-1 text-sm"
+              className="h-48 w-full rounded-sm border border-[var(--border-strong)] bg-white px-2 py-1 text-sm"
               value={affectedSelected}
               onChange={(e) =>
                 setAffectedSelected(Array.from(e.target.selectedOptions, (o) => o.value))

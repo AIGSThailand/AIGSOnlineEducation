@@ -37,7 +37,7 @@ export default async function AdminCertificatesPage() {
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm text-slate-700">
-              <thead className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase text-slate-500">
+              <thead className="border-b border-[var(--border)] bg-slate-50 text-xs font-semibold uppercase text-slate-500">
                 <tr>
                   <th className="px-6 py-3">Title</th>
                   <th className="px-6 py-3">Slug</th>

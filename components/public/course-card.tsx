@@ -1,3 +1,4 @@
+import { CoursePrice } from "@/components/public/course-price";
 import Link from "next/link";
 import { ArrowRight, BookOpen, Layers } from "lucide-react";
 import { wordpressContentToPlainText, decodeHtmlEntities } from "@/lib/utils/wordpress-content";
@@ -9,6 +10,8 @@ export type PublicCourseCardData = {
   description?: string | null;
   excerpt?: string | null;
   thumbnail_url?: string | null;
+  price?: string | null;
+  stripe_price_id?: string | null;
   access_type?: string | null;
 };
 
@@ -18,6 +21,7 @@ export type PublicBundleCardData = {
   description?: string | null;
   thumbnailUrl?: string | null;
   courseCount: number;
+  price?: string | null;
   stripePriceId?: string | null;
 };
 
@@ -98,6 +102,7 @@ export function PublicCourseCard({ course, enrolled = false, className }: Public
         <p className="mt-3 line-clamp-3 flex-1 text-sm leading-6 text-[var(--text-secondary)]">
           {summary}
         </p>
+        <CoursePrice price={course.price} openAccess={course.access_type === "open" && !course.stripe_price_id} />
         <Link
           href={`/courses/${course.id}`}
           className="mt-5 flex min-h-11 items-center justify-between gap-3 border-t border-[var(--border)] pt-4 text-sm font-semibold text-[var(--brand-primary)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand-primary)]"
@@ -156,6 +161,7 @@ export function PublicBundleCard({ bundle, owned = false, className }: PublicBun
         <p className="mt-3 line-clamp-3 flex-1 text-sm leading-6 text-[var(--text-secondary)]">
           {summary}
         </p>
+        <CoursePrice price={bundle.price} />
         <Link
           href={`/bundles/${bundle.id}`}
           className="mt-5 flex min-h-11 items-center justify-between gap-3 border-t border-[var(--border)] pt-4 text-sm font-semibold text-[var(--brand-primary)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand-primary)]"

@@ -322,7 +322,7 @@ export function QuizEditor({
 
   if (loading) {
     return (
-      <div className="space-y-4 rounded-lg border border-slate-200 bg-white p-6">
+      <div className="space-y-4 rounded-sm border border-[var(--border)] bg-white p-6">
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-10 w-full" />
         <Skeleton className="h-24 w-full" />
@@ -332,7 +332,7 @@ export function QuizEditor({
 
   return (
     <div className="space-y-6">
-      <div className="rounded-lg border border-slate-200 bg-white p-6">
+      <div className="rounded-sm border border-[var(--border)] bg-white p-6">
         <div className="mb-4 flex items-center justify-between gap-3">
           <h2 className="text-lg font-semibold text-slate-900">Quiz editor</h2>
           <Button
@@ -346,7 +346,7 @@ export function QuizEditor({
         </div>
 
         {error && (
-          <p className="mb-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p className="mb-4 rounded-sm border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
             {error}
           </p>
         )}
@@ -452,7 +452,7 @@ export function QuizEditor({
         </div>
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white p-6">
+      <div className="rounded-sm border border-[var(--border)] bg-white p-6">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <h3 className="text-base font-semibold text-slate-900">
             Questions ({questions.length})
@@ -495,13 +495,13 @@ export function QuizEditor({
         </div>
 
         {questionError && (
-          <p className="mb-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p className="mb-4 rounded-sm border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
             {questionError}
           </p>
         )}
 
         {editing && (
-          <div className="mb-6 space-y-3 rounded-md border border-slate-200 bg-slate-50 p-4">
+          <div className="mb-6 space-y-3 rounded-sm border border-[var(--border)] bg-slate-50 p-4">
             <div className="flex items-center justify-between">
               <p className="text-sm font-medium text-slate-800">
                 {editing.questionId ? "Edit question" : "New question"} ({editing.questionType})
@@ -595,7 +595,7 @@ export function QuizEditor({
                 {editing.options.map((opt, index) => (
                   <div
                     key={opt.key}
-                    className="flex flex-col gap-2 rounded border border-slate-200 bg-white p-3 sm:flex-row sm:items-start"
+                    className="flex flex-col gap-2 rounded border border-[var(--border)] bg-white p-3 sm:flex-row sm:items-start"
                   >
                     <label className="mt-2 flex items-center gap-2 text-xs text-slate-600">
                       <input

@@ -16,7 +16,7 @@ export async function ResumeLearning({
   return (
     <section
       aria-labelledby="resume-title"
-      className="overflow-hidden rounded-2xl border border-brand-100 bg-white shadow-sm"
+      className="overflow-hidden rounded-sm border border-brand-100 bg-white shadow-none"
     >
       <div className="grid md:grid-cols-[1fr_16rem]">
         <div className="p-6 sm:p-8">
@@ -37,7 +37,7 @@ export async function ResumeLearning({
           </p>
           <Link
             href={resume.next?.href || `/courses/${courseId}`}
-            className="mt-6 inline-flex min-h-11 items-center gap-3 rounded-lg bg-brand-600 px-5 py-3 text-sm font-semibold text-white hover:bg-brand-700"
+            className="mt-6 inline-flex min-h-11 items-center gap-3 rounded-sm bg-brand-600 px-5 py-3 text-sm font-semibold text-white hover:bg-brand-700"
           >
             {resume.finished
               ? "Review course"

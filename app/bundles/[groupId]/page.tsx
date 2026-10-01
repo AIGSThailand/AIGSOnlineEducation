@@ -1,3 +1,5 @@
+import { getPublicPrice } from "@/lib/stripe/public-price";
+import { CoursePrice } from "@/components/public/course-price";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/permissions";
@@ -22,6 +24,7 @@ export default async function PublicBundlePage({ params, searchParams }: PagePro
   const group = await getPublicGroupBundle(params.groupId);
   if (!group) notFound();
 
+  const price = await getPublicPrice(group.stripePriceId);
   const user = await getCurrentUser();
   let checkoutMessage: { tone: "success" | "error"; text: string } | null = null;
 
@@ -120,7 +123,8 @@ export default async function PublicBundlePage({ params, searchParams }: PagePro
           </div>
         </div>
 
-        <Card className="h-fit p-6">
+        <Card className="h-fit space-y-4 p-6">
+          <CoursePrice price={price} />
           {isMember ? (
             <div className="space-y-3">
               <p className="text-sm font-semibold text-emerald-800">You have access to this bundle.</p>
@@ -128,6 +132,8 @@ export default async function PublicBundlePage({ params, searchParams }: PagePro
                 <Button className="w-full rounded-sm font-bold shadow-none">Go to my courses</Button>
               </Link>
             </div>
+          ) : !price ? (
+            <p className="text-sm text-[var(--text-secondary)]">This bundle is not open for purchase yet.</p>
           ) : user ? (
             group.stripePriceId ? (
               <BuyBundleButton

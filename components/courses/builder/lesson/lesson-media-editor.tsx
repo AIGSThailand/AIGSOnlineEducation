@@ -50,7 +50,7 @@ export function LessonMediaEditor({
       : "Upload a .vtt file or paste a stable captions URL (not a signed link).";
 
   return (
-    <section className="space-y-4 rounded-lg border border-slate-200 bg-white p-4">
+    <section className="space-y-4 rounded-sm border border-[var(--border)] bg-white p-4">
       <div>
         <h3 className="text-sm font-semibold text-slate-900">Primary video</h3>
         <p className="mt-0.5 text-xs text-slate-500">

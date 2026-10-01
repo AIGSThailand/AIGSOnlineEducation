@@ -54,7 +54,7 @@ export function LessonVideo({ url, title, className, captionsUrl, posterUrl }: L
     return (
       <div
         className={cn(
-          "aspect-video w-full overflow-hidden rounded-lg bg-[var(--brand-dark)]",
+          "aspect-video w-full overflow-hidden rounded-sm bg-[var(--brand-dark)]",
           className
         )}
       >
@@ -182,7 +182,7 @@ function NativeLessonVideo({
 
   if (showNativeFallback) {
     return (
-      <div className={cn("overflow-hidden rounded-lg bg-black", className)}>
+      <div className={cn("overflow-hidden rounded-sm bg-black", className)}>
         <video
           className="aspect-video h-auto w-full"
           src={url}
@@ -209,7 +209,7 @@ function NativeLessonVideo({
     <div
       ref={rootRef}
       className={cn(
-        "group relative overflow-hidden rounded-lg bg-[var(--brand-dark)] text-white",
+        "group relative overflow-hidden rounded-sm bg-[var(--brand-dark)] text-white",
         className
       )}
     >
@@ -261,7 +261,7 @@ function NativeLessonVideo({
           <div className="flex flex-wrap justify-center gap-2">
             <a
               href={url}
-              className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-[var(--brand-chrome)]"
+              className="rounded-sm bg-white px-3 py-2 text-sm font-bold text-[var(--brand-chrome)]"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -269,7 +269,7 @@ function NativeLessonVideo({
             </a>
             <button
               type="button"
-              className="rounded-md border border-white/40 px-3 py-2 text-sm font-semibold"
+              className="rounded-sm border border-white/40 px-3 py-2 text-sm font-bold"
               onClick={() => setShowNativeFallback(true)}
             >
               Use browser controls
@@ -316,7 +316,7 @@ function NativeLessonVideo({
               id={`${labelsId}-speed`}
               value={speed}
               onChange={(e) => onSpeed(Number(e.target.value))}
-              className="h-8 rounded-md border border-white/20 bg-black/40 px-1.5 text-xs text-white"
+              className="h-8 rounded-sm border border-white/20 bg-black/40 px-1.5 text-xs text-white"
             >
               {SPEEDS.map((rate) => (
                 <option key={rate} value={rate}>
@@ -357,7 +357,7 @@ function ControlBtn({
       aria-label={label}
       title={label}
       onClick={onClick}
-      className="inline-flex h-9 w-9 items-center justify-center rounded-md text-white hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+      className="inline-flex h-9 w-9 items-center justify-center rounded-sm text-white hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
     >
       {children}
     </button>

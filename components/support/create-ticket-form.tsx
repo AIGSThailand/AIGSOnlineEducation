@@ -10,11 +10,19 @@ import { createSupportTicketAction } from "@/features/support/actions";
 import { cn } from "@/lib/utils";
 import type { SupportTicketPriority } from "@/types/database.types";
 
-export function CreateTicketForm({ plain = false }: { plain?: boolean }) {
+export function CreateTicketForm({
+  plain = false,
+  initialSubject = "",
+  initialBody = "",
+}: {
+  plain?: boolean;
+  initialSubject?: string;
+  initialBody?: string;
+}) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [subject, setSubject] = useState("");
-  const [body, setBody] = useState("");
+  const [subject, setSubject] = useState(initialSubject);
+  const [body, setBody] = useState(initialBody);
   const [priority, setPriority] = useState<SupportTicketPriority>("normal");
   const [error, setError] = useState<string | null>(null);
 
@@ -36,7 +44,7 @@ export function CreateTicketForm({ plain = false }: { plain?: boolean }) {
       onSubmit={onSubmit}
       className={cn(
         "space-y-4",
-        plain ? "" : "rounded-lg border border-slate-200 bg-white p-4"
+        plain ? "" : "rounded-sm border border-[var(--border)] bg-white p-4"
       )}
     >
       <div>
@@ -73,7 +81,7 @@ export function CreateTicketForm({ plain = false }: { plain?: boolean }) {
             "mt-1 w-full border px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500",
             plain
               ? "rounded-sm border-[var(--border-strong)] shadow-none"
-              : "rounded-md border-slate-300 shadow-sm"
+              : "rounded-sm border-[var(--border-strong)] shadow-none"
           )}
           placeholder="Describe your issue…"
         />

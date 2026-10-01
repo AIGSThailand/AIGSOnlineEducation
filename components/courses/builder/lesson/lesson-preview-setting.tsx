@@ -53,7 +53,7 @@ export function LessonPreviewSetting({
     }
   }
   return (
-    <section className="space-y-2 rounded-lg border border-slate-200 p-4">
+    <section className="space-y-2 rounded-sm border border-[var(--border)] p-4">
       <label className="flex items-center gap-3 text-sm font-semibold">
         <input
           type="checkbox"

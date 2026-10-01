@@ -89,7 +89,7 @@ export function RichTextEditor({
         HTMLAttributes: { rel: "noopener noreferrer", target: "_blank" },
       }),
       Image.configure({
-        HTMLAttributes: { class: "rounded-lg max-w-full h-auto" },
+        HTMLAttributes: { class: "rounded-sm max-w-full h-auto" },
       }),
       Table.configure({
         resizable: false,
@@ -170,7 +170,7 @@ export function RichTextEditor({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-lg border border-slate-200 bg-white focus-within:ring-2 focus-within:ring-brand-500",
+        "overflow-hidden rounded-sm border border-[var(--border)] bg-white focus-within:ring-2 focus-within:ring-brand-500",
         disabled && "opacity-60",
         className
       )}
@@ -298,7 +298,7 @@ function Toolbar({
         }}
       />
       <div
-        className="flex flex-wrap items-center gap-0.5 border-b border-slate-200 bg-slate-50 px-2 py-1.5"
+        className="flex flex-wrap items-center gap-0.5 border-b border-[var(--border)] bg-slate-50 px-2 py-1.5"
         role="toolbar"
         aria-label="Text formatting"
       >
@@ -443,7 +443,7 @@ function Toolbar({
       {(imageUploading || imageError) && (
         <p
           className={cn(
-            "border-b border-slate-200 px-3 py-1 text-xs",
+            "border-b border-[var(--border)] px-3 py-1 text-xs",
             imageError ? "bg-red-50 text-red-700" : "bg-slate-50 text-slate-500"
           )}
           role={imageError ? "alert" : "status"}

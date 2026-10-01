@@ -134,7 +134,7 @@ export function QuizPlayer({ courseId, quizId, stepId, initial }: QuizPlayerProp
 
   if (quiz.questions.length === 0) {
     return (
-      <p className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+      <p className="rounded-sm border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
         This quiz has no questions yet.
       </p>
     );
@@ -143,13 +143,13 @@ export function QuizPlayer({ courseId, quizId, stepId, initial }: QuizPlayerProp
   return (
     <div className="space-y-6">
       {error && (
-        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
+        <p className="rounded-sm bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
           {error}
         </p>
       )}
 
       {phase === "intro" && (
-        <div className="space-y-4 rounded-lg border border-slate-200 bg-slate-50 p-5">
+        <div className="space-y-4 rounded-sm border border-[var(--border)] bg-[var(--surface-muted)] p-5">
           {quiz.description ? <p className="text-sm text-slate-700">{quiz.description}</p> : null}
           <ul className="space-y-1 text-sm text-slate-600">
             <li>
@@ -168,8 +168,8 @@ export function QuizPlayer({ courseId, quizId, stepId, initial }: QuizPlayerProp
           </ul>
 
           {quiz.attempts.filter((a) => a.submittedAt).length > 0 && (
-            <div className="border-t border-slate-200 pt-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <div className="border-t border-[var(--border)] pt-3">
+              <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
                 Previous attempts
               </p>
               <ul className="mt-2 space-y-1 text-sm text-slate-600">
@@ -200,7 +200,7 @@ export function QuizPlayer({ courseId, quizId, stepId, initial }: QuizPlayerProp
             {secondsLeft != null && (
               <p
                 className={
-                  secondsLeft <= 60 ? "font-semibold text-red-600" : "font-medium text-slate-800"
+                  secondsLeft <= 60 ? "font-bold text-red-600" : "font-medium text-slate-800"
                 }
                 aria-live="polite"
               >
@@ -212,9 +212,9 @@ export function QuizPlayer({ courseId, quizId, stepId, initial }: QuizPlayerProp
           {quiz.questions.map((q, index) => (
             <fieldset
               key={q.id}
-              className="space-y-3 rounded-lg border border-slate-200 bg-white p-4"
+              className="space-y-3 rounded-sm border border-[var(--border)] bg-white p-4"
             >
-              <legend className="px-1 text-sm font-semibold text-slate-900">
+              <legend className="px-1 text-sm font-bold text-slate-900">
                 {index + 1}. {q.questionText}
                 <span className="ml-2 font-normal text-slate-500">({q.points} pt)</span>
               </legend>
@@ -224,7 +224,7 @@ export function QuizPlayer({ courseId, quizId, stepId, initial }: QuizPlayerProp
                   {q.options.map((opt) => (
                     <label
                       key={opt.id}
-                      className="flex cursor-pointer items-start gap-2 rounded-md border border-slate-100 px-3 py-2 text-sm hover:bg-slate-50"
+                      className="flex cursor-pointer items-start gap-2 rounded-sm border border-slate-100 px-3 py-2 text-sm hover:bg-[var(--surface-muted)]"
                     >
                       <input
                         type="radio"
@@ -251,7 +251,7 @@ export function QuizPlayer({ courseId, quizId, stepId, initial }: QuizPlayerProp
                     return (
                       <label
                         key={opt.id}
-                        className="flex cursor-pointer items-start gap-2 rounded-md border border-slate-100 px-3 py-2 text-sm hover:bg-slate-50"
+                        className="flex cursor-pointer items-start gap-2 rounded-sm border border-slate-100 px-3 py-2 text-sm hover:bg-[var(--surface-muted)]"
                       >
                         <input
                           type="checkbox"
@@ -278,7 +278,7 @@ export function QuizPlayer({ courseId, quizId, stepId, initial }: QuizPlayerProp
                 q.questionType === "fill_blank" ||
                 q.questionType === "assessment") && (
                 <textarea
-                  className="min-h-[100px] w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="min-h-[100px] w-full rounded-sm border border-[var(--border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   value={answers[q.id]?.text || ""}
                   onChange={(e) =>
                     setAnswers((prev) => ({
@@ -314,13 +314,13 @@ export function QuizPlayer({ courseId, quizId, stepId, initial }: QuizPlayerProp
       {phase === "results" && result && (
         <div className="space-y-5">
           <div
-            className={`rounded-lg border px-4 py-4 ${
+            className={`rounded-sm border px-4 py-4 ${
               result.passed
                 ? "border-emerald-200 bg-emerald-50 text-emerald-900"
                 : "border-amber-200 bg-amber-50 text-amber-950"
             }`}
           >
-            <p className="text-lg font-semibold">
+            <p className="text-lg font-bold">
               {result.passed ? "Passed" : "Not passed"} — {result.percentage}%
             </p>
             <p className="mt-1 text-sm">
@@ -388,7 +388,7 @@ function ResultRow({ index, answer }: { index: number; answer: GradedAnswerResul
         : "Incorrect";
 
   return (
-    <li className="rounded-lg border border-slate-200 p-4 text-sm">
+    <li className="rounded-sm border border-[var(--border)] p-4 text-sm">
       <p className="font-medium text-slate-900">
         {index + 1}. {answer.questionText}
       </p>

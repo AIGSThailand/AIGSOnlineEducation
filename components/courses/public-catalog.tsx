@@ -15,7 +15,7 @@ import type { Database } from "@/types/database.types";
 type Course = Pick<
   Database["public"]["Tables"]["courses"]["Row"],
   "id" | "title" | "description" | "excerpt" | "thumbnail_url" | "access_type" | "created_at"
->;
+> & { price?: string | null };
 
 type CatalogItem =
   | { kind: "course"; sortTitle: string; sortDate: string; course: Course }

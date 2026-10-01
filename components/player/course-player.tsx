@@ -100,7 +100,7 @@ export function CoursePlayer({
           <div className="flex items-center gap-3 px-3 py-2.5 sm:px-5">
             <button
               type="button"
-              className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-md border border-[var(--border)] lg:hidden"
+              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-sm border border-[var(--border)] lg:hidden"
               onClick={() => setMenuOpen(true)}
               aria-label="Open syllabus"
             >
@@ -109,14 +109,14 @@ export function CoursePlayer({
 
             {previewMode ? (
               <div className="min-w-0 flex-1 text-sm">
-                <p className="font-semibold text-brand-700">Free preview</p>
+                <p className="font-bold text-brand-700">Free preview</p>
                 <Link href={`/courses/${player.courseId}`} className="underline">
                   Enroll to access the full course
                 </Link>
               </div>
             ) : (
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)]">
+                <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--text-secondary)]">
                   {percent}% complete
                   <span className="ml-2 font-medium normal-case tracking-normal">
                     {completedCount}/{total} steps
@@ -149,7 +149,7 @@ export function CoursePlayer({
             {menuOpen ? (
               <button
                 type="button"
-                className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-md border border-[var(--border)] lg:hidden"
+                className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-sm border border-[var(--border)] lg:hidden"
                 onClick={closeMenu}
                 aria-label="Close syllabus"
               >
@@ -186,12 +186,12 @@ export function CoursePlayer({
                         : "In progress"}
                   </Badge>
                 </div>
-                <h1 className="font-display text-2xl font-semibold tracking-tight text-[var(--text-primary)] sm:text-3xl">
+                <h1 className="font-display text-2xl font-bold tracking-tight text-[var(--text-primary)] sm:text-3xl">
                   {current.title}
                 </h1>
               </div>
 
-              <div className="rounded-xl border border-[var(--border)] bg-white p-4 shadow-sm sm:p-6">
+              <div className="rounded-sm border border-[var(--border)] bg-white p-4 shadow-none sm:p-6">
                 {children}
               </div>
 

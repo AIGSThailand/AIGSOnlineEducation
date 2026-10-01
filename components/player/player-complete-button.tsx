@@ -54,7 +54,7 @@ export function PlayerCompleteButton({
         onClick={toggle}
         disabled={disabled || isPending}
         className={cn(
-          "inline-flex min-h-10 items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand-primary)] disabled:opacity-50",
+          "inline-flex min-h-11 items-center justify-center gap-2 rounded-sm px-4 text-sm font-bold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand-primary)] disabled:opacity-50",
           completed
             ? "border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
             : "bg-[var(--brand-primary)] text-white hover:bg-[var(--brand-primary-hover)]",

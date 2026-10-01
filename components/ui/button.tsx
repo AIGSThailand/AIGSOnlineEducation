@@ -21,21 +21,21 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-medium rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 disabled:opacity-50 disabled:pointer-events-none";
+      "inline-flex items-center justify-center font-bold rounded-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 disabled:opacity-50 disabled:pointer-events-none";
 
     const variantStyles = {
-      primary: "bg-brand-600 text-white hover:bg-brand-700 shadow-sm",
+      primary: "bg-brand-600 text-white hover:bg-brand-700 shadow-none",
       secondary:
         "bg-slate-100 text-slate-900 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100",
       outline:
-        "border border-slate-300 text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200",
-      danger: "bg-red-600 text-white hover:bg-red-700 shadow-sm",
+        "border border-[var(--border-strong)] text-[var(--text-primary)] hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200",
+      danger: "bg-red-600 text-white hover:bg-red-700 shadow-none",
       ghost: "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800",
     };
 
     const sizeStyles = {
       sm: "h-8 px-3 text-xs",
-      md: "h-10 px-4 text-sm",
+      md: "h-11 px-4 text-sm",
       lg: "h-12 px-6 text-base",
     };
 

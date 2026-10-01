@@ -12,7 +12,7 @@ interface PlayerNavProps {
 
 export function PlayerNav({ prev, next, nextLocked }: PlayerNavProps) {
   const base =
-    "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-md px-4 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand-primary)]";
+    "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-sm px-4 text-sm font-bold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand-primary)]";
 
   return (
     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">

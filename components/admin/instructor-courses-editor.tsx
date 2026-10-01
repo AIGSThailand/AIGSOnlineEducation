@@ -72,9 +72,9 @@ export function InstructorCoursesEditor({
       </button>
 
       {open ? (
-        <div className="mt-2 space-y-2 rounded-md border border-slate-200 bg-slate-50 p-3">
+        <div className="mt-2 space-y-2 rounded-sm border border-[var(--border)] bg-slate-50 p-3">
           <input
-            className="h-9 w-full rounded-md border border-slate-300 px-2 text-xs"
+            className="h-9 w-full rounded-sm border border-[var(--border-strong)] px-2 text-xs"
             placeholder="Filter courses…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}

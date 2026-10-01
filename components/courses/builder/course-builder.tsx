@@ -293,13 +293,13 @@ export function CourseBuilder({
       />
 
       <div className="flex flex-1 overflow-hidden">
-        <aside className="hidden w-72 shrink-0 border-r border-slate-200 bg-white lg:block">
+        <aside className="hidden w-72 shrink-0 border-r border-[var(--border)] bg-white lg:block">
           <CourseStructure {...structureProps} />
         </aside>
 
         <main className="min-w-0 flex-1 overflow-y-auto p-6 lg:p-8">
           <div className="mx-auto max-w-3xl">
-            {navigationNotice && <p role="alert" className="mb-4 rounded-md bg-amber-50 p-3 text-sm text-amber-900">{navigationNotice}</p>}
+            {navigationNotice && <p role="alert" className="mb-4 rounded-sm bg-amber-50 p-3 text-sm text-amber-900">{navigationNotice}</p>}
             <ContentEditor
               data={data}
               selected={selected}
@@ -309,7 +309,7 @@ export function CourseBuilder({
           </div>
         </main>
 
-        <aside className="hidden w-80 shrink-0 border-l border-slate-200 bg-white xl:block">
+        <aside className="hidden w-80 shrink-0 border-l border-[var(--border)] bg-white xl:block">
           <div className="h-full overflow-y-auto p-6">
             <CourseSettings
               course={data.course}

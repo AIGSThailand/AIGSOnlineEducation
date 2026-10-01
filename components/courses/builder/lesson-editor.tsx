@@ -430,7 +430,7 @@ export function LessonEditor({
 
   return (
     <div className="space-y-4">
-      {recovery && <div className="space-y-2 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm">
+      {recovery && <div className="space-y-2 rounded-sm border border-amber-200 bg-amber-50 p-3 text-sm">
         <p>Unsaved edits from this browser tab are available. Restoring will replace the current editor contents; review them before saving.</p>
         <Button type="button" size="sm" disabled={isSaving} onClick={() => { setForm(recovery); formRef.current = recovery; setRecovery(null); setDirty(true); dirtyRef.current = true; onSaveStatusChange("unsaved"); }}>Restore edits</Button>
         <Button type="button" size="sm" variant="outline" disabled={isSaving} onClick={() => { setRecovery(null); if (draftKey) { try { sessionStorage.removeItem(draftKey); } catch { /* Ignore unavailable storage. */ } } }}>Discard recovery</Button>
@@ -480,20 +480,20 @@ export function LessonEditor({
       </div>
 
       {error && (
-        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
+        <p className="rounded-sm bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
           {error}
         </p>
       )}
 
       {meta.hasSourceHtmlWarning && (
-        <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+        <p className="rounded-sm border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
           This lesson has preserved LearnDash source HTML that may differ from the visual editor.
           Use HTML source mode if unsupported markup is missing. Source HTML is never overwritten.
         </p>
       )}
 
       <div
-        className="flex gap-1 border-b border-slate-200"
+        className="flex gap-1 border-b border-[var(--border)]"
         role="tablist"
         aria-label="Lesson editor sections"
       >
@@ -596,7 +596,7 @@ export function LessonEditor({
           {tab === "settings" && <div className="lg:hidden">{settingsPanel}</div>}
 
           {tab === "history" && (
-            <div className="rounded-lg border border-slate-200 bg-white p-6">
+            <div className="rounded-sm border border-[var(--border)] bg-white p-6">
               <h3 className="text-sm font-semibold text-slate-900">Version history</h3>
               <p className="mt-2 text-sm text-slate-500">
                 Lesson revisions are planned for a later phase. Autosave does not create revision
@@ -614,7 +614,7 @@ export function LessonEditor({
           )}
         </div>
 
-        <aside className="hidden rounded-lg border border-slate-200 bg-slate-50 p-4 lg:block">
+        <aside className="hidden rounded-sm border border-[var(--border)] bg-slate-50 p-4 lg:block">
           {settingsPanel}
         </aside>
       </div>

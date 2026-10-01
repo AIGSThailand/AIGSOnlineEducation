@@ -197,7 +197,7 @@ export function CourseSettings({
       </div>
 
       {error && (
-        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
+        <p className="rounded-sm bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
           {error}
         </p>
       )}
@@ -271,7 +271,7 @@ export function CourseSettings({
           <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-800">
             <input
               type="checkbox"
-              className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+              className="h-4 w-4 rounded border-[var(--border-strong)] text-brand-600 focus:ring-brand-500"
               checked={form.accessExpirationEnabled}
               onChange={(e) => patchForm({ accessExpirationEnabled: e.target.checked })}
             />
@@ -341,7 +341,7 @@ export function CourseSettings({
               <img
                 src={form.thumbnailUrl}
                 alt="Course thumbnail preview"
-                className="mt-2 h-24 w-full rounded-md object-cover"
+                className="mt-2 h-24 w-full rounded-sm object-cover"
                 onError={(e) => {
                   (e.target as HTMLImageElement).style.display = "none";
                 }}
@@ -374,7 +374,7 @@ export function CourseSettings({
       {canManageInstructors ? (
         <SettingsSection title="Instructors" defaultOpen>
           <p className="text-xs text-slate-500">Select one or more instructors for this course.</p>
-          <ul className="max-h-48 space-y-2 overflow-y-auto rounded-md border border-slate-200 p-2">
+          <ul className="max-h-48 space-y-2 overflow-y-auto rounded-sm border border-[var(--border)] p-2">
             {instructors.length === 0 ? (
               <li className="px-1 py-2 text-sm text-slate-500">No instructors found.</li>
             ) : (
@@ -384,10 +384,10 @@ export function CourseSettings({
                 const checked = form.instructorIds.includes(inst.id);
                 return (
                   <li key={inst.id}>
-                    <label className="flex cursor-pointer items-start gap-2 rounded-md px-1 py-1 hover:bg-slate-50">
+                    <label className="flex cursor-pointer items-start gap-2 rounded-sm px-1 py-1 hover:bg-slate-50">
                       <input
                         type="checkbox"
-                        className="mt-1 h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                        className="mt-1 h-4 w-4 rounded border-[var(--border-strong)] text-brand-600 focus:ring-brand-500"
                         checked={checked}
                         onChange={() => toggleInstructor(inst.id)}
                       />
@@ -514,7 +514,7 @@ function SettingsSection({
 }) {
   return (
     <details
-      className="rounded-lg border border-slate-200 bg-white open:pb-3"
+      className="rounded-sm border border-[var(--border)] bg-white open:pb-3"
       open={defaultOpen}
     >
       <summary className="cursor-pointer select-none px-3 py-2.5 text-sm font-semibold text-slate-800">
